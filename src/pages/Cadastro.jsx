@@ -18,6 +18,7 @@ function Cadastro() {
 
   const navigate = useNavigate();
 
+  // Atualizar estado (captura mudanças)
   const onChange = (event) => {
     const { name, value } = event.target;
     setUser({ ...user, [name]: value });
@@ -33,51 +34,49 @@ function Cadastro() {
       const response = await api.postCadastro(user);
       console.log(response);
       alert(response.data.message);
-      navigate("/");
+      navigate("/"); // Cadastro bem-sucedido, navega para login
     } catch (error) {
       console.log(error);
-      alert(error.response.data.error);
+      alert(error.response?.data?.error || "Erro ao cadastrar");
     }
   }
 
   return (
     <div
       style={{
-        background: "linear-gradient(to right, #6C9BA5, #A8C4D9, #B2DDE3, #BAA8D1, #9CAEC9)",
         backgroundSize: "cover",
         backgroundPosition: "center",
         height: "100vh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        position: "relative",
       }}
     >
+
       <Container
         component="main"
         maxWidth="xs"
         style={{
           backgroundColor: "white",
           borderRadius: 20,
-          padding: 20,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+          padding: 10,
+          boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+          zIndex: 2,
         }}
       >
         <CssBaseline />
+
         <Box display="flex" flexDirection="column" alignItems="center">
           <Typography
             component="h1"
             variant="h5"
-            style={{
-              color: "#6C9BA5",
-              fontWeight: "bold",
-              marginBottom: 10,
-              textAlign: "center",
-            }}
+            style={{ color: "#d40000", fontWeight: "bold", marginBottom: 10 }}
           >
             CRIE SUA CONTA
           </Typography>
 
-          <Box component="form" onSubmit={handleSubmit} noValidate>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ width: "100%" }}>
             <TextField
               margin="normal"
               required
@@ -87,7 +86,7 @@ function Cadastro() {
               name="name"
               value={user.name}
               onChange={onChange}
-              style={{ backgroundColor: "#F4F6FA", borderRadius: 5 }}
+              style={{ backgroundColor: "#f9f9f9", borderRadius: 5 }}
             />
             <TextField
               margin="normal"
@@ -98,7 +97,7 @@ function Cadastro() {
               name="cpf"
               value={user.cpf}
               onChange={onChange}
-              style={{ backgroundColor: "#F4F6FA", borderRadius: 5 }}
+              style={{ backgroundColor: "#f9f9f9", borderRadius: 5 }}
             />
             <TextField
               margin="normal"
@@ -109,7 +108,7 @@ function Cadastro() {
               name="email"
               value={user.email}
               onChange={onChange}
-              style={{ backgroundColor: "#F4F6FA", borderRadius: 5 }}
+              style={{ backgroundColor: "#f9f9f9", borderRadius: 5 }}
             />
             <TextField
               margin="normal"
@@ -120,7 +119,7 @@ function Cadastro() {
               name="password"
               value={user.password}
               onChange={onChange}
-              style={{ backgroundColor: "#F4F6FA", borderRadius: 5 }}
+              style={{ backgroundColor: "#f9f9f9", borderRadius: 5 }}
             />
 
             <Button
@@ -128,28 +127,20 @@ function Cadastro() {
               fullWidth
               variant="contained"
               style={{
-                background: "linear-gradient(to right, #A8C4D9, #6C9BA5)",
+                backgroundColor: "#d40000",
                 color: "white",
                 fontWeight: "bold",
-                marginTop: 15,
-                borderRadius: 10,
+                marginTop: 10,
               }}
             >
               Cadastrar
             </Button>
 
-            <div style={{ textAlign: "center", marginTop: 10 }}>
-              <Link
-                to="/"
-                style={{
-                  color: "#6C9BA5",
-                  textDecoration: "none",
-                  fontWeight: "bold",
-                }}
-              >
+            <Box textAlign="center" mt={2}>
+              <Link to="/" style={{ color: "red", textDecoration: "none", fontWeight: "bold" }}>
                 JÁ TEM UMA CONTA? FAÇA LOGIN
               </Link>
-            </div>
+            </Box>
           </Box>
         </Box>
       </Container>
