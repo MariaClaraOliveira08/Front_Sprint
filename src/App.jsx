@@ -1,16 +1,20 @@
 // src/App.jsx
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Cadastro from "./pages/Cadastro";
 import Login from "./pages/Login";
+import Cadastro from "./pages/Cadastro";
 
-export default function App() {
+function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Cadastro  />} />
-        <Route path="/login" element={<Login />} />
-      </Routes>
-    </BrowserRouter>
+    <div>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/cadastro" element={<Cadastro />} />
+
+        </Routes>
+      </BrowserRouter>
+    </div>
   );
 }
+export default App;

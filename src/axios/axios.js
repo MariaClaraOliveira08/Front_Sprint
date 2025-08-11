@@ -1,21 +1,22 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://10.89.240.70:5000/projeto_final/",
-  headers: { accept: "application/json" },
+  baseURL: "http://10.89.240.68:3000/projeto_final/",
+  headers: {
+    accept: "application/json",
+  },
 });
 
-// Interceptador para adicionar o token JWT automaticamente
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `${token}`;
-  }
-  return config;
-});
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    token && (config.headers.Authorization = token);
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-const sheets = {
-  postLogin: (usuario) => api.post("login/", usuario),
-  postCadastro: (usuario) => api.post("user/", usuario),
-}
-export default sheets;
+// Endpoints
+api.postCadastro = (user) => api.post("user/", user);
+api.postLogin = (user) => api.post("user/login/", user);
+export default api;
