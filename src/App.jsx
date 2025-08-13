@@ -1,20 +1,20 @@
-// src/App.jsx
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout"; // ✅ IMPORT ESSENCIAL
 import Login from "./pages/Login";
 import Cadastro from "./pages/Cadastro";
 
 function App() {
   return (
-    <div>
-      <BrowserRouter>
-        <Routes>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<Layout />}>
           <Route path="/" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
-
-        </Routes>
-      </BrowserRouter>
-    </div>
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
+
 export default App;

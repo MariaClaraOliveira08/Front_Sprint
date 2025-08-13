@@ -1,160 +1,144 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Container from "@mui/material/Container";
-import TextField from "@mui/material/TextField";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  CssBaseline,
+  Link as MuiLink,
+} from "@mui/material";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import api from "../axios/axios";
 
 function Login() {
-  const [user, setUser] = useState({
-    cpf: "",
-    password: "",
-  });
-
+  const [user, setUser] = useState({ email: "", password: "" });
   const navigate = useNavigate();
 
-  //atualiza o estado de um objeto (captura as mudanças)
-  const onChange = (event) => {
-    const { name, value } = event.target;
+  const onChange = (e) => {
+    const { name, value } = e.target;
     setUser({ ...user, [name]: value });
   };
 
-  const handleSubmit = (event) => {
-    //processa os dados inseridos
-    event.preventDefault(); //previne que a página não recarregue
-    login();
-  };
-
-  async function login() {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
       const response = await api.postLogin(user);
-
-      console.log("Conteúdo do usuário:", response.data.user);
-
       const userId = response.data.user?.id_usuario;
-
       if (!userId) {
-        console.error("userId não encontrado na resposta.");
+        alert("Usuário não encontrado.");
         return;
       }
-
-      alert(response.data.message);
-
       localStorage.setItem("userId", userId);
-
-      const token = response.data.token;
-      localStorage.setItem("token", token);
+      localStorage.setItem("token", response.data.token);
       localStorage.setItem("authenticated", true);
-
       navigate("/Home");
     } catch (error) {
-      console.error(error.response.data.error);
-      if (error.response && error.response.data && error.response.data.error) {
-        alert(error.response.data.error);
-      } else {
-        alert("Erro na conexão com o servidor.");
-      }
+      alert(error.response?.data?.error || "Erro na conexão com o servidor.");
     }
-  }
+  };
 
   return (
-    //estlização da imagem de fundo
-    <div
-      style={{
-        backgroundImage: "url('/Imagem_de_fundo.jpg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        height: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
+    <Box sx={{ width: "100%", height: "100vh", bgcolor: "#e5e5e5" }}>
+      <CssBaseline />
 
-      <Container
-        component="main"
-        maxWidth="xs"
-        style={{
-          backgroundColor: "white",
-          borderRadius: 20,
-          padding: 20, //espaçamento interno
-          boxShadow: "0 4px 8px rgba(0,0,0,0.2)", //sombra ao redor do elemento
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          pt: "40px", // padding para não ficar sob o header
+          pb: "40px", // padding para não ficar sob o footer
+          minHeight: "100vh",
         }}
       >
-        {/*evita que os navegadores façam ajustes próprios no estilo padrão*/}
-        <CssBaseline />
-
-        {/*estilização da box de login*/}
-        <Box display="flex" flexDirection="column" alignItems="center">
-          <Typography
-            component="h1" //renderizado como uma tag h1
-            variant="h5" //estilo da atg h5
-            style={{ color: "#d40000", fontWeight: "bold", marginBottom: 10 }}
-          >
-            LOGIN
+        {/* Logo e texto */}
+        <Box display="flex" flexDirection="column" alignItems="center" mb={4}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
+            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+              Glimp
+            </Typography>
+          </Box>
+          <Typography variant="caption" sx={{ mt: 0.5, fontSize: 15 }}>
+            Grandes Lugares Inspiram Momentos Perfeitos.
           </Typography>
+        </Box>
 
-          {/*estilização do formulario*/}
-          <Box component="form" onSubmit={handleSubmit} noValidate>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="CPF"
-              type="text"
-              name="cpf"
-              value={user.cpf}
-              onChange={onChange} 
-              style={{ backgroundColor: "#f9f9f9", borderRadius: 5 }}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="Senha"
-              type="password"
-              name="password"
-              value={user.password}
-              onChange={onChange}
-              style={{ backgroundColor: "#f9f9f9", borderRadius: 5 }}
-            />
+        {/* Formulário */}
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{
+            width: "90%",
+            maxWidth: 500,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
+          <TextField
+            fullWidth
+            required
+            name="email"
+            label="Email"
+            value={user.email}
+            onChange={onChange}
+            variant="filled"
+            InputProps={{
+              disableUnderline: true,
+              sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
+            }}
+            InputLabelProps={{ sx: { color: "#000" } }}
+          />
+          <TextField
+            fullWidth
+            required
+            name="password"
+            label="Senha"
+            type="password"
+            value={user.password}
+            onChange={onChange}
+            variant="filled"
+            InputProps={{
+              disableUnderline: true,
+              sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
+            }}
+            InputLabelProps={{ sx: { color: "#000" } }}
+          />
 
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              style={{
-                backgroundColor: "#d40000",
-                color: "white",
-                fontWeight: "bold",
-                marginTop: 10,
-              }}
-            >
-              ENTRAR
-            </Button>
-
-            <Button
+          <Typography variant="caption" sx={{ mt: 2, textAlign: "center" }}>
+            Não possui login?{" "}
+            <MuiLink
               component={Link}
               to="/cadastro"
-              fullWidth
-              variant="contained"
-              style={{
-                backgroundColor: "#d40000",
-                color: "white",
-                fontWeight: "bold",
-                alignItems: "center",
-                marginTop: 10,
-              }}
+              sx={{ fontWeight: "bold", color: "#62798B" }}
             >
-              CADASTRE-SE
-            </Button>
-          </Box>
+              Cadastro
+            </MuiLink>
+          </Typography>
+
+          <Button
+            type="submit"
+            variant="contained"
+            sx={{
+              bgcolor: "#69819A",
+              color: "#000000",
+              borderRadius: 2,
+              py: 1,
+              mt: 1,
+              fontWeight: "bold",
+              textTransform: "none",
+            }}
+          >
+            Entrar
+          </Button>
         </Box>
-      </Container>
-    </div>
+      </Box>
+
+   
+    </Box>
   );
 }
 

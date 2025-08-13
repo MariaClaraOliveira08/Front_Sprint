@@ -17,6 +17,7 @@ api.interceptors.request.use(
 );
 
 // Endpoints
-api.postCadastro = (user) => api.post("user/", user);
+api.postCadastro = (user) => api.post("/user", user);
 api.postLogin = (user) => api.post("user/login/", user);
+
 export default api;
