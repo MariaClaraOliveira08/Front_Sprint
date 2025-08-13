@@ -12,7 +12,7 @@ import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import api from "../axios/axios";
 
 function Login() {
-  const [user, setUser] = useState({ email: "", password: "" });
+  const [user, setUser] = useState({ email: "", senha: "" });
   const navigate = useNavigate();
 
   const onChange = (e) => {
@@ -95,10 +95,10 @@ function Login() {
           <TextField
             fullWidth
             required
-            name="password"
+            name="senha"
             label="Senha"
             type="password"
-            value={user.password}
+            value={user.senha}
             onChange={onChange}
             variant="filled"
             InputProps={{
@@ -136,8 +136,6 @@ function Login() {
           </Button>
         </Box>
       </Box>
-
-   
     </Box>
   );
 }
