@@ -94,20 +94,22 @@ const Home = () => {
 
 // ESTILOS
 const styles = {
-  container: {
+    container: {
     display: "flex",
     height: "100vh",
     width: "100vw",
     fontFamily: "Segoe UI, sans-serif",
-    overflow: "hidden"
+    overflow: "hidden",
+    marginLeft: -55 
   },
+  
   sidebar: {
     width: 180,
     backgroundColor: "#e6e6e6",
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
-    padding: 20,
+    padding: 65,
     color: "#333"
   },
   perfil: {
@@ -142,7 +144,7 @@ const styles = {
   main: {
     flex: 1,
     backgroundColor: "#f3f4f6",
-    padding: 40,
+    padding: 55,
     overflow: "hidden"
   },
   logo: {
