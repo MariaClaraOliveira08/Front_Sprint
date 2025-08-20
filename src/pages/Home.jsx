@@ -1,196 +1,213 @@
-import React, { useState } from "react";
-import { FaUser } from "react-icons/fa";
-import { FiLogOut } from "react-icons/fi";
+import React from "react";
+import { FaUser, FaSignOutAlt, FaSearch } from "react-icons/fa";
 
-const Home = () => {
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState("praia");
-  const [lugarSelecionado, setLugarSelecionado] = useState(1);
-
-  const categorias = [
-    { id: "comida", emoji: "🍽️" },
-    { id: "praia", emoji: "🏖️" },
-    { id: "shopping", emoji: "🏛️" }
-  ];
-
-  const lugares = [
-    { id: 1, nome: "Restaurante Sabor da Casa" },
-    { id: 2, nome: "Pizzaria Brazetto" },
-    { id: 3, nome: "Loja Do Osmar" },
-    { id: 4, nome: "Sesc" }
-  ];
-
+export default function Home() {
   return (
     <div style={styles.container}>
-      {/* MENU LATERAL */}
-      <div style={styles.sidebar}>
+      {/* Sidebar */}
+      <aside style={styles.sidebar}>
         <div style={styles.perfil}>
-          <FaUser size={18} />
-          <span style={styles.sidebarText}>Perfil</span>
+          <FaUser size={24} />
+          <span style={styles.text}>Perfil</span>
         </div>
-        <div style={styles.menu}>
-          <span style={styles.menuItem}>Início</span>
+        <nav style={styles.nav}>
+          <span style={styles.menuItem}>início</span>
           <span style={styles.menuItem}>Sobre nós</span>
-          <span style={styles.menuItemSair}>
-            <FiLogOut size={16} /> <span>Sair</span>
-          </span>
+        </nav>
+        <div style={styles.logout}>
+          <FaSignOutAlt color="red" />
+          <span style={styles.sair}>Sair</span>
         </div>
-      </div>
+      </aside>
 
-      {/* CONTEÚDO PRINCIPAL */}
-      <div style={styles.main}>
-        <h2 style={styles.logo}>Glimp</h2>
-        <p style={styles.subtitulo}>
-          Grandes Lugares Inspiram Momentos Perfeitos.
-        </p>
+      {/* Main */}
+      <main style={styles.main}>
+        {/* Header azul topo */}
+        <div style={styles.header}></div>
 
-        {/* BARRA DE PESQUISA */}
-        <div style={styles.searchWrapper}>
-          <input
-            type="text"
-            placeholder="Pesquisar..."
-            style={styles.search}
-          />
-        </div>
+        {/* Conteúdo central */}
+        <div style={styles.content}>
+          {/* Logo + slogan */}
+          <h1 style={styles.logo}>🗺️ Glimp</h1>
+          <p style={styles.slogan}>Grandes Lugares Inspiram Momentos Perfeitos.</p>
 
-        {/* CATEGORIAS */}
-        <div style={styles.categorias}>
-          {categorias.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setCategoriaSelecionada(cat.id)}
-              style={{
-                ...styles.botaoCategoria,
-                backgroundColor:
-                  categoriaSelecionada === cat.id ? "#4a5a87" : "#d9d9d9",
-                color: categoriaSelecionada === cat.id ? "#fff" : "#000"
-              }}
-            >
-              {cat.emoji}
-            </button>
-          ))}
-        </div>
+          {/* Barra de pesquisa */}
+          <div style={styles.searchBar}>
+            <input
+              type="text"
+              placeholder="Pesquisar..."
+              style={styles.searchInput}
+            />
+            <FaSearch style={styles.searchIcon} />
+          </div>
 
-        {/* LUGARES */}
-        <div style={styles.lugares}>
-          {lugares.map((lugar) => (
-            <div
-              key={lugar.id}
-              onClick={() => setLugarSelecionado(lugar.id)}
-              style={{
-                ...styles.lugar,
-                backgroundColor:
-                  lugarSelecionado === lugar.id ? "#4a5a87" : "#fff",
-                color: lugarSelecionado === lugar.id ? "#fff" : "#000"
-              }}
-            >
-              {lugar.nome}
+          {/* Ícones principais */}
+          <div style={styles.iconsRow}>
+            <div style={styles.iconBox}>🍴</div>
+            <div style={styles.iconBox}>🏖️</div>
+            <div style={styles.iconBox}>🏬</div>
+          </div>
+
+          {/* Lista de locais */}
+          <div style={styles.list}>
+            <div style={styles.listItem}>
+              <div style={styles.listIcon}></div>
+              <span>Restaurante Sabor da Casa</span>
             </div>
-          ))}
+            <div style={styles.listItem}>
+              <div style={{ ...styles.listIcon, backgroundColor: "#94a3b8" }}></div>
+              <span>Pizzaria Brazetto</span>
+            </div>
+            <div style={styles.listItem}>
+              <div style={styles.listIcon}></div>
+              <span>Loja Do Osmar</span>
+            </div>
+            <div style={styles.listItem}>
+              <div style={{ ...styles.listIcon, backgroundColor: "#94a3b8" }}></div>
+              <span>Sesc</span>
+            </div>
+          </div>
         </div>
-      </div>
+
+        {/* Rodapé azul */}
+        <div style={styles.footer}></div>
+      </main>
     </div>
   );
-};
+}
 
-// ESTILOS
+// Estilos
 const styles = {
   container: {
     display: "flex",
     height: "100vh",
     width: "100vw",
+    margin: 0,
     fontFamily: "Segoe UI, sans-serif",
-    overflow: "hidden"
   },
   sidebar: {
-    width: 180,
-    backgroundColor: "#e6e6e6",
+    width: "220px",
+    backgroundColor: "#d1d5db",
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
-    padding: 20,
-    color: "#333"
+    padding: "20px 10px",
+    boxSizing: "border-box",
   },
   perfil: {
     display: "flex",
     alignItems: "center",
-    gap: 10,
+    gap: "8px",
     fontWeight: "bold",
-    fontSize: 16
   },
-  sidebarText: {
-    fontSize: 16,
-    color: "#222"
-  },
-  menu: {
+  nav: {
     display: "flex",
     flexDirection: "column",
-    gap: 20,
-    fontSize: 16
+    gap: "20px",
+    marginTop: "40px",
   },
   menuItem: {
-    cursor: "pointer",
-    color: "#333"
+    fontSize: "16px",
   },
-  menuItemSair: {
-    color: "red",
-    fontWeight: "bold",
+  logout: {
     display: "flex",
     alignItems: "center",
-    gap: 5,
-    cursor: "pointer"
+    gap: "8px",
+  },
+  sair: {
+    color: "red",
+    fontWeight: "bold",
   },
   main: {
     flex: 1,
-    backgroundColor: "#f3f4f6",
-    padding: 40,
-    overflow: "hidden"
+    backgroundColor: "#e5e7eb",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+  },
+  header: {
+    height: "40px",
+    backgroundColor: "#62798B",
+  },
+  footer: {
+    height: "40px",
+    backgroundColor: "#62798B",
+  },
+  content: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    padding: "20px",
+    textAlign: "center",
   },
   logo: {
     margin: 0,
-    fontSize: 24
+    fontSize: "28px",
   },
-  subtitulo: {
-    fontSize: 14,
-    color: "#777",
-    marginBottom: 20
+  slogan: {
+    margin: "5px 0 20px",
+    fontSize: "12px",
+    color: "#333",
   },
-  searchWrapper: {
+  searchBar: {
+    display: "flex",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: "20px",
+    padding: "5px 10px",
+    width: "60%",
+    marginBottom: "20px",
+  },
+  searchInput: {
+    flex: 1,
+    border: "none",
+    outline: "none",
+    padding: "8px",
+    fontSize: "14px",
+    backgroundColor: "transparent",
+  },
+  searchIcon: {
+    color: "#555",
+  },
+  iconsRow: {
     display: "flex",
     justifyContent: "center",
-    marginBottom: 20
+    gap: "30px",
+    marginBottom: "30px",
   },
-  search: {
-    width: "60%",
-    padding: 12,
-    borderRadius: 8,
-    border: "1px solid #ccc",
-    fontSize: 14
-  },
-  categorias: {
+  iconBox: {
+    width: "80px",
+    height: "80px",
+    backgroundColor: "#94a3b8",
     display: "flex",
-    gap: 20,
-    marginBottom: 30
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: "10px",
+    fontSize: "30px",
   },
-  botaoCategoria: {
-    width: 70,
-    height: 70,
-    borderRadius: 10,
-    border: "none",
-    fontSize: 30,
-    cursor: "pointer"
-  },
-  lugares: {
+  list: {
     display: "flex",
     flexDirection: "column",
-    gap: 15
+    gap: "15px",
+    width: "80%",
+    maxWidth: "500px",
   },
-  lugar: {
-    padding: "15px 20px",
-    borderRadius: 8,
-    fontWeight: "bold",
-    cursor: "pointer",
-    transition: "0.2s"
-  }
+  listItem: {
+    display: "flex",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: "8px",
+    padding: "12px 16px",
+    gap: "12px",
+    fontSize: "16px",
+    fontWeight: "500",
+  },
+  listIcon: {
+    width: "30px",
+    height: "30px",
+    backgroundColor: "#64748b",
+    borderRadius: "6px",
+  },
 };
 
-export default Home;
