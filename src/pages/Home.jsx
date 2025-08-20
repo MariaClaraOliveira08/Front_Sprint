@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FaUser } from "react-icons/fa";
 import { FiLogOut } from "react-icons/fi";
+import Logoff from "../components/Logoff"; // importa o componente de sair
 
 const Home = () => {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState("praia");
@@ -30,9 +31,10 @@ const Home = () => {
         <div style={styles.menu}>
           <span style={styles.menuItem}>Início</span>
           <span style={styles.menuItem}>Sobre nós</span>
-          <span style={styles.menuItemSair}>
-            <FiLogOut size={16} /> <span>Sair</span>
-          </span>
+          <div style={styles.menuItemSair}>
+            <FiLogOut size={16} />
+            <Logoff />
+          </div>
         </div>
       </div>
 
@@ -94,7 +96,7 @@ const Home = () => {
 
 // ESTILOS
 const styles = {
-    container: {
+  container: {
     display: "flex",
     height: "100vh",
     width: "100vw",
@@ -102,7 +104,6 @@ const styles = {
     overflow: "hidden",
     marginLeft: -55 
   },
-  
   sidebar: {
     width: 180,
     backgroundColor: "#e6e6e6",
