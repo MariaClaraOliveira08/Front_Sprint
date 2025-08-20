@@ -20,7 +20,23 @@ function Login() {
     setUser({ ...user, [name]: value });
   };
 
-  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await api.postLogin(user);
+      const userId = response.data.user?.id_usuario;
+      if (!userId) {
+        alert("Usuário não encontrado.");
+        return;
+      }
+      localStorage.setItem("userId", userId);
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("authenticated", true);
+      navigate("/Home");
+    } catch (error) {
+      alert(error.response?.data?.error || "Erro na conexão com o servidor.");
+    }
+  };
 
   return (
     <Box sx={{ width: "100%", height: "100vh", bgcolor: "#e5e5e5" }}>
