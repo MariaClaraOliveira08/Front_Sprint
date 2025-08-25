@@ -7,17 +7,18 @@ const api = axios.create({
   },
 });
 
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    token && (config.headers.Authorization = token);
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`; // 🔴 Importante
+  }
+  return config;
+});
 
 // Endpoints
 api.postCadastro = (user) => api.post("/user", user);
 api.postLogin = (user) => api.post("/login", user);
+//api.getbuscarEstabelecimento = () => api.get("/buscar");
+
 
 export default api;

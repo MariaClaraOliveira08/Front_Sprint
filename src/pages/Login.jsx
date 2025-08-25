@@ -24,7 +24,7 @@ function Login() {
     e.preventDefault();
     try {
       const response = await api.postLogin(user);
-      const userId = response.data.user?.id_usuario;
+      const userId = response.data.user.id_usuario;
       if (!userId) {
         alert("Usuário não encontrado.");
         return;
@@ -32,9 +32,9 @@ function Login() {
       localStorage.setItem("userId", userId);
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("authenticated", true);
-      navigate("/Home");
+      navigate("/home");
     } catch (error) {
-      alert(error.response?.data?.error || "Erro na conexão com o servidor.");
+      alert(error.response.data.error);
     }
   };
 
