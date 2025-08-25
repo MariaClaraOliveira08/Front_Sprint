@@ -40,10 +40,7 @@ const Home = () => {
 
         <div style={styles.line}></div>
 
-        <div style={styles.menuItem}
-          onClick={() => navigate("/")}>
-          <span style={styles.menuItemInicio}>Início</span>
-        </div>
+        
 
         <div style={styles.menu}>
           <span style={styles.menuItem}>Sobre nós</span>
@@ -162,14 +159,6 @@ const styles = {
     color: "#333",
     gap: 10,
   },
-  menuItemInicio: {
-  cursor: "pointer",
-  color: "#333",
-  display: "flex",          // Garante que o conteúdo dentro do botão será alinhado corretamente
-  alignItems: "center",     // Alinha verticalmente os itens
-  justifyContent: "center", // Alinha horizontalmente os itens
-  marginTop: "-220px",       // Ajuste para mover o botão para cima
-},
 
   menuItemSair: {
     color: "red",
