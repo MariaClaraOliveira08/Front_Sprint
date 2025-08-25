@@ -18,5 +18,7 @@ api.interceptors.request.use((config) => {
 // Endpoints
 api.postCadastro = (user) => api.post("/user", user);
 api.postLogin = (user) => api.post("/login", user);
+//api.getbuscarEstabelecimento = () => api.get("/buscar");
+
 
 export default api;
