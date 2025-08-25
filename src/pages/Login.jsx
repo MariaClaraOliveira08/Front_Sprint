@@ -109,7 +109,7 @@ function Login() {
           />
 
           <Typography variant="caption" sx={{ mt: 2, textAlign: "center" }}>
-            Não possui login?{" "}
+            Não possui login?{""}
             <MuiLink
               component={Link}
               to="/cadastro"

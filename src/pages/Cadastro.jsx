@@ -177,7 +177,7 @@ export default function Cadastro() {
             Já possui cadastro?{" "}
             <MuiLink
               component={Link}
-              to="/"
+              to="/Login"
               sx={{ fontWeight: "bold", color: "#62798B" }}
             >
               Logar
