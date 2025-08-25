@@ -1,196 +1,180 @@
-import React, { useState } from "react";
-import { FaUser } from "react-icons/fa";
-import { FiLogOut } from "react-icons/fi";
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  Typography,
+  TextField,
+  IconButton,
+  Paper,
+  Grid,
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import RestaurantIcon from "@mui/icons-material/Restaurant";
+import BeachAccessIcon from "@mui/icons-material/BeachAccess";
+import StoreIcon from "@mui/icons-material/Store";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined"; 
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import BarraLateral from "../components/BarraLateral";
 
-const Home = () => {
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState("praia");
-  const [lugarSelecionado, setLugarSelecionado] = useState(1);
+export default function Home() {
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const [estabelecimentos, setEstabelecimentos] = useState([]);
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState("");
 
-  const categorias = [
-    { id: "comida", emoji: "🍽️" },
-    { id: "praia", emoji: "🏖️" },
-    { id: "shopping", emoji: "🏛️" }
-  ];
+  useEffect(() => {
+    async function fetchEstabelecimentos() {
+      try {
+        const response = await axios.get("/buscar");
+        setEstabelecimentos(response.data);
+      } catch (error) {
+        console.error("Erro ao carregar estabelecimentos:", error);
+      }
+    }
+    fetchEstabelecimentos();
+  }, []);
 
-  const lugares = [
-    { id: 1, nome: "Restaurante Sabor da Casa" },
-    { id: 2, nome: "Pizzaria Brazetto" },
-    { id: 3, nome: "Loja Do Osmar" },
-    { id: 4, nome: "Sesc" }
-  ];
+  const filteredEstabelecimentos = estabelecimentos
+    .filter((r) => r.nome.toLowerCase().includes(search.toLowerCase()))
+    .filter((r) => (categoriaSelecionada ? r.categoria === categoriaSelecionada : true));
+
+  const handleCategoriaSelect = (categoria) => {
+    setCategoriaSelecionada(categoria);
+  };
 
   return (
-    <div style={styles.container}>
-      {/* MENU LATERAL */}
-      <div style={styles.sidebar}>
-        <div style={styles.perfil}>
-          <FaUser size={18} />
-          <span style={styles.sidebarText}>Perfil</span>
-        </div>
-        <div style={styles.menu}>
-          <span style={styles.menuItem}>Início</span>
-          <span style={styles.menuItem}>Sobre nós</span>
-          <span style={styles.menuItemSair}>
-            <FiLogOut size={16} /> <span>Sair</span>
-          </span>
-        </div>
-      </div>
+    <Box sx={{ display: "flex", width: "100vw", height: "100vh", bgcolor: "#d3d3d3" }}>
+      <BarraLateral />
 
-      {/* CONTEÚDO PRINCIPAL */}
-      <div style={styles.main}>
-        <h2 style={styles.logo}>Glimp</h2>
-        <p style={styles.subtitulo}>
-          Grandes Lugares Inspiram Momentos Perfeitos.
-        </p>
+      <Box
+        sx={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          height: "100vh",
+          overflowY: "auto",
+          p: 4,
+          boxSizing: "border-box",
+        }}
+      >
+        {/* Logo */}
+        <Box display="flex" flexDirection="column" alignItems="flex-start" mb={4}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000", marginTop: "15px" }} />
+            <Typography variant="h4" sx={{ fontWeight: "bold", marginTop: "20px" }}>
+              Glimp
+            </Typography>
+          </Box>
+          <Typography variant="subtitle2" sx={{ mt: 1.5, fontSize: 15 }}>
+            Grandes Lugares Inspiram Momentos Perfeitos.
+          </Typography>
+        </Box>
 
-        {/* BARRA DE PESQUISA */}
-        <div style={styles.searchWrapper}>
-          <input
-            type="text"
+        {/* Campo de busca */}
+        <Box sx={{ display: "flex", mb: 2, width: "1020px", color:"#FFFF" }}>
+          <TextField
+            fullWidth
             placeholder="Pesquisar..."
-            style={styles.search}
+            variant="outlined"
+            size="small"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            InputProps={{
+              endAdornment: (
+                <IconButton>
+                  <SearchIcon />
+                </IconButton>
+              ),
+            }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "20px", // arredondado
+              },
+            }}
           />
-        </div>
+        </Box>
 
-        {/* CATEGORIAS */}
-        <div style={styles.categorias}>
-          {categorias.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setCategoriaSelecionada(cat.id)}
-              style={{
-                ...styles.botaoCategoria,
-                backgroundColor:
-                  categoriaSelecionada === cat.id ? "#4a5a87" : "#d9d9d9",
-                color: categoriaSelecionada === cat.id ? "#fff" : "#000"
-              }}
-            >
-              {cat.emoji}
-            </button>
-          ))}
-        </div>
+        {/* Categorias */}
+        <Box
+          sx={{
+            position: "sticky",
+            top: 0,
+            backgroundColor: "#d3d3d3",
+            zIndex: 1,
+            mb: 4,
+          }}
+        >
+          <Grid container spacing={2} justifyContent="center">
+            <Grid item>
+              <Paper
+                sx={{
+                  p: 2,
+                  cursor: "pointer",
+                  backgroundColor: categoriaSelecionada === "restaurante" ? "#6c78b8" : "#fff",
+                  borderRadius: 2,
+                }}
+                onClick={() => handleCategoriaSelect("restaurante")}
+              >
+                <RestaurantIcon fontSize="large" />
+              </Paper>
+            </Grid>
+            <Grid item>
+              <Paper
+                sx={{
+                  p: 2,
+                  cursor: "pointer",
+                  backgroundColor: categoriaSelecionada === "praia" ? "#6c78b8" : "#fff",
+                  borderRadius: 2,
+                }}
+                onClick={() => handleCategoriaSelect("praia")}
+              >
+                <BeachAccessIcon fontSize="large" />
+              </Paper>
+            </Grid>
+            <Grid item>
+              <Paper
+                sx={{
+                  p: 2,
+                  cursor: "pointer",
+                  backgroundColor: categoriaSelecionada === "loja" ? "#6c78b8" : "#fff",
+                  borderRadius: 2,
+                }}
+                onClick={() => handleCategoriaSelect("loja")}
+              >
+                <StoreIcon fontSize="large" />
+              </Paper>
+            </Grid>
+          </Grid>
+        </Box>
 
-        {/* LUGARES */}
-        <div style={styles.lugares}>
-          {lugares.map((lugar) => (
-            <div
-              key={lugar.id}
-              onClick={() => setLugarSelecionado(lugar.id)}
-              style={{
-                ...styles.lugar,
-                backgroundColor:
-                  lugarSelecionado === lugar.id ? "#4a5a87" : "#fff",
-                color: lugarSelecionado === lugar.id ? "#fff" : "#000"
+        {/* Lista de estabelecimentos */}
+        {filteredEstabelecimentos.map((r) => (
+          <Box
+            key={r.id}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              mb: 2,
+              bgcolor: "#fff",
+              borderRadius: 1,
+              cursor: "pointer",
+              p: 1,
+            }}
+            onClick={() => navigate(`/restaurante/${r.id}`)}
+          >
+            <Box
+              sx={{
+                width: "40px",
+                height: "40px",
+                bgcolor: r.cor || "#6c78b8",
+                mr: 2,
+                borderRadius: 1,
               }}
-            >
-              {lugar.nome}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+            />
+            <Typography>{r.nome}</Typography>
+          </Box>
+        ))}
+      </Box>
+    </Box>
   );
-};
-
-// ESTILOS
-const styles = {
-  container: {
-    display: "flex",
-    height: "100vh",
-    width: "100vw",
-    fontFamily: "Segoe UI, sans-serif",
-    overflow: "hidden"
-  },
-  sidebar: {
-    width: 180,
-    backgroundColor: "#e6e6e6",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    padding: 20,
-    color: "#333"
-  },
-  perfil: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    fontWeight: "bold",
-    fontSize: 16
-  },
-  sidebarText: {
-    fontSize: 16,
-    color: "#222"
-  },
-  menu: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 20,
-    fontSize: 16
-  },
-  menuItem: {
-    cursor: "pointer",
-    color: "#333"
-  },
-  menuItemSair: {
-    color: "red",
-    fontWeight: "bold",
-    display: "flex",
-    alignItems: "center",
-    gap: 5,
-    cursor: "pointer"
-  },
-  main: {
-    flex: 1,
-    backgroundColor: "#f3f4f6",
-    padding: 40,
-    overflow: "hidden"
-  },
-  logo: {
-    margin: 0,
-    fontSize: 24
-  },
-  subtitulo: {
-    fontSize: 14,
-    color: "#777",
-    marginBottom: 20
-  },
-  searchWrapper: {
-    display: "flex",
-    justifyContent: "center",
-    marginBottom: 20
-  },
-  search: {
-    width: "60%",
-    padding: 12,
-    borderRadius: 8,
-    border: "1px solid #ccc",
-    fontSize: 14
-  },
-  categorias: {
-    display: "flex",
-    gap: 20,
-    marginBottom: 30
-  },
-  botaoCategoria: {
-    width: 70,
-    height: 70,
-    borderRadius: 10,
-    border: "none",
-    fontSize: 30,
-    cursor: "pointer"
-  },
-  lugares: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 15
-  },
-  lugar: {
-    padding: "15px 20px",
-    borderRadius: 8,
-    fontWeight: "bold",
-    cursor: "pointer",
-    transition: "0.2s"
-  }
-};
-
-export default Home;
+}
