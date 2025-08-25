@@ -56,7 +56,7 @@ export default function Cadastro() {
       // Se o backend retornar token, salvar
       if (response.data.token) localStorage.setItem("token", response.data.token);
 
-      navigate("/login");
+      navigate("/");
     } catch (err) {
       setMensagem(
         "Erro ao cadastrar: " + (err.response?.data?.error || err.message)
@@ -177,7 +177,7 @@ export default function Cadastro() {
             Já possui cadastro?{" "}
             <MuiLink
               component={Link}
-              to="/"
+              to="/Login"
               sx={{ fontWeight: "bold", color: "#62798B" }}
             >
               Logar
