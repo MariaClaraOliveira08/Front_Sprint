@@ -1,12 +1,38 @@
-# React + Vite
+# Projeto Base - React
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este projeto fornece a estrutura inicial para um sistema com telas de **Login** e **Cadastro**, desenvolvido em **React com Vite**. O layout das telas está implementado e funcional.
 
-Currently, two official plugins are available:
+## Objetivo da Sprint
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Estilizar** as telas existentes.
+- **Implementar funcionalidades**.
+- **Criar as devidas telas referentes ao nosso projeto** chamadas "Home","Sobre Nós", "Perfil" e as demais telas com o mapa.
+- **Realizar a integração** das telas com uma API utilizando.
 
-## Expanding the ESLint configuration
+## Instalação do Projeto final
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. Clone o repositório:
+   ```sh
+   git clone https://github.com/MariaClaraOliveira08/Front_Sprint.git
+   cd front_sprint
+
+2. Instale as dependências:
+   ```sh
+   npm i
+
+## Dependências Necessárias
+
+1. Material UI (MUI)
+    - Para utilizar os componentes de UI do Material-UI:
+   ```sh
+    npm install @mui/material @emotion/react @emotion/styled @mui/icons-material
+
+2. Axios:
+    - Para integrar com a API utilizando Axios, instale:
+   ```sh
+    npm i axios
+
+3. React Router DOM
+    - Para gerenciar a navegação entre as páginas:
+   ```sh
+    npm install react-router-dom
