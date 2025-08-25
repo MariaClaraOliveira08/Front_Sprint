@@ -1,7 +1,7 @@
 import React from "react";
-import { Box, TextField, Button, Avatar, Typography } from "@mui/material";
-import EditIcon from '@mui/icons-material/Edit';
-import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import { Box, TextField, Button, Avatar } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 
 function Perfil() {
   return (
@@ -11,58 +11,51 @@ function Perfil() {
         minHeight: "100vh",
         backgroundColor: "#E0E0E0",
         display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        pt: 5,
+        justifyContent: "center",
+        alignItems: "center", 
         boxSizing: "border-box",
+        p: 2,
       }}
     >
-      {/* Cabeçalho com gradiente */}
+      {/* Card central */}
       <Box
         sx={{
           width: "100%",
-          height: 150,
-          background: "linear-gradient(to bottom, #8c9eff, #536dfe)",
+          maxWidth: 800,
+          backgroundColor: "#E0E0E0",
+          borderRadius: 3,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          p: 4,
           position: "relative",
         }}
       >
+        {/* Avatar */}
         <Avatar
           src="/path/to/your/image.jpg"
           alt="Foto do perfil"
           sx={{
-            width: 120,
-            height: 120,
-            position: "absolute",
-            bottom: -60,
-            left: "50%",
-            transform: "translateX(-50%)",
-            border: "4px solid white",
+            width: 150,
+            height: 150,
+            mb: 4,
           }}
         />
-      </Box>
 
-      {/* Formulário */}
-      <Box
-        sx={{
-          width: "90%",
-          maxWidth: 400,
-          mt: 8,
-          display: "flex",
-          flexDirection: "column",
-          gap: 3,
-        }}
-      >
+        {/* Campos */}
         <TextField
           label="Nome"
           defaultValue="Nino&Nina"
           variant="outlined"
           fullWidth
+          sx={{ mb: 3, borderRadius: 3 }}
         />
         <TextField
           label="Email"
           defaultValue="nino&nina@gmail.com"
           variant="outlined"
           fullWidth
+          sx={{ mb: 3, borderRadius: 3 }}
         />
         <TextField
           label="Senha"
@@ -70,37 +63,56 @@ function Perfil() {
           type="password"
           variant="outlined"
           fullWidth
+          sx={{ mb: 3, borderRadius: 3 }}
         />
 
-        {/* Botões */}
-        <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
+        {/* Botões principais */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 4,
+            mt: 2,
+            width: "100%",
+          }}
+        >
           <Button
             variant="contained"
             startIcon={<EditIcon />}
-            sx={{ backgroundColor: "#8c9eff", boxShadow: "0 3px 6px rgba(0,0,0,0.2)" }}
+            sx={{
+              backgroundColor: "#7681A1",
+              borderRadius: 5,
+              px: 4,
+              ":hover": { backgroundColor: "#5f6a8a" },
+            }}
           >
             Editar perfil
           </Button>
           <Button
-      variant="contained"
-      startIcon={<ExitToAppIcon />}
-      sx={{
-        backgroundColor: "#8c9eff",
-        boxShadow: "0 3px 6px rgba(0,0,0,0.2)",
-        ":hover": {
-          backgroundColor: "#7b8dfc", 
-        },
-      }}
-      onClick={() => navigate("/home")}
-    >
-      Sair
-    </Button>
+            variant="contained"
+            startIcon={<ExitToAppIcon />}
+            sx={{
+              backgroundColor: "#7681A1",
+              borderRadius: 5,
+              px: 4,
+              ":hover": { backgroundColor: "#5f6a8a" },
+            }}
+          >
+            Sair
+          </Button>
         </Box>
 
-        {/* Botão de excluir */}
+        {/* Botão excluir */}
         <Button
           variant="outlined"
-          sx={{ mt: 2, color: "red", borderColor: "red" }}
+          sx={{
+            mt: 3,
+            color: "red",
+            borderColor: "red",
+            borderRadius: 5,
+            px: 6,
+            fontWeight: "bold",
+          }}
         >
           Excluir conta
         </Button>
