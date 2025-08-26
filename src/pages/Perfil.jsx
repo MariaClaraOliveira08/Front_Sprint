@@ -16,6 +16,16 @@ function Perfil() {
     password: "",
   });
 
+  const handleLogout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("userId");
+  localStorage.removeItem("authenticated");
+
+  // redireciona e substitui a rota atual
+  navigate("/login", { replace: true });
+};
+
+
   // Carregar dados do usuário
   useEffect(() => {
     async function fetchUsuario() {
@@ -164,7 +174,7 @@ function Perfil() {
             variant="contained"
             startIcon={<ExitToAppIcon />}
             sx={{ backgroundColor: "#7681A1", flex: 1 }}
-            onClick={() => navigate("/login")}
+            onClick={handleLogout}
           >
             Sair
           </Button>
