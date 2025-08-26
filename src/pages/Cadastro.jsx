@@ -28,7 +28,7 @@ export default function Cadastro() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) navigate("/home");
+    if (token) navigate("/cadastro");
   }, [navigate]);
 
   const onChange = (e) => {
