@@ -164,7 +164,7 @@ function Perfil() {
             variant="contained"
             startIcon={<ExitToAppIcon />}
             sx={{ backgroundColor: "#7681A1", flex: 1 }}
-            onClick={() => navigate("/home")}
+            onClick={() => navigate("/login")}
           >
             Sair
           </Button>
