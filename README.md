@@ -36,3 +36,8 @@ Este projeto fornece a estrutura inicial para um sistema com telas de **Login** 
     - Para gerenciar a navegação entre as páginas:
    ```sh
     npm install react-router-dom
+
+   4. Mui Material Icons
+   - Instala os ícones do Material UI
+  ```sh
+  npm install @mui/icons-material
