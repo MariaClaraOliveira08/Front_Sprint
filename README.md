@@ -38,7 +38,7 @@ Este projeto fornece a estrutura inicial para um sistema com telas de **Login** 
     npm install react-router-dom
 
 
-   4. Mui Material Icons
-   - Instala os ícones do Material UI
+4. Mui Material Icons
+   - Instala os ícones do Material UI:
   ```sh
   npm install @mui/icons-material
