@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import sheets from "../axios/axios";
-
+import CustomSnackbar from "../components/CustomSnackbar";
 
 export default function Cadastro() {
   const navigate = useNavigate();
@@ -25,6 +25,21 @@ export default function Cadastro() {
   const [loading, setLoading] = useState(false);
   const [btnHover, setBtnHover] = useState(false);
   const [mensagem, setMensagem] = useState("");
+
+  // 🔔 Estados para o Snackbar
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+  const handleOpenSnackbar = (message, severity = "success") => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setOpenSnackbar(true);
+  };
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -41,7 +56,6 @@ export default function Cadastro() {
     setLoading(true);
 
     try {
-      // Objeto exato que o backend espera
       const usuario = {
         nome: user.nome,
         cpf: user.cpf,
@@ -51,16 +65,27 @@ export default function Cadastro() {
 
       const response = await sheets.postCadastro(usuario);
 
-      alert(response.data.message || "Cadastro realizado com sucesso!");
-
-      // Se o backend retornar token, salvar
-      if (response.data.token) localStorage.setItem("token", response.data.token);
-
-      navigate("/");
-    } catch (err) {
-      setMensagem(
-        "Erro ao cadastrar: " + (err.response?.data?.error || err.message)
+      // ✅ Mostra snackbar de sucesso
+      handleOpenSnackbar(
+        response.data.message || "Cadastro realizado com sucesso!",
+        "success"
       );
+
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+      }
+
+      // ⏳ espera antes de navegar
+      setTimeout(() => {
+        navigate("/");
+      }, 1500);
+    } catch (err) {
+      // ❌ Mostra snackbar de erro
+      handleOpenSnackbar(
+        "Erro ao cadastrar: " + (err.response?.data?.error || err.message),
+        "error"
+      );
+      setMensagem("Erro ao cadastrar.");
     } finally {
       setLoading(false);
     }
@@ -183,28 +208,36 @@ export default function Cadastro() {
               Logar
             </MuiLink>
           </Typography>
+
+          <Button
+            type="submit"
+            variant="contained"
+            onMouseEnter={() => !loading && setBtnHover(true)}
+            onMouseLeave={() => setBtnHover(false)}
+            disabled={loading}
+            sx={{
+              bgcolor: btnHover ? "#4b5c75" : "#69819A",
+              color: "#000",
+              borderRadius: 2,
+              py: 1,
+              mt: 2,
+              fontWeight: "bold",
+              textTransform: "none",
+              width: 150,
+              alignSelf: "center",
+            }}
+          >
+            {loading ? "Cadastrando..." : "Cadastrar"}
+          </Button>
         </Box>
 
-        <Button
-          type="submit"
-          variant="contained"
-          onClick={handleCadastro}
-          onMouseEnter={() => !loading && setBtnHover(true)}
-          onMouseLeave={() => setBtnHover(false)}
-          disabled={loading}
-          sx={{
-            bgcolor: btnHover ? "#4b5c75" : "#69819A",
-            color: "#000",
-            borderRadius: 2,
-            py: 1,
-            mt: 2,
-            fontWeight: "bold",
-            textTransform: "none",
-            width: 150,
-          }}
-        >
-          {loading ? "Cadastrando..." : "Cadastrar"}
-        </Button>
+        {/* Snackbar */}
+        <CustomSnackbar
+          open={openSnackbar}
+          message={snackbarMessage}
+          severity={snackbarSeverity}
+          onClose={handleCloseSnackbar}
+        />
 
         {mensagem && (
           <Typography sx={{ mt: 1, color: "red", fontWeight: "bold" }}>
@@ -212,7 +245,6 @@ export default function Cadastro() {
           </Typography>
         )}
       </Box>
-      
     </>
   );
 }

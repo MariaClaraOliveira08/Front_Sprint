@@ -10,10 +10,26 @@ import {
 } from "@mui/material";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import api from "../axios/axios";
+import CustomSnackbar from "../components/CustomSnackbar";
 
 function Login() {
   const [user, setUser] = useState({ email: "", senha: "" });
   const navigate = useNavigate();
+
+  // 🔔 Estados do Snackbar
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+  const handleOpenSnackbar = (message, severity = "success") => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setOpenSnackbar(true);
+  };
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -25,16 +41,27 @@ function Login() {
     try {
       const response = await api.postLogin(user);
       const userId = response.data.user.id_usuario;
+
       if (!userId) {
-        alert("Usuário não encontrado.");
+        handleOpenSnackbar("Usuário não encontrado.", "error");
         return;
       }
+
       localStorage.setItem("userId", userId);
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("authenticated", true);
-      navigate("/home");
+
+      // ✅ Mostra mensagem antes de navegar
+      handleOpenSnackbar("Usuário logado com sucesso!", "success");
+
+      setTimeout(() => {
+        navigate("/home");
+      }, 1500);
     } catch (error) {
-      alert(error.response.data.error);
+      handleOpenSnackbar(
+        error.response?.data?.error || "Erro ao fazer login.",
+        "error"
+      );
     }
   };
 
@@ -135,6 +162,14 @@ function Login() {
             Entrar
           </Button>
         </Box>
+
+        {/* Snackbar */}
+        <CustomSnackbar
+          open={openSnackbar}
+          message={snackbarMessage}
+          severity={snackbarSeverity}
+          onClose={handleCloseSnackbar}
+        />
       </Box>
     </Box>
   );
