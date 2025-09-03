@@ -7,12 +7,16 @@ import {
   Typography,
   CssBaseline,
   Link as MuiLink,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import api from "../axios/axios";
 import CustomSnackbar from "../components/CustomSnackbar";
 
 function Login() {
+  const [showPassword, setShowPassword] = useState(false);
   const [user, setUser] = useState({ email: "", senha: "" });
   const navigate = useNavigate();
 
@@ -75,8 +79,8 @@ function Login() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          pt: "40px", // padding para não ficar sob o header
-          pb: "40px", // padding para não ficar sob o footer
+          pt: "40px",
+          pb: "40px",
           minHeight: "100vh",
         }}
       >
@@ -119,18 +123,29 @@ function Login() {
             }}
             InputLabelProps={{ sx: { color: "#000" } }}
           />
+
           <TextField
-            fullWidth
-            required
-            name="senha"
             label="Senha"
-            type="password"
+            name="senha"
+            type={showPassword ? "text" : "password"}
             value={user.senha}
             onChange={onChange}
+            fullWidth
+            required
             variant="filled"
             InputProps={{
               disableUnderline: true,
               sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
             }}
             InputLabelProps={{ sx: { color: "#000" } }}
           />

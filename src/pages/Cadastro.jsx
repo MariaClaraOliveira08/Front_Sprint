@@ -7,8 +7,11 @@ import {
   Typography,
   CssBaseline,
   Link as MuiLink,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import sheets from "../axios/axios";
 import CustomSnackbar from "../components/CustomSnackbar";
 
@@ -26,10 +29,13 @@ export default function Cadastro() {
   const [btnHover, setBtnHover] = useState(false);
   const [mensagem, setMensagem] = useState("");
 
-  // 🔔 Estados para o Snackbar
+  // 🔔 Snackbar
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+  // 👁️ Estado do olho
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleOpenSnackbar = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -65,7 +71,6 @@ export default function Cadastro() {
 
       const response = await sheets.postCadastro(usuario);
 
-      // ✅ Mostra snackbar de sucesso
       handleOpenSnackbar(
         response.data.message || "Cadastro realizado com sucesso!",
         "success"
@@ -75,12 +80,10 @@ export default function Cadastro() {
         localStorage.setItem("token", response.data.token);
       }
 
-      // ⏳ espera antes de navegar
       setTimeout(() => {
         navigate("/");
       }, 1500);
     } catch (err) {
-      // ❌ Mostra snackbar de erro
       handleOpenSnackbar(
         "Erro ao cadastrar: " + (err.response?.data?.error || err.message),
         "error"
@@ -92,159 +95,167 @@ export default function Cadastro() {
   };
 
   return (
-    <>
+    <Box
+      sx={{
+        width: "100%",
+        minHeight: "100vh",
+        bgcolor: "#e5e5e5",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        p: 2,
+        paddingTop: 2,
+      }}
+    >
+      <CssBaseline />
+
+      {/* Logo */}
+      <Box display="flex" flexDirection="column" alignItems="center" mb={4}>
+        <Box display="flex" alignItems="center" gap={1}>
+          <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
+          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+            Glimp
+          </Typography>
+        </Box>
+        <Typography variant="caption" sx={{ mt: 0.5, fontSize: 15 }}>
+          Grandes Lugares Inspiram Momentos Perfeitos.
+        </Typography>
+      </Box>
+
+      {/* Formulário */}
       <Box
+        component="form"
         sx={{
-          width: "100%",
-          minHeight: "100vh",
-          bgcolor: "#e5e5e5",
+          width: "90%",
+          maxWidth: 500,
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          p: 2,
-          paddingTop: 2,
+          gap: 2,
+        }}
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleCadastro();
         }}
       >
-        <CssBaseline />
-
-        {/* Logo */}
-        <Box display="flex" flexDirection="column" alignItems="center" mb={4}>
-          <Box display="flex" alignItems="center" gap={1}>
-            <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
-            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-              Glimp
-            </Typography>
-          </Box>
-          <Typography variant="caption" sx={{ mt: 0.5, fontSize: 15 }}>
-            Grandes Lugares Inspiram Momentos Perfeitos.
-          </Typography>
-        </Box>
-
-        {/* Formulário */}
-        <Box
-          component="form"
-          sx={{
-            width: "90%",
-            maxWidth: 500,
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
+        <TextField
+          fullWidth
+          required
+          label="Nome"
+          name="nome"
+          value={user.nome}
+          onChange={onChange}
+          variant="filled"
+          InputProps={{
+            disableUnderline: true,
+            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
           }}
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleCadastro();
+          InputLabelProps={{ sx: { color: "#000" } }}
+          disabled={loading}
+        />
+        <TextField
+          fullWidth
+          required
+          label="CPF"
+          name="cpf"
+          value={user.cpf}
+          onChange={onChange}
+          variant="filled"
+          InputProps={{
+            disableUnderline: true,
+            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
           }}
-        >
-          <TextField
-            fullWidth
-            required
-            label="Nome"
-            name="nome"
-            value={user.nome}
-            onChange={onChange}
-            variant="filled"
-            InputProps={{
-              disableUnderline: true,
-              sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
-            }}
-            InputLabelProps={{ sx: { color: "#000" } }}
-            disabled={loading}
-          />
-          <TextField
-            fullWidth
-            required
-            label="CPF"
-            name="cpf"
-            value={user.cpf}
-            onChange={onChange}
-            variant="filled"
-            InputProps={{
-              disableUnderline: true,
-              sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
-            }}
-            InputLabelProps={{ sx: { color: "#000" } }}
-            disabled={loading}
-          />
-          <TextField
-            fullWidth
-            required
-            label="Email"
-            name="email"
-            value={user.email}
-            onChange={onChange}
-            variant="filled"
-            InputProps={{
-              disableUnderline: true,
-              sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
-            }}
-            InputLabelProps={{ sx: { color: "#000" } }}
-            disabled={loading}
-          />
-          <TextField
-            fullWidth
-            required
-            label="Senha"
-            name="senha"
-            type="password"
-            value={user.senha}
-            onChange={onChange}
-            variant="filled"
-            InputProps={{
-              disableUnderline: true,
-              sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
-            }}
-            InputLabelProps={{ sx: { color: "#000" } }}
-            disabled={loading}
-          />
-
-          <Typography variant="caption" sx={{ mt: 2, textAlign: "center" }}>
-            Já possui cadastro?{" "}
-            <MuiLink
-              component={Link}
-              to="/Login"
-              sx={{ fontWeight: "bold", color: "#62798B" }}
-            >
-              Logar
-            </MuiLink>
-          </Typography>
-
-          <Button
-            type="submit"
-            variant="contained"
-            onMouseEnter={() => !loading && setBtnHover(true)}
-            onMouseLeave={() => setBtnHover(false)}
-            disabled={loading}
-            sx={{
-              bgcolor: btnHover ? "#4b5c75" : "#69819A",
-              color: "#000",
-              borderRadius: 2,
-              py: 1,
-              mt: 2,
-              fontWeight: "bold",
-              textTransform: "none",
-              width: 150,
-              alignSelf: "center",
-            }}
-          >
-            {loading ? "Cadastrando..." : "Cadastrar"}
-          </Button>
-        </Box>
-
-        {/* Snackbar */}
-        <CustomSnackbar
-          open={openSnackbar}
-          message={snackbarMessage}
-          severity={snackbarSeverity}
-          onClose={handleCloseSnackbar}
+          InputLabelProps={{ sx: { color: "#000" } }}
+          disabled={loading}
+        />
+        <TextField
+          fullWidth
+          required
+          label="Email"
+          name="email"
+          value={user.email}
+          onChange={onChange}
+          variant="filled"
+          InputProps={{
+            disableUnderline: true,
+            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
+          }}
+          InputLabelProps={{ sx: { color: "#000" } }}
+          disabled={loading}
+        />
+        <TextField
+          fullWidth
+          required
+          label="Senha"
+          name="senha"
+          type={showPassword ? "text" : "password"}
+          value={user.senha}
+          onChange={onChange}
+          variant="filled"
+          InputProps={{
+            disableUnderline: true,
+            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => setShowPassword(!showPassword)}
+                  edge="end"
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+          InputLabelProps={{ sx: { color: "#000" } }}
+          disabled={loading}
         />
 
-        {mensagem && (
-          <Typography sx={{ mt: 1, color: "red", fontWeight: "bold" }}>
-            {mensagem}
-          </Typography>
-        )}
+        <Typography variant="caption" sx={{ mt: 2, textAlign: "center" }}>
+          Já possui cadastro?{" "}
+          <MuiLink
+            component={Link}
+            to="/Login"
+            sx={{ fontWeight: "bold", color: "#62798B" }}
+          >
+            Logar
+          </MuiLink>
+        </Typography>
+
+        <Button
+          type="submit"
+          variant="contained"
+          onMouseEnter={() => !loading && setBtnHover(true)}
+          onMouseLeave={() => setBtnHover(false)}
+          disabled={loading}
+          sx={{
+            bgcolor: btnHover ? "#4b5c75" : "#69819A",
+            color: "#000",
+            borderRadius: 2,
+            py: 1,
+            mt: 2,
+            fontWeight: "bold",
+            textTransform: "none",
+            width: 150,
+            alignSelf: "center",
+          }}
+        >
+          {loading ? "Cadastrando..." : "Cadastrar"}
+        </Button>
       </Box>
-    </>
+
+      {/* Snackbar */}
+      <CustomSnackbar
+        open={openSnackbar}
+        message={snackbarMessage}
+        severity={snackbarSeverity}
+        onClose={handleCloseSnackbar}
+      />
+
+      {mensagem && (
+        <Typography sx={{ mt: 1, color: "red", fontWeight: "bold" }}>
+          {mensagem}
+        </Typography>
+      )}
+    </Box>
   );
 }
