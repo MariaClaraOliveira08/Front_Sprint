@@ -1,5 +1,6 @@
 import React from "react";
-import BarraLateral from "../components/BarraLateral"; // ajuste o caminho conforme sua estrutura
+import BarraLateral from "../components/BarraLateral";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 
 const SobreNos = () => {
   return (
@@ -9,7 +10,10 @@ const SobreNos = () => {
 
       {/* Conteúdo principal */}
       <div style={styles.container}>
-        <h2 style={styles.logo}>Glimp</h2>
+        <div style={styles.logoWrapper}>
+          <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
+          <h2 style={styles.logo}>Glimp</h2>
+        </div>
         <p style={styles.subtitulo}>
           Grandes Lugares Inspiram Momentos Perfeitos.
         </p>
@@ -17,7 +21,8 @@ const SobreNos = () => {
         <div style={styles.card}>
           <h3>Sobre nós:</h3>
           <p>
-            Somos apaixonados por conectar pessoas aos melhores lugares para criar experiências inesquecíveis.
+            Somos apaixonados por conectar pessoas aos melhores lugares para
+            criar experiências inesquecíveis.
           </p>
         </div>
 
@@ -25,7 +30,8 @@ const SobreNos = () => {
           <div style={styles.cardSmall}>
             <h4>Missão</h4>
             <p>
-              Facilitar o acesso a lugares incríveis com uma experiência intuitiva.
+              Facilitar o acesso a lugares incríveis com uma experiência
+              intuitiva.
             </p>
           </div>
           <div style={styles.cardSmall}>
@@ -50,10 +56,13 @@ const styles = {
     flex: 1,
     backgroundColor: "#f3f4f6",
     padding: 40,
+    paddingLeft: 200,
   },
   logo: {
     margin: 0,
-    fontSize: 24,
+  fontSize: 24,
+  color: "#4a5a87",
+  lineHeight: 1,
   },
   subtitulo: {
     fontSize: 14,

@@ -6,32 +6,24 @@ import Cadastro from "./pages/Cadastro";
 import Home from "./pages/Home";
 import Perfil from "./pages/Perfil";
 import SobreNos from "./pages/SobreNos";
-import ProtectedRoute from "./components/ProtectedRoute"; // 👈 corrigido
-
-
+import ProtectedRoute from "./components/ProtectedRoute";
+import Inicio from "./pages/Inicio";
+import Favoritos from "./pages/Favoritos";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Rotas que usam o Layout padrão */}
         <Route element={<Layout />}>
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
-          <Route path="/home" element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          } />
-
-          <Route path="/perfil" element={
-            <ProtectedRoute>
-              <Perfil />
-            </ProtectedRoute>} />
-          <Route path="/sobre" element={
-            <ProtectedRoute>
-              <SobreNos />
-            </ProtectedRoute>} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/perfil" element={<Perfil />} />
+          <Route path="/sobre" element={<SobreNos />} />
+          <Route path="/favoritos" element={<Favoritos />} />
+          <Route path="/inicio" element={<Inicio />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -7,22 +7,26 @@ export default function Layout() {
   return (
     <div
       style={{
-        minHeight: "100dvh", // altura da viewport (mobile-friendly)
-        display: "grid",
-        gridTemplateRows: "auto 1fr auto", // header | main | footer
-        overflow: "hidden", // impede scroll global
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <Header />
+
       <main
         style={{
-          display: "grid",
-          placeItems: "center", // centraliza qualquer página
-          overflow: "hidden", // garante sem scroll dentro do main
+          display: "flex",
+          justifyContent: "center", // centraliza horizontalmente
+          alignItems: "center", // centraliza verticalmente
+          height: "100vh", // ocupa a altura total da viewport
+          width: "100%",
+          overflow: "hidden",
         }}
       >
         <Outlet />
       </main>
+
       <Footer />
     </div>
   );

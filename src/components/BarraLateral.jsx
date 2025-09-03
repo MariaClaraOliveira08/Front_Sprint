@@ -1,15 +1,45 @@
 import React from "react";
 import { Box, Typography, Divider } from "@mui/material";
-import { FaUser } from "react-icons/fa";
-import { FiLogOut } from "react-icons/fi";
+import {
+  Home,
+  FavoriteBorder,
+  ChatBubbleOutline,
+  Settings,
+  AccountCircle,
+  Logout,
+  Info,
+} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
-const BarraLateral = () => {
+const Sidebar = () => {
   const navigate = useNavigate();
+
+  const menuItems = [
+    { label: "Início", icon: <Home fontSize="small" />, route: "/home" },
+    {
+      label: "Favoritos",
+      icon: <FavoriteBorder fontSize="small" />,
+      route: "/favoritos",
+    },
+    {
+      label: "Avaliações",
+      icon: <ChatBubbleOutline fontSize="small" />,
+      route: "/avaliacoes",
+    },
+    {
+      label: "Configurações",
+      icon: <Settings fontSize="small" />,
+      route: "/configuracoes",
+    },
+    { label: "Sobre nós", icon: <Info fontSize="small" />, route: "/sobre" },
+  ];
 
   return (
     <Box
       sx={{
+        position: "fixed",
+        top: 0,
+        left: 0,
         width: 180,
         height: "100vh",
         bgcolor: "#d9d9d9",
@@ -19,6 +49,7 @@ const BarraLateral = () => {
         borderRight: "1px solid #ccc",
         boxSizing: "border-box",
         padding: 2,
+        zIndex: 1000,
       }}
     >
       {/* Topo com perfil */}
@@ -30,41 +61,47 @@ const BarraLateral = () => {
             gap: 2,
             cursor: "pointer",
             textDecoration: "underline",
-            marginTop: "40px",
+            marginTop: "10px",
+            marginBottom: 2,
           }}
           onClick={() => navigate("/perfil")}
         >
-          <FaUser size={24} />
+          <AccountCircle fontSize="medium" />
           <Typography sx={{ fontWeight: "bold", fontSize: 16 }}>
             Perfil
           </Typography>
         </Box>
-        <Divider sx={{ mt: 2 }} />
+        <Divider />
       </Box>
 
-      {/* Menu central */}
+      {/* Menu */}
       <Box
         sx={{
           display: "flex",
           flexDirection: "column",
-          gap: 2, // espaçamento uniforme entre os itens
+          gap: 2,
+          mt: 4, 
+          flexGrow: 1, 
         }}
       >
-        {/* Apenas o botão "Sobre nós" */}
-        <Typography
-          sx={{
-            cursor: "pointer",
-            fontSize: 16,
-            position: "relative",
-            top: "168px",
-          }}
-          onClick={() => navigate("/sobre")}
-        >
-          Sobre nós
-        </Typography>
+        {menuItems.map((item, index) => (
+          <Box
+            key={index}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              cursor: "pointer",
+            }}
+            onClick={() => navigate(item.route)}
+          >
+            {item.icon}
+            <Typography fontSize={16}>{item.label}</Typography>
+          </Box>
+        ))}
       </Box>
 
-      {/* Rodapé com sair */}
+      {/* Rodapé - Sair */}
       <Box
         sx={{
           display: "flex",
@@ -72,17 +109,15 @@ const BarraLateral = () => {
           gap: 1,
           color: "red",
           cursor: "pointer",
-          mb: 2,
-          position: "relative",
-          top: "-20px", // valor negativo sobe o botão
+          top: -3,
         }}
         onClick={() => navigate("/")}
       >
-        <FiLogOut size={18} />
+        <Logout fontSize="small" />
         <Typography sx={{ fontWeight: "bold", fontSize: 16 }}>Sair</Typography>
       </Box>
     </Box>
   );
 };
 
-export default BarraLateral;
+export default Sidebar;
