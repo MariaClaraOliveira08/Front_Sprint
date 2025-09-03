@@ -1,5 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Box, TextField, Button, Avatar } from "@mui/material";
+import {
+  Box,
+  TextField,
+  Button,
+  Avatar,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import api from "../axios/axios";
@@ -15,6 +27,12 @@ function Perfil() {
     email: "",
     password: "",
   });
+
+  // Estado para modal de sair
+  const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
+
+  // Estado para snackbar
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   // Carregar dados do usuário
   useEffect(() => {
@@ -50,6 +68,18 @@ function Perfil() {
       console.error("Erro ao atualizar os dados:", error);
       alert("Erro ao atualizar os dados do usuário.");
     }
+  };
+
+  // Confirmar logoff
+  const handleConfirmLogout = () => {
+    localStorage.clear();
+    setOpenLogoutDialog(false);
+    setOpenSnackbar(true);
+
+    // Depois de 2s redireciona pro login
+    setTimeout(() => {
+      navigate("/login");
+    }, 2000);
   };
 
   // Deletar conta
@@ -164,7 +194,7 @@ function Perfil() {
             variant="contained"
             startIcon={<ExitToAppIcon />}
             sx={{ backgroundColor: "#7681A1", flex: 1 }}
-            onClick={() => navigate("/login")}
+            onClick={() => setOpenLogoutDialog(true)}
           >
             Sair
           </Button>
@@ -179,7 +209,7 @@ function Perfil() {
               borderColor: "red",
               width: "100%",
               top: "-39px",
-              padding: "12px", // Aumenta o botão para melhorar a visibilidade
+              padding: "12px",
             }}
             onClick={handleDelete}
           >
@@ -187,6 +217,39 @@ function Perfil() {
           </Button>
         </Box>
       </Box>
+
+      {/* Modal de confirmação de logout */}
+      <Dialog
+        open={openLogoutDialog}
+        onClose={() => setOpenLogoutDialog(false)}
+      >
+        <DialogTitle>Encerrar sessão</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Tem certeza que deseja encerrar sua sessão?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenLogoutDialog(false)} color="primary">
+            Cancelar
+          </Button>
+          <Button onClick={handleConfirmLogout} color="error" autoFocus>
+            Sair
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar de logout */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={2000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert severity="success" sx={{ width: "100%" }}>
+          Sessão encerrada com sucesso!
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
