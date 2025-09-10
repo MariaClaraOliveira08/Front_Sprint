@@ -1,13 +1,13 @@
 import React from "react";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import SearchIcon from "@mui/icons-material/Search";
-import BarraLateral from "../components/BarraLateral";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import HamburgerDrawer from "../components/HamburgerDrawer";
 
 const Favoritos = () => {
   return (
     <div style={styles.wrapper}>
-      <BarraLateral />
+      <HamburgerDrawer />
 
       <main style={styles.container}>
         <header style={styles.header}>
@@ -27,7 +27,8 @@ const Favoritos = () => {
         <section style={styles.listaFavoritos}>
           {[...Array(10)].map((_, i) => (
             <div key={i} style={styles.card} tabIndex={0}>
-              <FavoriteBorderIcon sx={{ color: "#e91e63", fontSize: 26 }} />
+              <FavoriteBorderIcon sx={styles.favoriteIcon} />
+              {/* Conteúdo do Card */}
             </div>
           ))}
         </section>
@@ -43,6 +44,7 @@ const styles = {
     width: "100vw",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     backgroundColor: "#f0f2f5",
+    marginBottom: -10,
   },
   container: {
     flex: 1,
@@ -59,7 +61,7 @@ const styles = {
     marginBottom: 40,
   },
   logoText: {
-    margin: 0,
+    margin: 5,
     fontSize: 32,
     fontWeight: "700",
     color: "#000000ff",
@@ -75,6 +77,7 @@ const styles = {
     maxWidth: 600,
     marginBottom: 40,
     border: "1px solid #ddd",
+    marginTop: -20,
   },
   searchInput: {
     flex: 1,
@@ -87,7 +90,7 @@ const styles = {
   },
   listaFavoritos: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+    gridTemplateColumns: "1fr", // Agora os cards vão ocupar uma linha inteira
     gap: 24,
   },
   card: {
@@ -99,12 +102,16 @@ const styles = {
     alignItems: "center",
     boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
     cursor: "pointer",
-    transition: "transform 0.2s ease, box-shadow 0.2s ease",
     userSelect: "none",
+    marginLeft: -140,
+    position: "relative", // Necessário para o posicionamento absoluto do ícone
   },
-  cardHover: {
-    transform: "scale(1.05)",
-    boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+  favoriteIcon: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    fontSize: 26,
+    color: "#e91e63", // Cor do ícone
   },
 };
 

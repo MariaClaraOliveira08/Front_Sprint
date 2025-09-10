@@ -9,6 +9,7 @@ import SobreNos from "./pages/SobreNos";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Inicio from "./pages/Inicio";
 import Favoritos from "./pages/Favoritos";
+import Avaliacao from "./pages/Avaliacao";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <Routes>
         {/* Rotas que usam o Layout padrão */}
         <Route element={<Layout />}>
+          <Route path="/inicio" element={<Inicio />} />
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
@@ -23,7 +25,7 @@ function App() {
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/sobre" element={<SobreNos />} />
           <Route path="/favoritos" element={<Favoritos />} />
-          <Route path="/inicio" element={<Inicio />} />
+          <Route path="/avaliacao" element={<Avaliacao />} />
         </Route>
       </Routes>
     </BrowserRouter>

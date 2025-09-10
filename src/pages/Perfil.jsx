@@ -1,9 +1,88 @@
-import React from "react";
-import { Box, TextField, Button, Avatar, Typography } from "@mui/material";
-import EditIcon from '@mui/icons-material/Edit';
-import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import React, { useEffect, useState } from "react";
+import { Box, TextField, Button, Avatar } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import api from "../axios/axios";
+import { useNavigate } from "react-router-dom";
 
 function Perfil() {
+  const navigate = useNavigate();
+  const userId = localStorage.getItem("userId");
+
+  const [user, setUser] = useState({
+    id: "",
+    name: "",
+    email: "",
+    password: "",
+  });
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("authenticated");
+
+    // redireciona para a tela inicial (home)
+    navigate("/", { replace: true });
+  };
+
+  // Carregar dados do usuário
+  useEffect(() => {
+    async function fetchUsuario() {
+      try {
+        if (!userId) return;
+        const response = await api.get(`/user/${userId}`);
+        const userData = response.data.user;
+
+        setUser({
+          id: userId,
+          name: userData.name || "",
+          email: userData.email || "",
+          password: "******",
+        });
+      } catch (error) {
+        console.error("Erro ao carregar dados do usuário:", error);
+      }
+    }
+    fetchUsuario();
+  }, [userId]);
+
+  // Atualizar dados do usuário
+  const handleUpdate = async () => {
+    try {
+      const response = await api.updateUser(user.id, {
+        name: user.name,
+        email: user.email,
+        password: user.password,
+      });
+      alert(response.data.message);
+    } catch (error) {
+      console.error("Erro ao atualizar os dados:", error);
+      alert("Erro ao atualizar os dados do usuário.");
+    }
+  };
+
+  // Deletar conta
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm(
+      "Você tem certeza que deseja excluir sua conta?"
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const response = await api.deleteUser(user.id);
+      alert(response.data.message);
+      navigate("/");
+    } catch (error) {
+      console.error("Erro ao excluir o usuário:", error);
+      alert("Erro ao excluir o usuário.");
+    }
+  };
+
+  const onChange = (event) => {
+    const { name, value } = event.target;
+    setUser({ ...user, [name]: value });
+  };
+
   return (
     <Box
       sx={{
@@ -17,12 +96,12 @@ function Perfil() {
         boxSizing: "border-box",
       }}
     >
-      {/* Cabeçalho com gradiente */}
+      {/* Cabeçalho */}
       <Box
         sx={{
           width: "100%",
           height: 150,
-          background: "linear-gradient(to bottom, #8c9eff, #536dfe)",
+          background: "#7681A1",
           position: "relative",
         }}
       >
@@ -44,67 +123,78 @@ function Perfil() {
       {/* Formulário */}
       <Box
         sx={{
-          width: "90%",
+          width: "100%",
           maxWidth: 400,
           mt: 8,
           display: "flex",
           flexDirection: "column",
           gap: 3,
+          alignItems: "center",
         }}
       >
         <TextField
           label="Nome"
-          defaultValue="Nino&Nina"
+          name="name"
+          value={user.name}
+          onChange={onChange}
           variant="outlined"
           fullWidth
         />
         <TextField
           label="Email"
-          defaultValue="nino&nina@gmail.com"
+          name="email"
+          type="email"
+          value={user.email}
+          onChange={onChange}
           variant="outlined"
           fullWidth
         />
         <TextField
           label="Senha"
-          defaultValue="********"
+          name="password"
           type="password"
+          value={user.password}
+          onChange={onChange}
           variant="outlined"
           fullWidth
         />
 
-        {/* Botões */}
-        <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
+        {/* Botões Editar e Sair lado a lado */}
+        <Box sx={{ display: "flex", gap: 2, width: "100%", mb: 2 }}>
           <Button
             variant="contained"
             startIcon={<EditIcon />}
-            sx={{ backgroundColor: "#8c9eff", boxShadow: "0 3px 6px rgba(0,0,0,0.2)" }}
+            sx={{ backgroundColor: "#7681A1", flex: 1 }}
+            onClick={handleUpdate}
           >
             Editar perfil
           </Button>
           <Button
-      variant="contained"
-      startIcon={<ExitToAppIcon />}
-      sx={{
-        backgroundColor: "#8c9eff",
-        boxShadow: "0 3px 6px rgba(0,0,0,0.2)",
-        ":hover": {
-          backgroundColor: "#7b8dfc", 
-        },
-      }}
-      onClick={() => navigate("/home")}
-    >
-      Sair
-    </Button>
-    
+            variant="contained"
+            startIcon={<ExitToAppIcon />}
+            sx={{ backgroundColor: "#7681A1", flex: 1 }}
+            onClick={handleLogout}
+          >
+            Sair
+          </Button>
         </Box>
 
-        {/* Botão de excluir */}
-        <Button
-          variant="outlined"
-          sx={{ mt: 2, color: "red", borderColor: "red" }}
-        >
-          Excluir conta
-        </Button>
+        {/* Botão de Excluir conta */}
+        <Box sx={{ width: "100%", mt: 3 }}>
+          <Button
+            variant="outlined"
+            sx={{
+              color: "red",
+              borderColor: "red",
+              width: "100%",
+              top: "-39px",
+              padding: "12px",
+            }}
+            onClick={handleDelete}
+          >
+            Excluir conta
+          </Button>
+        </Box>
       </Box>
     </Box>
   );

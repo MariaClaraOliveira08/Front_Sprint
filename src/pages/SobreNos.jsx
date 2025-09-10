@@ -1,12 +1,11 @@
 import React from "react";
-import BarraLateral from "../components/BarraLateral";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import HamburgerDrawer from "../components/HamburgerDrawer";
 
 const SobreNos = () => {
   return (
     <div style={styles.wrapper}>
-      {/* BarraLateral */}
-      <BarraLateral />
+      <HamburgerDrawer />
 
       {/* Conteúdo principal */}
       <div style={styles.container}>
@@ -56,13 +55,13 @@ const styles = {
     flex: 1,
     backgroundColor: "#f3f4f6",
     padding: 40,
-    paddingLeft: 200,
+    paddingLeft: 100,
   },
   logo: {
     margin: 0,
-  fontSize: 24,
-  color: "#4a5a87",
-  lineHeight: 1,
+    fontSize: 24,
+    color: "#4a5a87",
+    lineHeight: 1,
   },
   subtitulo: {
     fontSize: 14,

@@ -5,7 +5,8 @@ import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import BeachAccessIcon from "@mui/icons-material/BeachAccess";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import { useNavigate } from "react-router-dom";
-import BarraLateral from "../components/BarraLateral";
+import HamburgerDrawer from "../components/HamburgerDrawer";
+import api from "../axios/axios";
 
 const Home = () => {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
@@ -27,24 +28,21 @@ const Home = () => {
   };
 
   useEffect(() => {
-    async function fetchEstabelecimentos() {
+    const fetchEstabelecimentos = async () => {
       setLoading(true);
       try {
-        const res = await fetch("/buscar");
-        const data = await res.json();
-        console.log("Estabelecimentos da API:", data);
-
-        setLugares(data);
-
-        if (data.length > 0) {
-          setCategoriaSelecionada(data[0].categoria.toLowerCase());
+        const response = await api.get("/buscar"); // Corrigido o método de chamada
+        console.log(response); // Adicionado para depuração
+        setLugares(response?.data || []); // Definindo lugares a partir da resposta
+        if (response?.data?.length > 0) {
+          setCategoriaSelecionada(response.data[0].categoria.toLowerCase());
         }
       } catch (error) {
         console.error("Erro ao carregar estabelecimentos:", error);
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     fetchEstabelecimentos();
   }, []);
@@ -59,11 +57,13 @@ const Home = () => {
 
   return (
     <div style={styles.container}>
-      <BarraLateral />
+      <HamburgerDrawer />
 
       <div style={styles.main}>
         <div style={styles.logoWrapper}>
-          <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
+          <LocationOnOutlinedIcon
+            sx={{ fontSize: 36, color: "#000", alignItems: "center" }}
+          />
           <h2 style={styles.logo}>{"Glimp"}</h2>
         </div>
         <p style={styles.subtitulo}>
@@ -91,7 +91,7 @@ const Home = () => {
                     ? "#fff"
                     : "#000",
               }}
-              aria-label={cat.nome} // acessibilidade
+              aria-label={cat.nome}
             >
               {iconesCategoria[cat.nome.toLowerCase()] || "❓"}
             </button>
@@ -102,8 +102,7 @@ const Home = () => {
         <div style={styles.lugares}>
           {lugares
             .filter(
-              (lugar) =>
-                lugar.categoria.toLowerCase() === categoriaSelecionada
+              (lugar) => lugar.categoria.toLowerCase() === categoriaSelecionada
             )
             .map((lugar, index) => (
               <div
@@ -138,7 +137,6 @@ const styles = {
     backgroundColor: "#f5f5f5",
     padding: 50,
     paddingLeft: 200,
-    overflow: "hidden",
   },
   logoWrapper: {
     display: "flex",
@@ -163,7 +161,7 @@ const styles = {
     borderRadius: 25,
     padding: "0 15px",
     border: "1px solid #ccc",
-    marginBottom: 30,
+    marginBottom: 40,
   },
   search: {
     flex: 1,
@@ -184,6 +182,7 @@ const styles = {
     alignItems: "center",
     gap: 20,
     marginBottom: 30,
+    marginRight: 120,
   },
   botaoCategoria: {
     width: 80,
