@@ -7,6 +7,8 @@ import Home from "./pages/Home";
 import Perfil from "./pages/Perfil";
 import SobreNos from "./pages/SobreNos";
 import ProtectedRoute from "./components/ProtectedRoute"; // 👈 corrigido
+import Inicio from "./pages/Inicio";
+
 
 
 
@@ -32,6 +34,7 @@ function App() {
             <ProtectedRoute>
               <SobreNos />
             </ProtectedRoute>} />
+          <Route path="/inicio" element={<Inicio />} />
         </Route>
       </Routes>
     </BrowserRouter>
