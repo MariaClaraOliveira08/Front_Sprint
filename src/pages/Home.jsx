@@ -15,12 +15,20 @@ import {
   Divider,
   IconButton,
 } from "@mui/material";
+import CustomSnackbar from "../components/CustomSnackbar"; // <-- Importa o seu componente
 
 const Home = () => {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState("praia");
   const [lugarSelecionado, setLugarSelecionado] = useState(1);
   const [open, setOpen] = useState(false); // controla o Drawer
   const navigate = useNavigate();
+
+  // Estado do Snackbar
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   const categorias = [
     { id: "comida", emoji: "🍽️" },
@@ -53,7 +61,7 @@ const Home = () => {
         onClose={() => setOpen(false)}
         PaperProps={{
           sx: {
-            backgroundColor: "#D9D9D9", // cor do fundo do Drawer
+            backgroundColor: "#D9D9D9",
             width: 250,
             display: "flex",
             flexDirection: "column",
@@ -81,7 +89,13 @@ const Home = () => {
             <ListItem button>
               <ListItemText primary="Início" />
             </ListItem>
-            <ListItem button>
+            <ListItem
+              button
+              onClick={() => {
+                navigate("/sobre");
+                setOpen(false);
+              }}
+            >
               <ListItemText primary="Sobre nós" />
             </ListItem>
           </List>
@@ -110,11 +124,7 @@ const Home = () => {
 
         {/* BARRA DE PESQUISA */}
         <div style={styles.searchWrapper}>
-          <input
-            type="text"
-            placeholder="Pesquisar..."
-            style={styles.search}
-          />
+          <input type="text" placeholder="Pesquisar..." style={styles.search} />
           <SearchIcon style={styles.searchIcon} />
         </div>
 
@@ -123,7 +133,14 @@ const Home = () => {
           {categorias.map((cat) => (
             <button
               key={cat.id}
-              onClick={() => setCategoriaSelecionada(cat.id)}
+              onClick={() => {
+                setCategoriaSelecionada(cat.id);
+                setSnackbar({
+                  open: true,
+                  message: `Categoria "${cat.id}" selecionada!`,
+                  severity: "info",
+                });
+              }}
               style={{
                 ...styles.botaoCategoria,
                 backgroundColor:
@@ -141,7 +158,14 @@ const Home = () => {
           {lugares.map((lugar) => (
             <div
               key={lugar.id}
-              onClick={() => setLugarSelecionado(lugar.id)}
+              onClick={() => {
+                setLugarSelecionado(lugar.id);
+                setSnackbar({
+                  open: true,
+                  message: `Você selecionou "${lugar.nome}"!`,
+                  severity: "success",
+                });
+              }}
               style={{
                 ...styles.lugar,
                 backgroundColor:
@@ -154,6 +178,14 @@ const Home = () => {
           ))}
         </div>
       </div>
+
+      {/* SNACKBAR */}
+      <CustomSnackbar
+        open={snackbar.open}
+        message={snackbar.message}
+        severity={snackbar.severity}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      />
     </div>
   );
 };
@@ -169,7 +201,7 @@ const styles = {
   menuButton: {
     position: "absolute",
     top: 45,
-    left: 3 ,
+    left: 3,
     zIndex: 1000,
   },
   main: {
