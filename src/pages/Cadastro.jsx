@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -11,7 +11,6 @@ import {
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import sheets from "../axios/axios";
 
-
 export default function Cadastro() {
   const navigate = useNavigate();
 
@@ -20,16 +19,12 @@ export default function Cadastro() {
     cpf: "",
     email: "",
     senha: "",
+    confirmarSenha: ""
   });
 
   const [loading, setLoading] = useState(false);
   const [btnHover, setBtnHover] = useState(false);
   const [mensagem, setMensagem] = useState("");
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) navigate("/home");
-  }, [navigate]);
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -40,8 +35,13 @@ export default function Cadastro() {
     setMensagem("");
     setLoading(true);
 
+    if (user.senha !== user.confirmarSenha) {
+      setMensagem("As senhas não coincidem.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      // Objeto exato que o backend espera
       const usuario = {
         nome: user.nome,
         cpf: user.cpf,
@@ -53,10 +53,11 @@ export default function Cadastro() {
 
       alert(response.data.message || "Cadastro realizado com sucesso!");
 
-      // Se o backend retornar token, salvar
-      if (response.data.token) localStorage.setItem("token", response.data.token);
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+      }
 
-      navigate("/");
+      navigate("/login"); // Redireciona para login após cadastro
     } catch (err) {
       setMensagem(
         "Erro ao cadastrar: " + (err.response?.data?.error || err.message)
@@ -67,128 +68,140 @@ export default function Cadastro() {
   };
 
   return (
-    <>
+    <Box
+      sx={{
+        width: "100%",
+        minHeight: "100vh",
+        bgcolor: "#e5e5e5",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        paddingTop: 8,
+      }}
+    >
+      <CssBaseline />
+
+      {/* Logo */}
+      <Box display="flex" flexDirection="column" alignItems="center" mb={3}>
+        <Box display="flex" alignItems="center" gap={1}>
+          <LocationOnOutlinedIcon sx={{ fontSize: 30, color: "#000" }} />
+          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+            Glimp
+          </Typography>
+        </Box>
+        <Typography variant="caption" sx={{ mt: 0.5, fontSize: 14 }}>
+          Grandes Lugares Inspiram Momentos Perfeitos.
+        </Typography>
+      </Box>
+
+      {/* Formulário */}
       <Box
+        component="form"
         sx={{
           width: "100%",
-          minHeight: "100vh",
-          bgcolor: "#e5e5e5",
+          maxWidth: 450, // Ajustei para caber melhor
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          p: 2,
-          paddingTop: 2,
+          gap: 2,
+        }}
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleCadastro();
         }}
       >
-        <CssBaseline />
-
-        {/* Logo */}
-        <Box display="flex" flexDirection="column" alignItems="center" mb={4}>
-          <Box display="flex" alignItems="center" gap={1}>
-            <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
-            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-              Glimp
-            </Typography>
-          </Box>
-          <Typography variant="caption" sx={{ mt: 0.5, fontSize: 15 }}>
-            Grandes Lugares Inspiram Momentos Perfeitos.
-          </Typography>
-        </Box>
-
-        {/* Formulário */}
-        <Box
-          component="form"
-          sx={{
-            width: "90%",
-            maxWidth: 500,
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
+        <TextField
+          fullWidth
+          required
+          label="Nome"
+          name="nome"
+          value={user.nome}
+          onChange={onChange}
+          variant="filled"
+          InputProps={{
+            disableUnderline: true,
+            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
           }}
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleCadastro();
+          InputLabelProps={{ sx: { color: "#000" } }}
+          disabled={loading}
+        />
+        <TextField
+          fullWidth
+          required
+          label="CPF"
+          name="cpf"
+          value={user.cpf}
+          onChange={onChange}
+          variant="filled"
+          InputProps={{
+            disableUnderline: true,
+            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
           }}
-        >
-          <TextField
-            fullWidth
-            required
-            label="Nome"
-            name="nome"
-            value={user.nome}
-            onChange={onChange}
-            variant="filled"
-            InputProps={{
-              disableUnderline: true,
-              sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
-            }}
-            InputLabelProps={{ sx: { color: "#000" } }}
-            disabled={loading}
-          />
-          <TextField
-            fullWidth
-            required
-            label="CPF"
-            name="cpf"
-            value={user.cpf}
-            onChange={onChange}
-            variant="filled"
-            InputProps={{
-              disableUnderline: true,
-              sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
-            }}
-            InputLabelProps={{ sx: { color: "#000" } }}
-            disabled={loading}
-          />
-          <TextField
-            fullWidth
-            required
-            label="Email"
-            name="email"
-            value={user.email}
-            onChange={onChange}
-            variant="filled"
-            InputProps={{
-              disableUnderline: true,
-              sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
-            }}
-            InputLabelProps={{ sx: { color: "#000" } }}
-            disabled={loading}
-          />
-          <TextField
-            fullWidth
-            required
-            label="Senha"
-            name="senha"
-            type="password"
-            value={user.senha}
-            onChange={onChange}
-            variant="filled"
-            InputProps={{
-              disableUnderline: true,
-              sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
-            }}
-            InputLabelProps={{ sx: { color: "#000" } }}
-            disabled={loading}
-          />
+          InputLabelProps={{ sx: { color: "#000" } }}
+          disabled={loading}
+        />
+        <TextField
+          fullWidth
+          required
+          label="Email"
+          name="email"
+          value={user.email}
+          onChange={onChange}
+          variant="filled"
+          InputProps={{
+            disableUnderline: true,
+            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
+          }}
+          InputLabelProps={{ sx: { color: "#000" } }}
+          disabled={loading}
+        />
+        <TextField
+          fullWidth
+          required
+          label="Senha"
+          name="senha"
+          type="password"
+          value={user.senha}
+          onChange={onChange}
+          variant="filled"
+          InputProps={{
+            disableUnderline: true,
+            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
+          }}
+          InputLabelProps={{ sx: { color: "#000" } }}
+          disabled={loading}
+        />
+        <TextField
+          fullWidth
+          required
+          label="Confirmar Senha"
+          name="confirmarSenha"
+          type="password"
+          value={user.confirmarSenha}
+          onChange={onChange}
+          variant="filled"
+          InputProps={{
+            disableUnderline: true,
+            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
+          }}
+          InputLabelProps={{ sx: { color: "#000" } }}
+          disabled={loading}
+        />
 
-          <Typography variant="caption" sx={{ mt: 2, textAlign: "center" }}>
-            Já possui cadastro?{" "}
-            <MuiLink
-              component={Link}
-              to="/Login"
-              sx={{ fontWeight: "bold", color: "#62798B" }}
-            >
-              Logar
-            </MuiLink>
-          </Typography>
-        </Box>
+        <Typography variant="caption" sx={{ mt: 2, textAlign: "center", paddingTop: 5 }}>
+          Já possui cadastro?{" "}
+          <MuiLink
+            component={Link}
+            to="/login"
+            sx={{ fontWeight: "bold", color: "#62798B"}}
+          >
+            Logar
+          </MuiLink>
+        </Typography>
 
         <Button
           type="submit"
           variant="contained"
-          onClick={handleCadastro}
           onMouseEnter={() => !loading && setBtnHover(true)}
           onMouseLeave={() => setBtnHover(false)}
           disabled={loading}
@@ -201,18 +214,18 @@ export default function Cadastro() {
             fontWeight: "bold",
             textTransform: "none",
             width: 150,
+            alignSelf: "center",
           }}
         >
           {loading ? "Cadastrando..." : "Cadastrar"}
         </Button>
 
         {mensagem && (
-          <Typography sx={{ mt: 1, color: "red", fontWeight: "bold" }}>
+          <Typography sx={{ mt: 1, color: "red", fontWeight: "bold", textAlign: "center" }}>
             {mensagem}
           </Typography>
         )}
       </Box>
-      
-    </>
+    </Box>
   );
 }

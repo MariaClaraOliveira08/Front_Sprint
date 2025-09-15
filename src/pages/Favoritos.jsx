@@ -1,117 +1,110 @@
 import React from "react";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import SearchIcon from "@mui/icons-material/Search";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import HamburgerDrawer from "../components/HamburgerDrawer";
 
 const Favoritos = () => {
   return (
     <div style={styles.wrapper}>
       <HamburgerDrawer />
-
-      <main style={styles.container}>
+      <div style={styles.container}>
         <header style={styles.header}>
-          <LocationOnOutlinedIcon sx={{ fontSize: 32, color: "#000000ff" }} />
+          <LocationOnOutlinedIcon sx={{ fontSize: 28, color: "#000", marginLeft: -15 }} />
           <h1 style={styles.logoText}>Glimp</h1>
         </header>
 
         <div style={styles.searchBox}>
           <input
             type="text"
-            placeholder="Pesquisar"
+            placeholder="Pesquisar..."
             style={styles.searchInput}
           />
-          <SearchIcon sx={{ fontSize: 22, color: "#888" }} />
+          <SearchIcon sx={{ fontSize: 18, color: "#888" }} />
         </div>
 
+        <p style={styles.title}>Meus Favoritos:</p>
+
         <section style={styles.listaFavoritos}>
-          {[...Array(10)].map((_, i) => (
+          {[...Array(3)].map((_, i) => (
             <div key={i} style={styles.card} tabIndex={0}>
-              <FavoriteBorderIcon sx={styles.favoriteIcon} />
-              {/* Conteúdo do Card */}
+              {/* Espaço vazio para simular o card em branco */}
             </div>
           ))}
         </section>
-      </main>
+      </div>
     </div>
   );
 };
 
 const styles = {
   wrapper: {
-    display: "flex",
-    height: "100vh",
+    minHeight: "100vh",
     width: "100vw",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    backgroundColor: "#f0f2f5",
-    marginBottom: -10,
+    backgroundColor: "#e1e1e1",  // Fundo cinza claro que ocupa toda a tela
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    padding: 40,
+    boxSizing: "border-box",
   },
   container: {
-    flex: 1,
-    padding: 32,
-    paddingLeft: 240, // espaço para a barra lateral fixa
+    maxWidth: 600,
+    width: "100%",
+    backgroundColor: "#e1e1e1",  // Pode até tirar daqui, pois está no wrapper
+    borderRadius: 20,
+    padding: 30,
+    boxSizing: "border-box",
     display: "flex",
     flexDirection: "column",
-    overflowY: "auto",
   },
   header: {
     display: "flex",
     alignItems: "center",
-    gap: 12,
-    marginBottom: 40,
+    gap: 4,
+    marginBottom: 20,
   },
+  
   logoText: {
-    margin: 5,
-    fontSize: 32,
-    fontWeight: "700",
-    color: "#000000ff",
+    fontSize: 24,
+    color: "#000",
+    margin: 0,
     userSelect: "none",
+    fontWeight: 600,
+    marginLeft: 2,
   },
   searchBox: {
     display: "flex",
     alignItems: "center",
-    backgroundColor: "#cacacaff",
-    borderRadius: 25,
-    padding: "10px 20px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-    maxWidth: 600,
-    marginBottom: 40,
-    border: "1px solid #ddd",
-    marginTop: -20,
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: "8px 15px",
+    border: "1px solid #ccc",
+    marginBottom: 30,
   },
   searchInput: {
     flex: 1,
     border: "none",
     outline: "none",
+    fontSize: 14,
+    color: "#555",
     backgroundColor: "transparent",
-    fontSize: 16,
-    color: "#333",
+  },
+  title: {
+    textAlign: "center",
+    marginBottom: 20,
     fontWeight: "500",
+    color: "#333",
   },
   listaFavoritos: {
-    display: "grid",
-    gridTemplateColumns: "1fr", // Agora os cards vão ocupar uma linha inteira
-    gap: 24,
+    display: "flex",
+    flexDirection: "column",
+    gap: 15,
   },
   card: {
     backgroundColor: "#fff",
-    padding: 24,
-    borderRadius: 16,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+    height: 48,
+    borderRadius: 12,
     cursor: "pointer",
-    userSelect: "none",
-    marginLeft: -140,
-    position: "relative", // Necessário para o posicionamento absoluto do ícone
-  },
-  favoriteIcon: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    fontSize: 26,
-    color: "#e91e63", // Cor do ícone
+    outline: "none",
   },
 };
 

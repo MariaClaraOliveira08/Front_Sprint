@@ -42,7 +42,3 @@ Este projeto fornece a estrutura inicial para um sistema com telas de **Login** 
   ```sh
   npm install @mui/icons-material
 
-5. Mui Material Icons
-   - Instala os ícones do React:
-  ```sh
-  npm install react-icons

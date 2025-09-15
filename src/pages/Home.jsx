@@ -128,9 +128,9 @@ const styles = {
   container: {
     display: "flex",
     minHeight: "100vh",
-    width: "100%",
+    width: "100vw",
     fontFamily: "Segoe UI, sans-serif",
-    overflow: "auto",
+    overflow: "hidden",
   },
   main: {
     flex: 1,

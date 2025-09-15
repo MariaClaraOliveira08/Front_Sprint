@@ -7,37 +7,41 @@ const SobreNos = () => {
     <div style={styles.wrapper}>
       <HamburgerDrawer />
 
-      {/* Conteúdo principal */}
+      {/* Fundo cinza claro expandido */}
       <div style={styles.container}>
-        <div style={styles.logoWrapper}>
-          <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
-          <h2 style={styles.logo}>Glimp</h2>
-        </div>
-        <p style={styles.subtitulo}>
-          Grandes Lugares Inspiram Momentos Perfeitos.
-        </p>
+        {/* Container centralizado com largura fixa */}
+        <div style={styles.content}>
+          <div style={styles.logoWrapper}>
+            <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
+            <h2 style={styles.logo}>Glimp</h2>
+          </div>
 
-        <div style={styles.card}>
-          <h3>Sobre nós:</h3>
-          <p>
-            Somos apaixonados por conectar pessoas aos melhores lugares para
-            criar experiências inesquecíveis.
+          <p style={styles.subtitulo}>
+            Grandes Lugares Inspiram Momentos Perfeitos.
           </p>
-        </div>
 
-        <div style={styles.sectionWrapper}>
-          <div style={styles.cardSmall}>
-            <h4>Missão</h4>
+          <div style={styles.card}>
+            <h3>Sobre nós:</h3>
             <p>
-              Facilitar o acesso a lugares incríveis com uma experiência
-              intuitiva.
+              Somos apaixonados por conectar pessoas aos melhores lugares para
+              criar experiências inesquecíveis.
             </p>
           </div>
-          <div style={styles.cardSmall}>
-            <h4>Visão</h4>
-            <p>
-              Ser referência em descoberta de locais memoráveis em todo o país.
-            </p>
+
+          <div style={styles.sectionWrapper}>
+            <div style={styles.cardSmall}>
+              <h4>Missão</h4>
+              <p>
+                Facilitar o acesso a lugares incríveis com uma experiência
+                intuitiva.
+              </p>
+            </div>
+            <div style={styles.cardSmall}>
+              <h4>Visão</h4>
+              <p>
+                Ser referência em descoberta de locais memoráveis em todo o país.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -48,14 +52,33 @@ const SobreNos = () => {
 const styles = {
   wrapper: {
     display: "flex",
-    minHeight: "100vh",
+    height: "100vh",
+    width: "100vw",
     fontFamily: "Segoe UI, sans-serif",
+    margin: 0,
+    padding: 0,
+    boxSizing: "border-box",
   },
   container: {
     flex: 1,
     backgroundColor: "#f3f4f6",
+    height: "100vh",
+    overflowY: "auto",
+    display: "flex",
+    justifyContent: "center", // centraliza o conteúdo
+    alignItems: "flex-start", // alinha ao topo
     padding: 40,
-    paddingLeft: 100,
+    boxSizing: "border-box",
+  },
+  content: {
+    maxWidth: 800, // limita largura do conteúdo centralizado
+    width: "100%",
+  },
+  logoWrapper: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 10,
   },
   logo: {
     margin: 0,
@@ -77,9 +100,11 @@ const styles = {
   sectionWrapper: {
     display: "flex",
     gap: 20,
+    flexWrap: "wrap",
   },
   cardSmall: {
     flex: 1,
+    minWidth: 250,
     backgroundColor: "#ddd",
     padding: 20,
     borderRadius: 8,
