@@ -157,7 +157,6 @@ const Home = () => {
               {lugar.nome}
             </div>
           ))}
-          {/* A mensagem "Nenhum lugar encontrado" foi removida */}
         </div>
       </div>
 
