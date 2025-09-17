@@ -15,180 +15,8 @@ import {
   Divider,
   IconButton,
 } from "@mui/material";
-import CustomSnackbar from "../components/CustomSnackbar"; // <-- Importa o seu componente
-
-const Home = () => {
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState("praia");
-  const [lugarSelecionado, setLugarSelecionado] = useState(1);
-  const [open, setOpen] = useState(false); // controla o Drawer
-  const navigate = useNavigate();
-
-  // Estado do Snackbar
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
-
-  const categorias = [
-    { id: "comida", emoji: "🍽️" },
-    { id: "praia", emoji: "🏖️" },
-    { id: "shopping", emoji: "🏛️" },
-  ];
-
-  const lugares = [
-    { id: 1, nome: "Restaurante Sabor da Casa" },
-    { id: 2, nome: "Pizzaria Brazetto" },
-    { id: 3, nome: "Loja Do Osmar" },
-    { id: 4, nome: "Sesc" },
-  ];
-
-  return (
-    <div style={styles.container}>
-      {/* BOTÃO MENU */}
-      <IconButton
-        onClick={() => setOpen(true)}
-        style={styles.menuButton}
-        size="large"
-      >
-        <GiHamburgerMenu />
-      </IconButton>
-
-      {/* DRAWER DO MATERIAL UI */}
-      <Drawer
-        anchor="left"
-        open={open}
-        onClose={() => setOpen(false)}
-        PaperProps={{
-          sx: {
-            backgroundColor: "#D9D9D9",
-            width: 250,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-          },
-        }}
-      >
-        <div>
-          <List>
-            <ListItem
-              button
-              onClick={() => {
-                navigate("/perfil");
-                setOpen(false);
-              }}
-            >
-              <ListItemIcon>
-                <FaUser />
-              </ListItemIcon>
-              <ListItemText primary="Perfil" />
-            </ListItem>
-
-            <Divider />
-
-            <ListItem button>
-              <ListItemText primary="Início" />
-            </ListItem>
-            <ListItem
-              button
-              onClick={() => {
-                navigate("/sobre");
-                setOpen(false);
-              }}
-            >
-              <ListItemText primary="Sobre nós" />
-            </ListItem>
-          </List>
-        </div>
-
-        {/* BOTÃO SAIR FIXO EMBAIXO */}
-        <List>
-          <ListItem button sx={{ color: "red" }}>
-            <ListItemIcon>
-              <FiLogOut />
-            </ListItemIcon>
-            <Logoff />
-          </ListItem>
-        </List>
-      </Drawer>
-
-      {/* CONTEÚDO PRINCIPAL */}
-      <div style={styles.main}>
-        <div style={styles.logoWrapper}>
-          <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
-          <h2 style={styles.logo}>{"Glimp"}</h2>
-        </div>
-        <p style={styles.subtitulo}>
-          Grandes Lugares Inspiram Momentos Perfeitos.
-        </p>
-
-        {/* BARRA DE PESQUISA */}
-        <div style={styles.searchWrapper}>
-          <input type="text" placeholder="Pesquisar..." style={styles.search} />
-          <SearchIcon style={styles.searchIcon} />
-        </div>
-
-        {/* CATEGORIAS */}
-        <div style={styles.categorias}>
-          {categorias.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => {
-                setCategoriaSelecionada(cat.id);
-                setSnackbar({
-                  open: true,
-                  message: `Categoria "${cat.id}" selecionada!`,
-                  severity: "info",
-                });
-              }}
-              style={{
-                ...styles.botaoCategoria,
-                backgroundColor:
-                  categoriaSelecionada === cat.id ? "#4a5a87" : "#d9d9d9",
-                color: categoriaSelecionada === cat.id ? "#fff" : "#000",
-              }}
-            >
-              {cat.emoji}
-            </button>
-          ))}
-        </div>
-
-        {/* LUGARES */}
-        <div style={styles.lugares}>
-          {lugares.map((lugar) => (
-            <div
-              key={lugar.id}
-              onClick={() => {
-                setLugarSelecionado(lugar.id);
-                setSnackbar({
-                  open: true,
-                  message: `Você selecionou "${lugar.nome}"!`,
-                  severity: "success",
-                });
-              }}
-              style={{
-                ...styles.lugar,
-                backgroundColor:
-                  lugarSelecionado === lugar.id ? "#4a5a87" : "#fff",
-                color: lugarSelecionado === lugar.id ? "#fff" : "#000",
-              }}
-            >
-              {lugar.nome}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* SNACKBAR */}
-      <CustomSnackbar
-        open={snackbar.open}
-        message={snackbar.message}
-        severity={snackbar.severity}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      />
-    </div>
-  );
-};
+import CustomSnackbar from "../components/CustomSnackbar";
+import Mapa from "../components/Mapa";
 
 const styles = {
   container: {
@@ -198,18 +26,21 @@ const styles = {
     fontFamily: "Segoe UI, sans-serif",
     overflow: "hidden",
   },
-  menuButton: {
-    position: "absolute",
-    top: 45,
-    left: 3,
-    zIndex: 1000,
+  mapContainer: {
+    flex: 1,
+    height: "100vh",
   },
   main: {
     flex: 1,
     backgroundColor: "#f5f5f5",
     padding: 50,
-    overflow: "hidden",
-    width: "100%",
+    overflowY: "auto",
+  },
+  menuButton: {
+    position: "absolute",
+    top: 45,
+    left: 3,
+    zIndex: 1000,
   },
   logoWrapper: {
     display: "flex",
@@ -267,20 +98,122 @@ const styles = {
     alignItems: "center",
     cursor: "pointer",
   },
-  lugares: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 15,
-  },
-  lugar: {
-    padding: "15px 20px",
-    borderRadius: 8,
-    fontWeight: "bold",
-    cursor: "pointer",
-    backgroundColor: "#f4f4f4",
-    color: "#333",
-    transition: "0.2s",
-  },
+};
+
+const Home = () => {
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState("comida");
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const categorias = [
+    { id: "comida", emoji: "🍽️", tipo: "restaurant" },
+    { id: "praia", emoji: "🏖️", tipo: "park" },
+    { id: "shopping", emoji: "🏛️", tipo: "shopping_mall" },
+  ];
+
+  const searchType = categorias.find((cat) => cat.id === categoriaSelecionada).tipo;
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.mapContainer}>
+        {/* A URL da API foi corrigida para incluir o prefixo /projeto_final */}
+        <Mapa apiUrl="http://localhost:3000/projeto_final/api/estabelecimentos" searchType={searchType} />
+      </div>
+
+      <div style={styles.main}>
+        <IconButton onClick={() => setOpen(true)} style={styles.menuButton} size="large">
+          <GiHamburgerMenu />
+        </IconButton>
+
+        <Drawer
+          anchor="left"
+          open={open}
+          onClose={() => setOpen(false)}
+          PaperProps={{
+            sx: {
+              backgroundColor: "#D9D9D9",
+              width: 250,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            },
+          }}
+        >
+          <div>
+            <List>
+              <ListItem button onClick={() => { navigate("/perfil"); setOpen(false); }}>
+                <ListItemIcon>
+                  <FaUser />
+                </ListItemIcon>
+                <ListItemText primary="Perfil" />
+              </ListItem>
+              <Divider />
+              <ListItem button>
+                <ListItemText primary="Início" />
+              </ListItem>
+              <ListItem button onClick={() => { navigate("/sobre"); setOpen(false); }}>
+                <ListItemText primary="Sobre nós" />
+              </ListItem>
+            </List>
+          </div>
+          <List>
+            <ListItem button sx={{ color: "red" }}>
+              <ListItemIcon>
+                <FiLogOut />
+              </ListItemIcon>
+              <Logoff />
+            </ListItem>
+          </List>
+        </Drawer>
+
+        <div style={styles.logoWrapper}>
+          <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
+          <h2 style={styles.logo}>{"Glimp"}</h2>
+        </div>
+        <p style={styles.subtitulo}>Grandes Lugares Inspiram Momentos Perfeitos.</p>
+
+        <div style={styles.searchWrapper}>
+          <input type="text" placeholder="Pesquisar..." style={styles.search} />
+          <SearchIcon style={styles.searchIcon} />
+        </div>
+
+        <div style={styles.categorias}>
+          {categorias.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => {
+                setCategoriaSelecionada(cat.id);
+                setSnackbar({
+                  open: true,
+                  message: `Categoria "${cat.id}" selecionada!`,
+                  severity: "info",
+                });
+              }}
+              style={{
+                ...styles.botaoCategoria,
+                backgroundColor: categoriaSelecionada === cat.id ? "#4a5a87" : "#d9d9d9",
+                color: categoriaSelecionada === cat.id ? "#fff" : "#000",
+              }}
+            >
+              {cat.emoji}
+            </button>
+          ))}
+        </div>
+      </div>
+      <CustomSnackbar
+        open={snackbar.open}
+        message={snackbar.message}
+        severity={snackbar.severity}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      />
+    </div>
+  );
 };
 
 export default Home;
