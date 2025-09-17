@@ -2,50 +2,81 @@ import React, { useState, useEffect } from "react";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
-import BeachAccessIcon from "@mui/icons-material/BeachAccess";
+import ParkIcon from "@mui/icons-material/Park";
 import StorefrontIcon from "@mui/icons-material/Storefront";
-import { useNavigate } from "react-router-dom";
 import HamburgerDrawer from "../components/HamburgerDrawer";
+import DetalhesModal from "../components/Modal";
 import api from "../axios/axios";
 
 const Home = () => {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
-  const [lugarSelecionado, setLugarSelecionado] = useState(null);
-  const [categorias] = useState([
-    { nome: "Restaurante" },
-    { nome: "Praia" },
-    { nome: "Loja" },
-  ]);
+  const [enderecoSelecionado, setEnderecoSelecionado] = useState(null);
   const [lugares, setLugares] = useState([]);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [termoBusca, setTermoBusca] = useState("");
+  const [openModal, setOpenModal] = useState(false);
 
-  // Mapeamento de nome da categoria para ícone do MUI
-  const iconesCategoria = {
-    restaurante: <RestaurantMenuIcon sx={{ fontSize: 40 }} />,
-    praia: <BeachAccessIcon sx={{ fontSize: 40 }} />,
-    loja: <StorefrontIcon sx={{ fontSize: 40 }} />,
-  };
+  const categorias = [
+    {
+      nome: "Restaurante",
+      type: "restaurant",
+      icon: <RestaurantMenuIcon sx={{ fontSize: 40 }} />,
+    },
+    { nome: "Parque", type: "park", icon: <ParkIcon sx={{ fontSize: 40 }} /> },
+    {
+      nome: "Loja",
+      type: "store",
+      icon: <StorefrontIcon sx={{ fontSize: 40 }} />,
+    },
+  ];
 
   useEffect(() => {
     const fetchEstabelecimentos = async () => {
+      if (!categoriaSelecionada) return;
       setLoading(true);
       try {
-        const response = await api.get("/buscar"); // Corrigido o método de chamada
-        console.log(response); // Adicionado para depuração
-        setLugares(response?.data || []); // Definindo lugares a partir da resposta
-        if (response?.data?.length > 0) {
-          setCategoriaSelecionada(response.data[0].categoria.toLowerCase());
+        const categoria = categorias.find(
+          (cat) => cat.nome.toLowerCase() === categoriaSelecionada
+        );
+        if (!categoria) {
+          setLugares([]);
+          setLoading(false);
+          return;
         }
+
+        const response = await api.get("/buscar", {
+          params: {
+            location: "-20.5381,-47.4008",
+            radius: 17000,
+            type: categoria.type,
+          },
+        });
+
+        // Mapeando os dados que a API retorna para o formato esperado no modal
+        const dados = (response.data.estabelecimentos || []).map((item) => ({
+          nome: item.nome || "Nome não disponível",
+          endereco: item.endereco || "Não disponível",
+          categoria: categoria.nome,
+          telefone: item.telefone || "Não disponível",
+          horarios: item.horarios || "Não disponível",
+          avaliacao: item.avaliacao || "Não disponível",
+          place_id: item.place_id,
+        }));
+
+        setLugares(dados);
       } catch (error) {
         console.error("Erro ao carregar estabelecimentos:", error);
+        setLugares([]);
       } finally {
         setLoading(false);
       }
     };
-
     fetchEstabelecimentos();
-  }, []);
+  }, [categoriaSelecionada]);
+
+  const lugaresFiltrados = lugares.filter((lugar) =>
+    (lugar.nome || "").toLowerCase().includes(termoBusca.toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -58,23 +89,28 @@ const Home = () => {
   return (
     <div style={styles.container}>
       <HamburgerDrawer />
-
       <div style={styles.main}>
         <div style={styles.logoWrapper}>
-          <LocationOnOutlinedIcon
-            sx={{ fontSize: 36, color: "#000", alignItems: "center" }}
-          />
+          <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
           <h2 style={styles.logo}>{"Glimp"}</h2>
         </div>
         <p style={styles.subtitulo}>
           Grandes Lugares Inspiram Momentos Perfeitos.
         </p>
 
+        {/* Campo de busca */}
         <div style={styles.searchWrapper}>
-          <input type="text" placeholder="Pesquisar..." style={styles.search} />
+          <input
+            type="text"
+            placeholder="Pesquisar..."
+            style={styles.search}
+            value={termoBusca}
+            onChange={(e) => setTermoBusca(e.target.value)}
+          />
           <SearchIcon style={styles.searchIcon} />
         </div>
 
+        {/* Categorias */}
         <div style={styles.categorias}>
           {categorias.map((cat) => (
             <button
@@ -93,33 +129,45 @@ const Home = () => {
               }}
               aria-label={cat.nome}
             >
-              {iconesCategoria[cat.nome.toLowerCase()] || "❓"}
+              {cat.icon}
             </button>
           ))}
         </div>
 
-        {/* Lugares filtrados pela categoria selecionada */}
+        {/* Lista de lugares */}
         <div style={styles.lugares}>
-          {lugares
-            .filter(
-              (lugar) => lugar.categoria.toLowerCase() === categoriaSelecionada
-            )
-            .map((lugar, index) => (
+          {lugaresFiltrados.length === 0 ? (
+            <p>Nenhum lugar encontrado para essa categoria e busca.</p>
+          ) : (
+            lugaresFiltrados.map((lugar, index) => (
               <div
-                key={lugar.nome || lugar.id || index}
-                onClick={() => setLugarSelecionado(index)}
+                key={lugar.place_id || index}
+                onClick={() => {
+                  setEnderecoSelecionado(index);
+                  setOpenModal(true);
+                }}
                 style={{
                   ...styles.lugar,
                   backgroundColor:
-                    lugarSelecionado === index ? "#4a5a87" : "#fff",
-                  color: lugarSelecionado === index ? "#fff" : "#000",
+                    enderecoSelecionado === index ? "#4a5a87" : "#fff",
+                  color: enderecoSelecionado === index ? "#fff" : "#000",
                 }}
               >
                 {lugar.nome}
               </div>
-            ))}
+            ))
+          )}
         </div>
       </div>
+
+      {/* Modal */}
+      <DetalhesModal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        lugar={
+          enderecoSelecionado !== null ? lugares[enderecoSelecionado] : null
+        }
+      />
     </div>
   );
 };
@@ -138,20 +186,20 @@ const styles = {
     padding: 50,
     paddingLeft: 200,
   },
-  logoWrapper: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
+  logoWrapper: { 
+    display: "flex", 
+    alignItems: "center", 
+    gap: 10 
   },
-  logo: {
-    margin: 0,
-    fontSize: 26,
-    color: "#4a5a87",
+  logo: { 
+    margin: 0, 
+    fontSize: 26, 
+    color: "#4a5a87" 
   },
-  subtitulo: {
-    fontSize: 14,
-    color: "#777",
-    marginBottom: 20,
+  subtitulo: { 
+    fontSize: 14, 
+    color: "#777", 
+    marginBottom: 20 
   },
   searchWrapper: {
     display: "flex",
@@ -182,7 +230,7 @@ const styles = {
     alignItems: "center",
     gap: 20,
     marginBottom: 30,
-    marginRight: 120,
+    marginRight: 210,
   },
   botaoCategoria: {
     width: 80,
@@ -197,11 +245,7 @@ const styles = {
     fontSize: 40,
     fontWeight: "bold",
   },
-  lugares: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 15,
-  },
+  lugares: { display: "flex", flexDirection: "column", gap: 15 },
   lugar: {
     padding: "15px 20px",
     borderRadius: 8,
