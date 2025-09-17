@@ -21,6 +21,7 @@ export default function Cadastro() {
     cpf: "",
     email: "",
     senha: "",
+    confirmarSenha: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -61,6 +62,7 @@ export default function Cadastro() {
         cpf: user.cpf,
         email: user.email,
         senha: user.senha,
+        confirmarSenha: user.confirmarSenha,
       };
 
       const response = await sheets.postCadastro(usuario);
@@ -93,7 +95,7 @@ export default function Cadastro() {
       <Box
         sx={{
           width: "100%",
-          minHeight: "100vh",
+          minHeight: "100%",
           bgcolor: "#e5e5e5",
           display: "flex",
           flexDirection: "column",
@@ -101,6 +103,7 @@ export default function Cadastro() {
           justifyContent: "center",
           p: 2,
           paddingTop: 2,
+          
         }}
       >
         <CssBaseline />
@@ -182,6 +185,13 @@ export default function Cadastro() {
             label="Senha"
             name="senha"
             value={user.senha}
+            onChange={onChange}
+            disabled={loading}
+          />
+          <PasswordField
+            label="Confirmar Senha"
+            name="confirmarSenha"
+            value={user.confirmarSenha || ""}
             onChange={onChange}
             disabled={loading}
           />

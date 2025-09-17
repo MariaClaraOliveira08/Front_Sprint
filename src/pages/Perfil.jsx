@@ -19,19 +19,18 @@ import { useNavigate } from "react-router-dom";
 
 function Perfil() {
   const navigate = useNavigate();
-  const userId = localStorage.getItem("userId");
+  const userId = localStorage.getItem("userId"); // 🔹 você deve salvar o id do user no login
 
   const [user, setUser] = useState({
     id: "",
-    name: "",
+    nome: "",
+    cpf: "",
     email: "",
-    password: "",
+    senha: "",
+    
   });
 
-  // Estado para modal de sair
   const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
-
-  // Estado para snackbar
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
   // Carregar dados do usuário
@@ -43,10 +42,12 @@ function Perfil() {
         const userData = response.data.user;
 
         setUser({
-          id: userId,
-          name: userData.name || "",
+          id: userData.id_usuario,
+          nome: userData.nome || "",
+          cpf: userData.cpf || "",
           email: userData.email || "",
-          password: "******",
+          senha: "",
+          
         });
       } catch (error) {
         console.error("Erro ao carregar dados do usuário:", error);
@@ -58,10 +59,12 @@ function Perfil() {
   // Atualizar dados do usuário
   const handleUpdate = async () => {
     try {
-      const response = await api.updateUser(user.id, {
-        name: user.name,
+      const response = await api.put(`/user`, {
+        id: user.id,
+        nome: user.nome,
+        cpf: user.cpf,
         email: user.email,
-        password: user.password,
+        senha: user.senha,
       });
       alert(response.data.message);
     } catch (error) {
@@ -75,8 +78,6 @@ function Perfil() {
     localStorage.clear();
     setOpenLogoutDialog(false);
     setOpenSnackbar(true);
-
-    // Depois de 2s redireciona pro login
     setTimeout(() => {
       navigate("/login");
     }, 2000);
@@ -90,7 +91,7 @@ function Perfil() {
     if (!confirmDelete) return;
 
     try {
-      const response = await api.deleteUser(user.id);
+      const response = await api.delete(`/user/${user.id}`);
       alert(response.data.message);
       navigate("/");
     } catch (error) {
@@ -155,11 +156,18 @@ function Perfil() {
       >
         <TextField
           label="Nome"
-          name="name"
-          value={user.name}
+          name="nome"
+          value={user.nome}
           onChange={onChange}
-          variant="outlined"
           fullWidth
+        />
+        <TextField
+          label="CPF"
+          name="cpf"
+          value={user.cpf}
+          onChange={onChange}
+          fullWidth
+          disabled
         />
         <TextField
           label="Email"
@@ -167,20 +175,19 @@ function Perfil() {
           type="email"
           value={user.email}
           onChange={onChange}
-          variant="outlined"
           fullWidth
         />
         <TextField
           label="Senha"
-          name="password"
+          name="senha"
           type="password"
-          value={user.password}
+          value={user.senha}
           onChange={onChange}
-          variant="outlined"
           fullWidth
         />
+       
 
-        {/* Botões Editar e Sair lado a lado */}
+        {/* Botões */}
         <Box sx={{ display: "flex", gap: 2, width: "100%", mb: 2 }}>
           <Button
             variant="contained"
@@ -200,7 +207,6 @@ function Perfil() {
           </Button>
         </Box>
 
-        {/* Botão de Excluir conta */}
         <Box sx={{ width: "100%", mt: 3 }}>
           <Button
             variant="outlined"
@@ -208,7 +214,6 @@ function Perfil() {
               color: "red",
               borderColor: "red",
               width: "100%",
-              top: "-39px",
               padding: "12px",
             }}
             onClick={handleDelete}
@@ -230,16 +235,14 @@ function Perfil() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenLogoutDialog(false)} color="primary">
-            Cancelar
-          </Button>
+          <Button onClick={() => setOpenLogoutDialog(false)}>Cancelar</Button>
           <Button onClick={handleConfirmLogout} color="error" autoFocus>
             Sair
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar de logout */}
+      {/* Snackbar */}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={2000}
