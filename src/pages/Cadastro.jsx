@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -7,13 +7,9 @@ import {
   Typography,
   CssBaseline,
   Link as MuiLink,
-  IconButton,
-  InputAdornment,
 } from "@mui/material";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
 import sheets from "../axios/axios";
-import CustomSnackbar from "../components/CustomSnackbar";
 
 export default function Cadastro() {
   const navigate = useNavigate();
@@ -23,34 +19,12 @@ export default function Cadastro() {
     cpf: "",
     email: "",
     senha: "",
+    confirmarSenha: "",
   });
 
   const [loading, setLoading] = useState(false);
   const [btnHover, setBtnHover] = useState(false);
   const [mensagem, setMensagem] = useState("");
-
-  // 🔔 Snackbar
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
-  // 👁️ Estado do olho
-  const [showPassword, setShowPassword] = useState(false);
-
-  const handleOpenSnackbar = (message, severity = "success") => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setOpenSnackbar(true);
-  };
-
-  const handleCloseSnackbar = () => {
-    setOpenSnackbar(false);
-  };
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) navigate("/cadastro");
-  }, [navigate]);
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -61,34 +35,35 @@ export default function Cadastro() {
     setMensagem("");
     setLoading(true);
 
+    if (user.senha !== user.confirmarSenha) {
+      setMensagem("As senhas não coincidem.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const usuario = {
         nome: user.nome,
-        cpf: user.cpf,
+        cpf: user.cpf.replace(/\D/g, ""), // remove pontuação
         email: user.email,
         senha: user.senha,
+        confirmarSenha: user.confirmarSenha,
       };
 
       const response = await sheets.postCadastro(usuario);
 
-      handleOpenSnackbar(
-        response.data.message || "Cadastro realizado com sucesso!",
-        "success"
-      );
+      alert(response.data.message || "Cadastro realizado com sucesso!");
 
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
       }
 
-      setTimeout(() => {
-        navigate("/");
-      }, 1500);
+      navigate("/login"); // Redireciona para login após cadastro
     } catch (err) {
-      handleOpenSnackbar(
-        "Erro ao cadastrar: " + (err.response?.data?.error || err.message),
-        "error"
+      console.error("Erro ao cadastrar:", err.response?.data || err.message);
+      setMensagem(
+        "Erro ao cadastrar: " + (err.response?.data?.error || err.message)
       );
-      setMensagem("Erro ao cadastrar.");
     } finally {
       setLoading(false);
     }
@@ -103,22 +78,21 @@ export default function Cadastro() {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
-        p: 2,
-        paddingTop: 2,
+        justifyContent: "flex-start",
+        py: 6,
       }}
     >
       <CssBaseline />
 
       {/* Logo */}
-      <Box display="flex" flexDirection="column" alignItems="center" mb={4}>
+      <Box display="flex" flexDirection="column" alignItems="center" mb={3}>
         <Box display="flex" alignItems="center" gap={1}>
-          <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
+          <LocationOnOutlinedIcon sx={{ fontSize: 30, color: "#000" }} />
           <Typography variant="h6" sx={{ fontWeight: "bold" }}>
             Glimp
           </Typography>
         </Box>
-        <Typography variant="caption" sx={{ mt: 0.5, fontSize: 15 }}>
+        <Typography variant="caption" sx={{ mt: 0.5, fontSize: 14 }}>
           Grandes Lugares Inspiram Momentos Perfeitos.
         </Typography>
       </Box>
@@ -127,8 +101,8 @@ export default function Cadastro() {
       <Box
         component="form"
         sx={{
-          width: "90%",
-          maxWidth: 500,
+          width: "100%",
+          maxWidth: 450,
           display: "flex",
           flexDirection: "column",
           gap: 2,
@@ -188,23 +162,29 @@ export default function Cadastro() {
           required
           label="Senha"
           name="senha"
-          type={showPassword ? "text" : "password"}
+          type="password"
           value={user.senha}
           onChange={onChange}
           variant="filled"
           InputProps={{
             disableUnderline: true,
             sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton
-                  onClick={() => setShowPassword(!showPassword)}
-                  edge="end"
-                >
-                  {showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            ),
+          }}
+          InputLabelProps={{ sx: { color: "#000" } }}
+          disabled={loading}
+        />
+        <TextField
+          fullWidth
+          required
+          label="Confirmar Senha"
+          name="confirmarSenha"
+          type="password"
+          value={user.confirmarSenha}
+          onChange={onChange}
+          variant="filled"
+          InputProps={{
+            disableUnderline: true,
+            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
           }}
           InputLabelProps={{ sx: { color: "#000" } }}
           disabled={loading}
@@ -214,7 +194,7 @@ export default function Cadastro() {
           Já possui cadastro?{" "}
           <MuiLink
             component={Link}
-            to="/Login"
+            to="/login"
             sx={{ fontWeight: "bold", color: "#62798B" }}
           >
             Logar
@@ -241,21 +221,15 @@ export default function Cadastro() {
         >
           {loading ? "Cadastrando..." : "Cadastrar"}
         </Button>
+
+        {mensagem && (
+          <Typography
+            sx={{ mt: 1, color: "red", fontWeight: "bold", textAlign: "center" }}
+          >
+            {mensagem}
+          </Typography>
+        )}
       </Box>
-
-      {/* Snackbar */}
-      <CustomSnackbar
-        open={openSnackbar}
-        message={snackbarMessage}
-        severity={snackbarSeverity}
-        onClose={handleCloseSnackbar}
-      />
-
-      {mensagem && (
-        <Typography sx={{ mt: 1, color: "red", fontWeight: "bold" }}>
-          {mensagem}
-        </Typography>
-      )}
     </Box>
   );
 }
