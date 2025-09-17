@@ -10,6 +10,7 @@ import SobreNos from "./pages/SobreNos";
 import Favoritos from "./pages/Favoritos";
 import Avaliacao from "./pages/Avaliacao";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Mapa from "./pages/Mapa";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/mapa" element={<Mapa />} />
 
           <Route
             path="/perfil"
@@ -49,9 +51,9 @@ function App() {
           <Route
             path="/avaliacao"
             element={
-              <ProtectedRoute>
+              
                 <Avaliacao />
-              </ProtectedRoute>
+              
             }
           />
         </Route>

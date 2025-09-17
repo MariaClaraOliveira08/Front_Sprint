@@ -8,6 +8,8 @@ import HamburgerDrawer from "../components/HamburgerDrawer";
 import DetalhesModal from "../components/Modal";
 import api from "../axios/axios";
 
+import { useNavigate } from "react-router-dom";
+
 const Home = () => {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
   const [enderecoSelecionado, setEnderecoSelecionado] = useState(null);
@@ -15,6 +17,8 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [termoBusca, setTermoBusca] = useState("");
   const [openModal, setOpenModal] = useState(false);
+
+  const navigate = useNavigate();
 
   const categorias = [
     {
@@ -52,7 +56,6 @@ const Home = () => {
           },
         });
 
-        // Mapeando os dados que a API retorna para o formato esperado no modal
         const dados = (response.data.estabelecimentos || []).map((item) => ({
           nome: item.nome || "Nome não disponível",
           endereco: item.endereco || "Não disponível",
@@ -61,6 +64,9 @@ const Home = () => {
           horarios: item.horarios || "Não disponível",
           avaliacao: item.avaliacao || "Não disponível",
           place_id: item.place_id,
+          lat: item.latitude, // coordenadas
+          lng: item.longitude,
+          comentarios: item.comentarios || [],
         }));
 
         setLugares(dados);
@@ -78,13 +84,12 @@ const Home = () => {
     (lugar.nome || "").toLowerCase().includes(termoBusca.toLowerCase())
   );
 
-  if (loading) {
+  if (loading)
     return (
       <div style={styles.loadingContainer}>
         <p>Carregando...</p>
       </div>
     );
-  }
 
   return (
     <div style={styles.container}>
@@ -92,7 +97,7 @@ const Home = () => {
       <div style={styles.main}>
         <div style={styles.logoWrapper}>
           <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
-          <h2 style={styles.logo}>{"Glimp"}</h2>
+          <h2 style={styles.logo}>Glimp</h2>
         </div>
         <p style={styles.subtitulo}>
           Grandes Lugares Inspiram Momentos Perfeitos.
@@ -127,7 +132,6 @@ const Home = () => {
                     ? "#fff"
                     : "#000",
               }}
-              aria-label={cat.nome}
             >
               {cat.icon}
             </button>
@@ -136,27 +140,24 @@ const Home = () => {
 
         {/* Lista de lugares */}
         <div style={styles.lugares}>
-          {lugaresFiltrados.length === 0 ? (
-            <p>Nenhum lugar encontrado para essa categoria e busca.</p>
-          ) : (
-            lugaresFiltrados.map((lugar, index) => (
-              <div
-                key={lugar.place_id || index}
-                onClick={() => {
-                  setEnderecoSelecionado(index);
-                  setOpenModal(true);
-                }}
-                style={{
-                  ...styles.lugar,
-                  backgroundColor:
-                    enderecoSelecionado === index ? "#4a5a87" : "#fff",
-                  color: enderecoSelecionado === index ? "#fff" : "#000",
-                }}
-              >
-                {lugar.nome}
-              </div>
-            ))
-          )}
+          {lugaresFiltrados.map((lugar, index) => (
+            <div
+              key={lugar.place_id || index}
+              onClick={() => {
+                setEnderecoSelecionado(index);
+                setOpenModal(true);
+              }}
+              style={{
+                ...styles.lugar,
+                backgroundColor:
+                  enderecoSelecionado === index ? "#4a5a87" : "#fff",
+                color: enderecoSelecionado === index ? "#fff" : "#000",
+              }}
+            >
+              {lugar.nome}
+            </div>
+          ))}
+          {/* A mensagem "Nenhum lugar encontrado" foi removida */}
         </div>
       </div>
 
@@ -180,27 +181,10 @@ const styles = {
     fontFamily: "Segoe UI, sans-serif",
     overflow: "hidden",
   },
-  main: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-    padding: 50,
-    paddingLeft: 200,
-  },
-  logoWrapper: { 
-    display: "flex", 
-    alignItems: "center", 
-    gap: 10 
-  },
-  logo: { 
-    margin: 0, 
-    fontSize: 26, 
-    color: "#4a5a87" 
-  },
-  subtitulo: { 
-    fontSize: 14, 
-    color: "#777", 
-    marginBottom: 20 
-  },
+  main: { flex: 1, backgroundColor: "#f5f5f5", padding: 50, paddingLeft: 200 },
+  logoWrapper: { display: "flex", alignItems: "center", gap: 10 },
+  logo: { margin: 0, fontSize: 26, color: "#4a5a87" },
+  subtitulo: { fontSize: 14, color: "#777", marginBottom: 20 },
   searchWrapper: {
     display: "flex",
     alignItems: "center",
@@ -218,12 +202,7 @@ const styles = {
     padding: "12px 10px",
     fontSize: 14,
   },
-  searchIcon: {
-    color: "#555",
-    fontSize: 24,
-    cursor: "pointer",
-    marginLeft: 8,
-  },
+  searchIcon: { color: "#555", fontSize: 24, cursor: "pointer", marginLeft: 8 },
   categorias: {
     display: "flex",
     justifyContent: "center",
@@ -237,7 +216,6 @@ const styles = {
     height: 80,
     borderRadius: 15,
     border: "none",
-    backgroundColor: "#f4f4f4",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
