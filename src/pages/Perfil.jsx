@@ -27,7 +27,7 @@ function Perfil() {
     cpf: "",
     email: "",
     senha: "",
-    
+    confirmarSenha: "",
   });
 
   const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
@@ -38,7 +38,7 @@ function Perfil() {
     async function fetchUsuario() {
       try {
         if (!userId) return;
-        const response = await api.get(`/user/${userId}`);
+        const response = await api.getUsuarioById(userId);
         const userData = response.data.user;
 
         setUser({
@@ -47,7 +47,7 @@ function Perfil() {
           cpf: userData.cpf || "",
           email: userData.email || "",
           senha: "",
-          
+          confirmarSenha: "",
         });
       } catch (error) {
         console.error("Erro ao carregar dados do usuário:", error);
@@ -59,17 +59,13 @@ function Perfil() {
   // Atualizar dados do usuário
   const handleUpdate = async () => {
     try {
-      const response = await api.put(`/user`, {
-        id: user.id,
-        nome: user.nome,
-        cpf: user.cpf,
-        email: user.email,
-        senha: user.senha,
-      });
+      const response = await api.putUsuario(user);
       alert(response.data.message);
     } catch (error) {
       console.error("Erro ao atualizar os dados:", error);
-      alert("Erro ao atualizar os dados do usuário.");
+      alert(
+        error.response?.data?.error || "Erro ao atualizar os dados do usuário."
+      );
     }
   };
 
@@ -85,21 +81,15 @@ function Perfil() {
 
   // Deletar conta
   const handleDelete = async () => {
-    const confirmDelete = window.confirm(
-      "Você tem certeza que deseja excluir sua conta?"
-    );
-    if (!confirmDelete) return;
-
     try {
-      const response = await api.delete(`/user/${user.id}`);
+      const response = await api.deleteUsuario(user.id);
       alert(response.data.message);
       navigate("/");
     } catch (error) {
       console.error("Erro ao excluir o usuário:", error);
-      alert("Erro ao excluir o usuário.");
+      alert(error.response?.data?.error || "Erro ao excluir o usuário.");
     }
   };
-
   const onChange = (event) => {
     const { name, value } = event.target;
     setUser({ ...user, [name]: value });
@@ -114,17 +104,17 @@ function Perfil() {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        pt: 5,
         boxSizing: "border-box",
+        
       }}
     >
       {/* Cabeçalho */}
       <Box
         sx={{
           width: "100%",
-          height: 150,
+          height: 120,
           background: "#7681A1",
-          position: "relative",
+          position: "absolute",
         }}
       >
         <Avatar
@@ -147,11 +137,13 @@ function Perfil() {
         sx={{
           width: "100%",
           maxWidth: 400,
-          mt: 8,
+          mt: 25,
+          height: "100vh",
           display: "flex",
           flexDirection: "column",
-          gap: 3,
+          gap: 2,
           alignItems: "center",
+        
         }}
       >
         <TextField
@@ -185,7 +177,14 @@ function Perfil() {
           onChange={onChange}
           fullWidth
         />
-       
+        <TextField
+          label="Confirma senha"
+          name="senha"
+          type="password"
+          value={user.senha}
+          onChange={onChange}
+          fullWidth
+        />
 
         {/* Botões */}
         <Box sx={{ display: "flex", gap: 2, width: "100%", mb: 2 }}>
@@ -215,6 +214,7 @@ function Perfil() {
               borderColor: "red",
               width: "100%",
               padding: "12px",
+              mt: -3,
             }}
             onClick={handleDelete}
           >
