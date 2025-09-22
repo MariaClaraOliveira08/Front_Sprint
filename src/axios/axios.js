@@ -10,7 +10,7 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`; // 🔴 Importante
+    config.headers.Authorization = `Bearer ${token}`; 
   }
   return config;
 });
@@ -18,7 +18,9 @@ api.interceptors.request.use((config) => {
 // Endpoints
 api.postCadastro = (user) => api.post("/user", user);
 api.postLogin = (user) => api.post("/login", user);
-//api.getbuscarEstabelecimento = () => api.get("/buscar");
-
+api.buscarEstabelecimentosGoogle = (location, radius, type) =>
+  api.get("/buscar", {
+    params: { location, radius, type },
+  });
 
 export default api;
