@@ -27,9 +27,9 @@ function App() {
           <Route
             path="/perfil"
             element={
-              <ProtectedRoute>
+              
                 <Perfil />
-              </ProtectedRoute>
+              
             }
           />
           <Route
@@ -43,17 +43,17 @@ function App() {
           <Route
             path="/favoritos"
             element={
-              
+              <ProtectedRoute>
                 <Favoritos />
-              
+                </ProtectedRoute>
             }
           />
           <Route
             path="/avaliacao"
             element={
-              
+              <ProtectedRoute>
                 <Avaliacao />
-              
+                </ProtectedRoute>
             }
           />
         </Route>

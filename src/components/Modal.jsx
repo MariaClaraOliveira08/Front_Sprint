@@ -27,7 +27,7 @@ const DetalhesModal = ({ open, onClose, lugar }) => {
         <Typography><strong>Categoria:</strong> {lugar.categoria}</Typography>
         <Typography><strong>Telefone:</strong> {lugar.telefone}</Typography>
         <Typography><strong>Horários:</strong> {lugar.horarios}</Typography>
-        <Typography><strong>Avaliação:</strong> {lugar.avaliacao}</Typography>
+        <Typography><strong>Avaliações:</strong> {lugar.avaliacao}</Typography>
 
         <Link
           onClick={() => navigate("/mapa", { state: { lugar } })}
@@ -43,7 +43,6 @@ const DetalhesModal = ({ open, onClose, lugar }) => {
           lugar.comentarios.map((c, index) => (
             <Box key={index} mb={1}>
               <Typography><strong>Usuário:</strong> {c.usuario}</Typography>
-              <Typography><strong>Nota:</strong> {c.nota}</Typography>
               <Typography><strong>Comentário:</strong> {c.texto}</Typography>
               {index < lugar.comentarios.length - 1 && <Divider sx={{ my: 1 }} />}
             </Box>

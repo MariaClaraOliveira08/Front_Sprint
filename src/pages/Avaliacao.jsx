@@ -13,7 +13,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import HamburgerDrawer from "../components/HamburgerDrawer";
-import axios from "axios";
+import api from "../axios/axios";
 
 function Avaliacao({ idUsuario, google_place_id, nomeEstabelecimento }) {
   const [avaliacoes, setAvaliacoes] = useState([]);
@@ -29,11 +29,12 @@ function Avaliacao({ idUsuario, google_place_id, nomeEstabelecimento }) {
     fetchAvaliacoes();
   }, []);
 
+  // Função para buscar avaliações
   const fetchAvaliacoes = async () => {
     if (!google_place_id) return;
     setLoading(true);
     try {
-      const res = await axios.get(`/avaliacoes/place/${google_place_id}`);
+      const res = await api.get(`/avaliacoes/${google_place_id}`); // Alterado para corresponder à API
       setAvaliacoes(res.data.avaliacoes);
       setMediaNota(res.data.media_notas || 0);
     } catch (err) {
@@ -43,19 +44,30 @@ function Avaliacao({ idUsuario, google_place_id, nomeEstabelecimento }) {
     }
   };
 
+  // Função para enviar a nova avaliação
   const handleEnviar = async () => {
     if (!novaNota || !novoComentario) {
       alert("Preencha a nota e o comentário.");
       return;
     }
 
+    const token = localStorage.getItem("jwtToken"); // Pegando o token do localStorage ou sessionStorage
+
     try {
-      await axios.post("/avaliacoes", {
-        id_usuario: idUsuario,
-        google_place_id,
-        comentario: novoComentario,
-        nota: novaNota,
-      });
+      await axios.post(
+        "/avaliacoes", // Alterado para corresponder à API
+        {
+          id_usuario: idUsuario,
+          google_place_id,
+          comentario: novoComentario,
+          nota: novaNota,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Enviando o token JWT
+          },
+        }
+      );
       setNovaNota(0);
       setNovoComentario("");
       fetchAvaliacoes(); // Atualiza a lista após enviar
@@ -65,11 +77,13 @@ function Avaliacao({ idUsuario, google_place_id, nomeEstabelecimento }) {
     }
   };
 
+  // Função para abrir o modal de detalhes da avaliação
   const handleOpenModal = (avaliacao) => {
     setAvaliacaoModal(avaliacao);
     setOpenModal(true);
   };
 
+  // Função para fechar o modal de detalhes
   const handleCloseModal = () => {
     setOpenModal(false);
     setAvaliacaoModal(null);

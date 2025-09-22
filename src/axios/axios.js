@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://10.89.240.68:3000/projeto_final/",
+  baseURL: "http://10.89.240.68:3000/projeto_final", 
   headers: {
     accept: "application/json",
   },
@@ -10,7 +10,7 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`; 
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
@@ -22,5 +22,7 @@ api.buscarEstabelecimentosGoogle = (location, radius, type) =>
   api.get("/buscar", {
     params: { location, radius, type },
   });
+api.postAvaliacao = (avaliacaoData) => api.post("/avaliacao", avaliacaoData);
+api.getFavoritos = () => api.get("/favoritos");
 
 export default api;
