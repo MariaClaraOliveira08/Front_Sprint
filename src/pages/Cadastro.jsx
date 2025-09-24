@@ -10,7 +10,8 @@ import {
 } from "@mui/material";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import sheets from "../axios/axios";
-import PasswordField from "../components/PasswordField"; // Certifique-se de ter este componente
+import PasswordField from "../components/PasswordField";
+import CustomSnackbar from "../components/CustomSnackbar"; // importa o snackbar
 
 export default function Cadastro() {
   const navigate = useNavigate();
@@ -26,6 +27,11 @@ export default function Cadastro() {
   const [loading, setLoading] = useState(false);
   const [btnHover, setBtnHover] = useState(false);
   const [mensagem, setMensagem] = useState("");
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -53,18 +59,29 @@ export default function Cadastro() {
 
       const response = await sheets.postCadastro(usuario);
 
-      alert(response.data.message || "Cadastro realizado com sucesso!");
-      
+      // exibe o snackbar em vez de alert
+      setSnackbar({
+        open: true,
+        message: response.data.message || "Cadastro realizado com sucesso!",
+        severity: "success",
+      });
+
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
       }
-      
-      navigate("/login");
+
+      // aguarda 1,5s e redireciona para login
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
     } catch (err) {
       console.error("Erro ao cadastrar:", err.response?.data || err.message);
-      setMensagem(
-        "Erro ao cadastrar: " + (err.response?.data?.error || err.message)
-      );
+      setSnackbar({
+        open: true,
+        message:
+          "Erro ao cadastrar: " + (err.response?.data?.error || err.message),
+        severity: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -79,14 +96,14 @@ export default function Cadastro() {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center", // Altera para 'center' para centralizar verticalmente
-        py: 2, // Reduz o padding vertical para diminuir o espaço
+        justifyContent: "center",
+        py: 2,
       }}
     >
       <CssBaseline />
 
       {/* Logo */}
-      <Box display="flex" flexDirection="column" alignItems="center" mb={1}> {/* Reduz a margem inferior */}
+      <Box display="flex" flexDirection="column" alignItems="center" mb={1}>
         <Box display="flex" alignItems="center" gap={1}>
           <LocationOnOutlinedIcon sx={{ fontSize: 30, color: "#000" }} />
           <Typography variant="h6" sx={{ fontWeight: "bold" }}>
@@ -106,7 +123,7 @@ export default function Cadastro() {
           maxWidth: 450,
           display: "flex",
           flexDirection: "column",
-          gap: 1.5, // Reduz o espaçamento entre os elementos do formulário
+          gap: 1.5,
         }}
         onSubmit={(e) => {
           e.preventDefault();
@@ -158,7 +175,7 @@ export default function Cadastro() {
           InputLabelProps={{ sx: { color: "#000" } }}
           disabled={loading}
         />
-        <TextField
+        <PasswordField
           fullWidth
           required
           label="Senha"
@@ -174,7 +191,7 @@ export default function Cadastro() {
           InputLabelProps={{ sx: { color: "#000" } }}
           disabled={loading}
         />
-        <TextField
+        <PasswordField
           fullWidth
           required
           label="Confirmar Senha"
@@ -191,7 +208,7 @@ export default function Cadastro() {
           disabled={loading}
         />
 
-        <Typography variant="caption" sx={{ mt: 1, textAlign: "center" }}> {/* Reduz a margem superior */}
+        <Typography variant="caption" sx={{ mt: 1, textAlign: "center" }}>
           Já possui cadastro?{" "}
           <MuiLink
             component={Link}
@@ -213,7 +230,7 @@ export default function Cadastro() {
             color: "#000",
             borderRadius: 2,
             py: 1,
-            mt: 1, // Reduz a margem superior
+            mt: 1,
             fontWeight: "bold",
             textTransform: "none",
             width: 150,
@@ -225,12 +242,25 @@ export default function Cadastro() {
 
         {mensagem && (
           <Typography
-            sx={{ mt: 1, color: "red", fontWeight: "bold", textAlign: "center" }}
+            sx={{
+              mt: 1,
+              color: "red",
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
           >
             {mensagem}
           </Typography>
         )}
       </Box>
+
+      {/* Snackbar */}
+      <CustomSnackbar
+        open={snackbar.open}
+        message={snackbar.message}
+        severity={snackbar.severity}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      />
     </Box>
   );
 }
