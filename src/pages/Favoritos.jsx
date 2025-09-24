@@ -1,34 +1,35 @@
-// src/pages/Favoritos.jsx
-import React, { useState, useEffect } from 'react';
-import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
-import SearchIcon from '@mui/icons-material/Search';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import HamburgerDrawer from '../components/HamburgerDrawer';
-import api from '../axios/axios';
+import React, { useState, useEffect } from "react";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import SearchIcon from "@mui/icons-material/Search";
+import FavoriteIcon from "@mui/icons-material/Favorite"; // coração cheio
+import HamburgerDrawer from "../components/HamburgerDrawer";
+import api from "../axios/axios";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 const Favoritos = () => {
   const [favoritos, setFavoritos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // Manter para exibir outros erros
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [deletingId, setDeletingId] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
 
-  // Função para buscar os favoritos
   const fetchFavoritos = async () => {
-    const token = localStorage.getItem('token');
-    const id_usuario = localStorage.getItem('id_usuario'); // Garantir que 'id_usuario' está sendo armazenado corretamente
+    const token = localStorage.getItem("token");
 
-    if (!token || !id_usuario) {
-      setLoading(false);  // Não fazer nada se não estiver autenticado
-      return;  // Sai da função sem mostrar erro
+    if (!token) {
+      console.warn("Token do usuário ausente");
+      setError("Você precisa estar logado para ver seus favoritos.");
+      setLoading(false);
+      return;
     }
 
     try {
-      const response = await api.get('/favoritos', {
-        params: { id_usuario }, // Enviando o id_usuario para a API
-      });
-      setFavoritos(response.data.favoritos);
+      const response = await api.getFavoritos();
+      setFavoritos(response.data.favoritos || []);
     } catch (error) {
-      console.error('Erro ao buscar favoritos:', error.response?.data || error.message);
-      setError('Erro ao carregar seus favoritos. Tente novamente.');
+      setError("Erro ao carregar seus favoritos. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -38,123 +39,194 @@ const Favoritos = () => {
     fetchFavoritos();
   }, []);
 
+  const favoritosFiltrados = favoritos.filter((fav) => {
+    const textoBusca = searchTerm.toLowerCase();
+    return (
+      fav.nome_estabelecimento.toLowerCase().includes(textoBusca) ||
+      (fav.endereco && fav.endereco.toLowerCase().includes(textoBusca))
+    );
+  });
+
+  // Remove favorito ao clicar no coração
+  const toggleFavorito = async (id) => {
+    setDeletingId(id);
+    try {
+      await api.deleteFavorito(id);
+      setFavoritos((prev) => prev.filter((fav) => fav.id_favorito !== id));
+      setSnackbar({ open: true, message: "Favorito removido com sucesso!", severity: "success" });
+    } catch (error) {
+      setSnackbar({ open: true, message: "Erro ao remover favorito. Tente novamente.", severity: "error" });
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  // Fecha snackbar
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") return;
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
+
   return (
     <div style={styles.wrapper}>
       <HamburgerDrawer />
       <main style={styles.container}>
         <header style={styles.header}>
-          <LocationOnOutlinedIcon sx={{ fontSize: 32, color: '#000000ff' }} />
+          <LocationOnOutlinedIcon sx={{ fontSize: 32, color: "#000000ff" }} />
           <h1 style={styles.logoText}>Glimp</h1>
         </header>
         <p style={styles.subtitulo}>Grandes Lugares Inspiram Momentos Perfeitos.</p>
         <div style={styles.searchBox}>
-          <input type="text" placeholder="Pesquisar" style={styles.searchInput} />
-          <SearchIcon sx={{ fontSize: 22, color: '#888' }} />
+          <input
+            type="text"
+            placeholder="Pesquisar"
+            style={styles.searchInput}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <SearchIcon sx={{ fontSize: 22, color: "#888" }} />
         </div>
         {loading ? (
           <p>Carregando favoritos...</p>
         ) : error ? (
-          <p style={{ color: 'red' }}>{error}</p>
+          <p style={{ color: "red" }}>{error}</p>
         ) : (
           <section style={styles.listaFavoritos}>
-            {favoritos.length > 0 ? (
-              favoritos.map((favorito) => (
+            {favoritosFiltrados.length > 0 ? (
+              favoritosFiltrados.map((favorito) => (
                 <div key={favorito.id_favorito} style={styles.card}>
-                  <FavoriteBorderIcon sx={styles.favoriteIcon} />
-                  <div>{favorito.nome_estabelecimento}</div>
+                  <button
+                    onClick={() => toggleFavorito(favorito.id_favorito)}
+                    aria-label="Remover favorito"
+                    disabled={deletingId === favorito.id_favorito}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      position: "absolute",
+                      top: 10,
+                      right: 10,
+                    }}
+                  >
+                    <FavoriteIcon sx={{ fontSize: 26, color: "#e91e63" }} />
+                  </button>
+                  <div style={styles.infoContainer}>
+                    <div style={styles.nome}>{favorito.nome_estabelecimento}</div>
+                    <div style={styles.endereco}>{favorito.endereco}</div>
+                  </div>
                 </div>
               ))
             ) : (
-              <p>Você ainda não tem favoritos.</p>
+              <p>Nenhum favorito encontrado.</p>
             )}
           </section>
         )}
       </main>
+
+      {/* Snackbar para mensagens */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
 
 const styles = {
   wrapper: {
-    display: 'flex',
-    height: '100vh',
-    width: '100vw',
+    display: "flex",
+    height: "100vh",
+    width: "100vw",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    backgroundColor: '#f0f2f5',
+    backgroundColor: "#f0f2f5",
     marginBottom: -10,
   },
   container: {
     flex: 1,
     padding: 32,
     paddingLeft: 240,
-    display: 'flex',
-    flexDirection: 'column',
+    display: "flex",
+    flexDirection: "column",
   },
   header: {
-    display: 'flex',
-    alignItems: 'center',
+    display: "flex",
+    alignItems: "center",
     gap: 12,
     marginBottom: 40,
   },
   logoText: {
     margin: 5,
     fontSize: 32,
-    fontWeight: '700',
-    color: '#000000ff',
-    userSelect: 'none',
+    fontWeight: "700",
+    color: "#000000ff",
+    userSelect: "none",
   },
   subtitulo: {
     fontSize: 14,
-    color: '#777',
+    color: "#777",
     marginBottom: 20,
     marginTop: -40,
   },
   searchBox: {
-    display: 'flex',
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    display: "flex",
+    alignItems: "center",
+    backgroundColor: "#fff",
     borderRadius: 25,
-    padding: '10px 20px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    padding: "10px 20px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
     maxWidth: 600,
     marginBottom: 40,
-    border: '1px solid #ddd',
+    border: "1px solid #ddd",
     marginTop: 10,
     marginLeft: 70,
   },
   searchInput: {
     flex: 1,
-    border: 'none',
-    outline: 'none',
-    backgroundColor: 'transparent',
+    border: "none",
+    outline: "none",
+    backgroundColor: "transparent",
     fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
+    color: "#333",
+    fontWeight: "500",
   },
   listaFavoritos: {
-    display: 'grid',
-    gridTemplateColumns: '1fr',
+    display: "grid",
+    gridTemplateColumns: "1fr",
     gap: 24,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 24,
     borderRadius: 16,
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-    cursor: 'pointer',
-    userSelect: 'none',
+    display: "flex",
+    gap: 40,
+    alignItems: "center",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+    cursor: "default",
+    userSelect: "none",
     marginLeft: -180,
-    position: 'relative',
+    position: "relative",
   },
-  favoriteIcon: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    fontSize: 26,
-    color: '#e91e63',
+  infoContainer: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+    flex: 1,
+  },
+  nome: {
+    fontWeight: "700",
+    fontSize: 18,
+    color: "#000",
+  },
+  endereco: {
+    fontSize: 16,
+    color: "#555",
   },
 };
 
