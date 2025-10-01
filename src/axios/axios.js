@@ -22,11 +22,8 @@ api.postLogin = (user) => api.post("/login", user);
 api.buscarEstabelecimentosGoogle = (location, radius, type) =>
   api.get("/buscar", { params: { location, radius, type } });
 api.postAvaliacao = (data) => api.post("/avaliacao", data);
-api.getFavoritos = () => api.get("/favoritos");
+api.getFavoritos = (id_usuario) => api.get(`/favoritos/${id_usuario}`);
 api.deleteFavorito = (id_favorito) => api.delete(`/favoritos/${id_favorito}`);
-
-// ✅ Buscar avaliações de um usuário
-api.buscarAvaliacoesDoUsuario = (id_usuario) =>
-  api.get(`/avaliacoes/${id_usuario}`);
+api.buscarAvaliacoesDoUsuario = () => api.get("/avaliacao");
 
 export default api;

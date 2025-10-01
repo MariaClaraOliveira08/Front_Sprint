@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 import Inicio from "./pages/Inicio";
 import Login from "./pages/Login";
@@ -8,7 +8,7 @@ import Home from "./pages/Home";
 import Perfil from "./pages/Perfil";
 import SobreNos from "./pages/SobreNos";
 import Favoritos from "./pages/Favoritos";
-import Avaliacao from "./pages/Avaliacao";
+import AvaliacoesUsuario from "./pages/Avaliacao";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Mapa from "./pages/Mapa";
 
@@ -17,12 +17,10 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/inicio" element={<Inicio />} />
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<Inicio/>} />
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/home" element={<Home />} />
-          <Route path="/mapa" element={<Mapa />} />
 
           <Route
             path="/perfil"
@@ -32,6 +30,16 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+            <Route
+            path="/mapa"
+            element={
+              <ProtectedRoute>
+                <Mapa />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/sobre"
             element={
@@ -52,7 +60,7 @@ function App() {
             path="/avaliacao"
             element={
               <ProtectedRoute>
-                <Avaliacao />
+                <AvaliacoesUsuario />
               </ProtectedRoute>
             }
           />

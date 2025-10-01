@@ -19,27 +19,24 @@ function AvaliacoesUsuario() {
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [avaliacaoModal, setAvaliacaoModal] = useState(null);
-  const [idUsuario, setIdUsuario] = useState(null);
 
   useEffect(() => {
-    const userId = localStorage.getItem("userId") || localStorage.getItem("idUsuario");
-    if (userId) {
-      setIdUsuario(userId);
-      buscarAvaliacoesUsuario(userId);
-    }
+    buscarAvaliacoesUsuario();
   }, []);
 
-  const buscarAvaliacoesUsuario = async (id_usuario) => {
+  const buscarAvaliacoesUsuario = async () => {
     setLoading(true);
     try {
-      const res = await api.get(`/avaliacoes/${id_usuario}`);
-      console.log("Resposta da API:", res.data);
-
-      // Garante que sempre é um array
-      setAvaliacoes(res.data.avaliacoes || []);
+      const res = await api.get("/avaliacao");
+      // Garantir que o nome do estabelecimento exista
+      const dados = res.data.avaliacoes?.map((a) => ({
+        ...a,
+        nome_estabelecimento: a.nome_estabelecimento || "Estabelecimento",
+      })) || [];
+      setAvaliacoes(dados);
     } catch (err) {
-      console.error("Erro ao buscar avaliações do usuário:", err.response || err);
-      setAvaliacoes([]); // fallback para array vazio
+      console.warn(err.response?.data?.message || "Erro ao buscar avaliações");
+      setAvaliacoes([]);
     } finally {
       setLoading(false);
     }
@@ -69,7 +66,13 @@ function AvaliacoesUsuario() {
             <CircularProgress />
           </Box>
         ) : (
-          <Box display="flex" flexDirection="column" gap={3} mt={3}>
+          <Box
+            display="flex"
+            flexDirection="column"
+            gap={3}
+            mt={3}
+            sx={{ maxHeight: "70vh", overflowY: "auto", pr: 1 }}
+          >
             {avaliacoes.length === 0 ? (
               <Typography sx={{ color: "#777", textAlign: "center" }}>
                 Você ainda não fez nenhuma avaliação.
@@ -95,7 +98,7 @@ function AvaliacoesUsuario() {
                     </Avatar>
                     <Box flex={1}>
                       <Typography variant="subtitle1" fontWeight={600}>
-                        {avaliacao.nome_estabelecimento || "Estabelecimento"}
+                        {avaliacao.nome_estabelecimento}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         {avaliacao.google_place_id || "-"}
@@ -126,7 +129,6 @@ function AvaliacoesUsuario() {
           </Box>
         )}
 
-        {/* Modal de detalhes */}
         <Modal
           open={openModal}
           onClose={handleCloseModal}
@@ -142,6 +144,8 @@ function AvaliacoesUsuario() {
                 left: "50%",
                 transform: "translate(-50%, -50%)",
                 width: { xs: "90%", sm: 450 },
+                maxHeight: "80vh",
+                overflowY: "auto",
                 bgcolor: "background.paper",
                 borderRadius: 3,
                 boxShadow: 24,
@@ -157,10 +161,17 @@ function AvaliacoesUsuario() {
                 <Rating value={avaliacaoModal?.nota || 0} readOnly size="small" />
               </Box>
 
-              <Typography variant="body1">{avaliacaoModal?.comentario || "-"}</Typography>
+              <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
+                {avaliacaoModal?.comentario || "-"}
+              </Typography>
 
               <Box mt={3}>
-                <Button variant="outlined" onClick={handleCloseModal} fullWidth sx={{ borderRadius: 2 }}>
+                <Button
+                  variant="outlined"
+                  onClick={handleCloseModal}
+                  fullWidth
+                  sx={{ borderRadius: 2 }}
+                >
                   Fechar
                 </Button>
               </Box>

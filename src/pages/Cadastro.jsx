@@ -10,6 +10,9 @@ import {
 } from "@mui/material";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import sheets from "../axios/axios";
+import PasswordField from "../components/PasswordField";
+import CustomSnackbar from "../components/CustomSnackbar";
+import ValidacaoEmail from "../components/ValidacaoEmail";
 
 export default function Cadastro() {
   const navigate = useNavigate();
@@ -19,24 +22,62 @@ export default function Cadastro() {
     cpf: "",
     email: "",
     senha: "",
-    confirmarSenha: ""
+    confirmarSenha: "",
   });
 
   const [loading, setLoading] = useState(false);
   const [btnHover, setBtnHover] = useState(false);
-  const [mensagem, setMensagem] = useState("");
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const [openModal, setOpenModal] = useState(false);
 
   const onChange = (e) => {
     const { name, value } = e.target;
     setUser({ ...user, [name]: value });
   };
 
+  const validarCPF = (cpf) => {
+    // Remove não números
+    cpf = cpf.replace(/\D/g, "");
+    if (cpf.length !== 11) return false;
+    // TODO: implementar validação real do CPF se necessário
+    return true;
+  };
+
   const handleCadastro = async () => {
-    setMensagem("");
     setLoading(true);
 
+    // Validação local dos campos
+    if (!user.nome || !user.cpf || !user.email || !user.senha || !user.confirmarSenha) {
+      setSnackbar({
+        open: true,
+        message: "Todos os campos são obrigatórios.",
+        severity: "error",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (!validarCPF(user.cpf)) {
+      setSnackbar({
+        open: true,
+        message: "CPF inválido.",
+        severity: "error",
+      });
+      setLoading(false);
+      return;
+    }
+
     if (user.senha !== user.confirmarSenha) {
-      setMensagem("As senhas não coincidem.");
+      setSnackbar({
+        open: true,
+        message: "As senhas não coincidem.",
+        severity: "error",
+      });
       setLoading(false);
       return;
     }
@@ -44,27 +85,43 @@ export default function Cadastro() {
     try {
       const usuario = {
         nome: user.nome,
-        cpf: user.cpf,
+        cpf: user.cpf.replace(/\D/g, ""), // só números
         email: user.email,
         senha: user.senha,
+        confirmarSenha: user.confirmarSenha, // envio necessário
       };
 
       const response = await sheets.postCadastro(usuario);
 
-      alert(response.data.message || "Cadastro realizado com sucesso!");
-
-      if (response.data.token) {
-        localStorage.setItem("token", response.data.token);
+      if (response.data.success) {
+        setSnackbar({
+          open: true,
+          message: response.data.message || "Cadastro realizado com sucesso!",
+          severity: "success",
+        });
+        setOpenModal(true);
+      } else {
+        setSnackbar({
+          open: true,
+          message: response.data.message || "Erro ao cadastrar.",
+          severity: "error",
+        });
       }
-
-      navigate("/login"); // Redireciona para login após cadastro
     } catch (err) {
-      setMensagem(
-        "Erro ao cadastrar: " + (err.response?.data?.error || err.message)
-      );
+      console.error("Erro ao cadastrar:", err.response?.data || err.message);
+      setSnackbar({
+        open: true,
+        message: "Erro ao cadastrar: " + (err.response?.data?.error || err.message),
+        severity: "error",
+      });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleVerificacaoSucesso = () => {
+    setOpenModal(false);
+    navigate("/login");
   };
 
   return (
@@ -77,13 +134,11 @@ export default function Cadastro() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        paddingTop: 8,
+        py: 2,
       }}
     >
       <CssBaseline />
-
-      {/* Logo */}
-      <Box display="flex" flexDirection="column" alignItems="center" mb={3}>
+      <Box display="flex" flexDirection="column" alignItems="center" mb={1}>
         <Box display="flex" alignItems="center" gap={1}>
           <LocationOnOutlinedIcon sx={{ fontSize: 30, color: "#000" }} />
           <Typography variant="h6" sx={{ fontWeight: "bold" }}>
@@ -95,15 +150,14 @@ export default function Cadastro() {
         </Typography>
       </Box>
 
-      {/* Formulário */}
       <Box
         component="form"
         sx={{
           width: "100%",
-          maxWidth: 450, // Ajustei para caber melhor
+          maxWidth: 450,
           display: "flex",
           flexDirection: "column",
-          gap: 2,
+          gap: 1.5,
         }}
         onSubmit={(e) => {
           e.preventDefault();
@@ -118,10 +172,7 @@ export default function Cadastro() {
           value={user.nome}
           onChange={onChange}
           variant="filled"
-          InputProps={{
-            disableUnderline: true,
-            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
-          }}
+          InputProps={{ disableUnderline: true, sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" } }}
           InputLabelProps={{ sx: { color: "#000" } }}
           disabled={loading}
         />
@@ -133,10 +184,7 @@ export default function Cadastro() {
           value={user.cpf}
           onChange={onChange}
           variant="filled"
-          InputProps={{
-            disableUnderline: true,
-            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
-          }}
+          InputProps={{ disableUnderline: true, sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" } }}
           InputLabelProps={{ sx: { color: "#000" } }}
           disabled={loading}
         />
@@ -148,53 +196,38 @@ export default function Cadastro() {
           value={user.email}
           onChange={onChange}
           variant="filled"
-          InputProps={{
-            disableUnderline: true,
-            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
-          }}
+          InputProps={{ disableUnderline: true, sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" } }}
           InputLabelProps={{ sx: { color: "#000" } }}
           disabled={loading}
         />
-        <TextField
+        <PasswordField
           fullWidth
           required
           label="Senha"
           name="senha"
-          type="password"
           value={user.senha}
           onChange={onChange}
           variant="filled"
-          InputProps={{
-            disableUnderline: true,
-            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
-          }}
+          InputProps={{ disableUnderline: true, sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" } }}
           InputLabelProps={{ sx: { color: "#000" } }}
           disabled={loading}
         />
-        <TextField
+        <PasswordField
           fullWidth
           required
           label="Confirmar Senha"
           name="confirmarSenha"
-          type="password"
           value={user.confirmarSenha}
           onChange={onChange}
           variant="filled"
-          InputProps={{
-            disableUnderline: true,
-            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
-          }}
+          InputProps={{ disableUnderline: true, sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" } }}
           InputLabelProps={{ sx: { color: "#000" } }}
           disabled={loading}
         />
 
-        <Typography variant="caption" sx={{ mt: 2, textAlign: "center", paddingTop: 5 }}>
+        <Typography variant="caption" sx={{ mt: 1, textAlign: "center" }}>
           Já possui cadastro?{" "}
-          <MuiLink
-            component={Link}
-            to="/login"
-            sx={{ fontWeight: "bold", color: "#62798B"}}
-          >
+          <MuiLink component={Link} to="/login" sx={{ fontWeight: "bold", color: "#62798B" }}>
             Logar
           </MuiLink>
         </Typography>
@@ -202,15 +235,15 @@ export default function Cadastro() {
         <Button
           type="submit"
           variant="contained"
+          disabled={loading}
           onMouseEnter={() => !loading && setBtnHover(true)}
           onMouseLeave={() => setBtnHover(false)}
-          disabled={loading}
           sx={{
             bgcolor: btnHover ? "#4b5c75" : "#69819A",
             color: "#000",
             borderRadius: 2,
             py: 1,
-            mt: 2,
+            mt: 1,
             fontWeight: "bold",
             textTransform: "none",
             width: 150,
@@ -219,13 +252,21 @@ export default function Cadastro() {
         >
           {loading ? "Cadastrando..." : "Cadastrar"}
         </Button>
-
-        {mensagem && (
-          <Typography sx={{ mt: 1, color: "red", fontWeight: "bold", textAlign: "center" }}>
-            {mensagem}
-          </Typography>
-        )}
       </Box>
+
+      <CustomSnackbar
+        open={snackbar.open}
+        message={snackbar.message}
+        severity={snackbar.severity}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      />
+
+      <ValidacaoEmail
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        email={user.email}
+        onSuccess={handleVerificacaoSucesso}
+      />
     </Box>
   );
 }

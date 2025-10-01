@@ -1,3 +1,5 @@
+// Favoritos.jsx
+
 import React, { useState, useEffect } from "react";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import SearchIcon from "@mui/icons-material/Search";
@@ -26,7 +28,8 @@ const Favoritos = () => {
     }
 
     try {
-      const response = await api.getFavoritos();
+      const userId = localStorage.getItem("userId"); // 👈 garante que pega o ID do usuário
+      const response = await api.get(`/favoritos/${userId}`);
       setFavoritos(response.data.favoritos || []);
     } catch (error) {
       setError("Erro ao carregar seus favoritos. Tente novamente.");
@@ -47,21 +50,21 @@ const Favoritos = () => {
     );
   });
 
-  // Remove favorito ao clicar no coração
+  // 🔹 Corrigido: Delete favorito de fato
   const toggleFavorito = async (id) => {
     setDeletingId(id);
     try {
-      await api.deleteFavorito(id);
+      await api.delete(`/favoritos/${id}`); // 👈 agora chama corretamente sua rota DELETE
       setFavoritos((prev) => prev.filter((fav) => fav.id_favorito !== id));
       setSnackbar({ open: true, message: "Favorito removido com sucesso!", severity: "success" });
     } catch (error) {
+      console.error("Erro ao remover favorito:", error);
       setSnackbar({ open: true, message: "Erro ao remover favorito. Tente novamente.", severity: "error" });
     } finally {
       setDeletingId(null);
     }
   };
 
-  // Fecha snackbar
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") return;
     setSnackbar((prev) => ({ ...prev, open: false }));
@@ -123,7 +126,6 @@ const Favoritos = () => {
         )}
       </main>
 
-      {/* Snackbar para mensagens */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
