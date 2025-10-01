@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { GoogleMap, LoadScript, InfoWindow } from "@react-google-maps/api";
+import { GoogleMap, LoadScript, InfoWindow, Marker } from "@react-google-maps/api";
 import HamburgerDrawer from "../components/HamburgerDrawer";
 import { useLocation } from "react-router-dom";
 
@@ -8,15 +8,15 @@ const containerStyle = {
   height: "100vh",
 };
 
-// Substitua pela sua API Key do Google
 const GOOGLE_API_KEY = "AIzaSyD3aUrLEdn3S3HUg7SP9xwQoKNxL4AcCfw";
 
 const Mapa = ({ latitude = -20.5381, longitude = -47.4008 }) => {
   const location = useLocation();
   const [selectedLugar, setSelectedLugar] = useState(null);
+  const [lugares, setLugares] = useState([]); // lista de lugares da categoria
   const mapRef = useRef(null);
-  const markerRef = useRef(null);
 
+  // Se veio um lugar clicado no Home, seta ele
   useEffect(() => {
     if (location.state?.lugar) {
       const { lat, lng } = location.state.lugar;
@@ -26,6 +26,25 @@ const Mapa = ({ latitude = -20.5381, longitude = -47.4008 }) => {
     }
   }, [location.state]);
 
+  // Busca todos os lugares da categoria selecionada
+  useEffect(() => {
+    if (mapRef.current && location.state?.categoria) {
+      const service = new window.google.maps.places.PlacesService(mapRef.current);
+
+      const request = {
+        location: new window.google.maps.LatLng(latitude, longitude),
+        radius: 3000, // raio de busca em metros
+        type: location.state.categoria.type, // ex: "pizzeria", "restaurant", "bar"
+      };
+
+      service.nearbySearch(request, (results, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+          setLugares(results);
+        }
+      });
+    }
+  }, [location.state?.categoria]);
+
   // Gera URL da foto do Google Places
   const getFotoURL = (lugar) => {
     if (lugar.photos && lugar.photos.length > 0) {
@@ -34,26 +53,6 @@ const Mapa = ({ latitude = -20.5381, longitude = -47.4008 }) => {
     return null;
   };
 
-  // Cria o AdvancedMarkerElement
-  useEffect(() => {
-    if (!mapRef.current || !selectedLugar) return;
-
-    // Remove marcador anterior
-    if (markerRef.current) {
-      markerRef.current.setMap(null);
-    }
-
-    const marker = new window.google.maps.marker.AdvancedMarkerElement({
-      map: mapRef.current,
-      position: { lat: selectedLugar.lat, lng: selectedLugar.lng },
-      title: selectedLugar.nome,
-    });
-
-    markerRef.current = marker;
-
-    return () => marker.setMap(null);
-  }, [selectedLugar]);
-
   const center = selectedLugar
     ? { lat: selectedLugar.lat, lng: selectedLugar.lng }
     : { lat: latitude, lng: longitude };
@@ -61,11 +60,11 @@ const Mapa = ({ latitude = -20.5381, longitude = -47.4008 }) => {
   return (
     <div style={{ position: "relative", width: "100vw", height: "100vh" }}>
       <HamburgerDrawer />
-      <LoadScript googleMapsApiKey={GOOGLE_API_KEY}>
+      <LoadScript googleMapsApiKey={GOOGLE_API_KEY} libraries={["places"]}>
         <GoogleMap
           mapContainerStyle={containerStyle}
           center={center}
-          zoom={selectedLugar ? 16 : 13}
+          zoom={14}
           onLoad={(map) => (mapRef.current = map)}
           options={{
             streetViewControl: false,
@@ -74,6 +73,27 @@ const Mapa = ({ latitude = -20.5381, longitude = -47.4008 }) => {
             zoomControl: true,
           }}
         >
+          {/* Renderiza todos os marcadores da categoria */}
+          {lugares.map((lugar, index) => (
+            <Marker
+              key={index}
+              position={{
+                lat: lugar.geometry.location.lat(),
+                lng: lugar.geometry.location.lng(),
+              }}
+              onClick={() =>
+                setSelectedLugar({
+                  nome: lugar.name,
+                  endereco: lugar.vicinity,
+                  lat: lugar.geometry.location.lat(),
+                  lng: lugar.geometry.location.lng(),
+                  photos: lugar.photos,
+                })
+              }
+            />
+          ))}
+
+          {/* InfoWindow quando clica em um marcador */}
           {selectedLugar && (
             <InfoWindow
               position={{ lat: selectedLugar.lat, lng: selectedLugar.lng }}
@@ -82,8 +102,6 @@ const Mapa = ({ latitude = -20.5381, longitude = -47.4008 }) => {
               <div style={{ maxWidth: 250 }}>
                 <h3>{selectedLugar.nome}</h3>
                 <p>{selectedLugar.endereco}</p>
-
-                {/* Foto do Google Maps */}
                 {getFotoURL(selectedLugar) && (
                   <img
                     src={getFotoURL(selectedLugar)}

@@ -7,30 +7,48 @@ import StorefrontIcon from "@mui/icons-material/Storefront";
 import HamburgerDrawer from "../components/HamburgerDrawer";
 import DetalhesModal from "../components/Modal";
 import api from "../axios/axios";
-
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
-  const [enderecoSelecionado, setEnderecoSelecionado] = useState(null);
+  const [subcategoriaSelecionada, setSubcategoriaSelecionada] = useState(null);
   const [lugares, setLugares] = useState([]);
   const [loading, setLoading] = useState(false);
   const [termoBusca, setTermoBusca] = useState("");
   const [openModal, setOpenModal] = useState(false);
+  const [enderecoSelecionado, setEnderecoSelecionado] = useState(null);
 
   const navigate = useNavigate();
 
   const categorias = [
     {
-      nome: "Restaurante",
+      nome: "Restaurantes",
       type: "restaurant",
       icon: <RestaurantMenuIcon sx={{ fontSize: 40 }} />,
+      subcategorias: [
+        { nome: "Pizzarias", type: "pizzeria" },
+        { nome: "Hamburguerias", type: "burger" },
+        { nome: "Bares", type: "bar" },
+      ],
     },
-    { nome: "Parque", type: "park", icon: <ParkIcon sx={{ fontSize: 40 }} /> },
     {
-      nome: "Loja",
+      nome: "Lojas",
       type: "store",
       icon: <StorefrontIcon sx={{ fontSize: 40 }} />,
+      subcategorias: [
+        { nome: "Mercados", type: "supermarket" },
+        { nome: "Shopping", type: "shopping_mall" },
+        { nome: "Farmácias", type: "pharmacy" },
+      ],
+    },
+    {
+      nome: "Parques",
+      type: "park",
+      icon: <ParkIcon sx={{ fontSize: 40 }} />,
+      subcategorias: [
+        { nome: "Jardins Botânicos", type: "botanical_garden" },
+        { nome: "Parques Urbanos", type: "city_park" },
+      ],
     },
   ];
 
@@ -38,35 +56,33 @@ const Home = () => {
     const fetchEstabelecimentos = async () => {
       if (!categoriaSelecionada) return;
       setLoading(true);
+
       try {
         const categoria = categorias.find(
           (cat) => cat.nome.toLowerCase() === categoriaSelecionada
         );
-        if (!categoria) {
-          setLugares([]);
-          setLoading(false);
-          return;
-        }
+        if (!categoria) return;
 
         const response = await api.get("/buscar", {
           params: {
             location: "-20.5381,-47.4008",
             radius: 17000,
-            type: categoria.type,
+            type: subcategoriaSelecionada || categoria.type,
           },
         });
 
         const dados = (response.data.estabelecimentos || []).map((item) => ({
           nome: item.nome || "Nome não disponível",
           endereco: item.endereco || "Não disponível",
-          categoria: categoria.nome,
+          categoria: subcategoriaSelecionada || categoria.nome,
           telefone: item.telefone || "Não disponível",
           horarios: item.horarios || "Não disponível",
           avaliacao: item.avaliacao || "Não disponível",
           place_id: item.place_id,
-          lat: item.latitude, // coordenadas
+          lat: item.latitude,
           lng: item.longitude,
           comentarios: item.comentarios || [],
+          photos: item.photos || [],
         }));
 
         setLugares(dados);
@@ -77,8 +93,9 @@ const Home = () => {
         setLoading(false);
       }
     };
+
     fetchEstabelecimentos();
-  }, [categoriaSelecionada]);
+  }, [categoriaSelecionada, subcategoriaSelecionada]);
 
   const lugaresFiltrados = lugares.filter((lugar) =>
     (lugar.nome || "").toLowerCase().includes(termoBusca.toLowerCase())
@@ -115,12 +132,15 @@ const Home = () => {
           <SearchIcon style={styles.searchIcon} />
         </div>
 
-        {/* Categorias */}
+        {/* Categorias Pai */}
         <div style={styles.categorias}>
           {categorias.map((cat) => (
             <button
               key={cat.nome}
-              onClick={() => setCategoriaSelecionada(cat.nome.toLowerCase())}
+              onClick={() => {
+                setCategoriaSelecionada(cat.nome.toLowerCase());
+                setSubcategoriaSelecionada(null);
+              }}
               style={{
                 ...styles.botaoCategoria,
                 backgroundColor:
@@ -138,6 +158,31 @@ const Home = () => {
           ))}
         </div>
 
+        {/* Subcategorias */}
+        {categoriaSelecionada && (
+          <div style={styles.subcategorias}>
+            {categorias
+              .find((cat) => cat.nome.toLowerCase() === categoriaSelecionada)
+              ?.subcategorias.map((sub) => (
+                <button
+                  key={sub.nome}
+                  onClick={() => setSubcategoriaSelecionada(sub.type)}
+                  style={{
+                    ...styles.botaoSubcategoria,
+                    backgroundColor:
+                      subcategoriaSelecionada === sub.type
+                        ? "#4a5a87"
+                        : "#d9d9d9",
+                    color:
+                      subcategoriaSelecionada === sub.type ? "#fff" : "#000",
+                  }}
+                >
+                  {sub.nome}
+                </button>
+              ))}
+          </div>
+        )}
+
         {/* Lista de lugares */}
         <div style={styles.lugares}>
           {lugaresFiltrados.map((lugar, index) => (
@@ -146,13 +191,15 @@ const Home = () => {
               onClick={() => {
                 setEnderecoSelecionado(index);
                 setOpenModal(true);
+                navigate("/mapa", {
+                  state: {
+                    lugares: lugaresFiltrados,
+                    lugar: lugar,
+                    categoria: subcategoriaSelecionada || categoriaSelecionada,
+                  },
+                });
               }}
-              style={{
-                ...styles.lugar,
-                backgroundColor:
-                  enderecoSelecionado === index ? "#4a5a87" : "#fff",
-                color: enderecoSelecionado === index ? "#fff" : "#000",
-              }}
+              style={styles.lugar}
             >
               {lugar.nome}
             </div>
@@ -160,7 +207,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal de detalhes */}
       <DetalhesModal
         open={openModal}
         onClose={() => setOpenModal(false)}
@@ -207,8 +254,14 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     gap: 20,
-    marginBottom: 30,
+    marginBottom: 20,
     marginRight: 210,
+  },
+  subcategorias: {
+    display: "flex",
+    justifyContent: "center",
+    gap: 10,
+    marginBottom: 30,
   },
   botaoCategoria: {
     width: 80,
@@ -222,13 +275,21 @@ const styles = {
     fontSize: 40,
     fontWeight: "bold",
   },
+  botaoSubcategoria: {
+    padding: "8px 16px",
+    borderRadius: 20,
+    border: "none",
+    cursor: "pointer",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
   lugares: { display: "flex", flexDirection: "column", gap: 15 },
   lugar: {
     padding: "15px 20px",
     borderRadius: 8,
     fontWeight: "bold",
     cursor: "pointer",
-    backgroundColor: "#f4f4f4",
+    backgroundColor: "#fff",
     color: "#333",
     transition: "0.2s",
   },
