@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Box,
   TextField,
@@ -14,26 +14,31 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import api from "../axios/axios";
 import { useNavigate } from "react-router-dom";
+import PasswordField from "../components/PasswordField";
 
 function Perfil() {
   const navigate = useNavigate();
-  const userId = localStorage.getItem("userId"); // 🔹 você deve salvar o id do user no login
+  const userId = localStorage.getItem("userId");
+  const fileInputRef = useRef(null);
 
   const [user, setUser] = useState({
-    id: "",
+    id_usuario: "",
     nome: "",
     cpf: "",
     email: "",
     senha: "",
     confirmarSenha: "",
+    imagem: null,
   });
 
+  const [avatarPreview, setAvatarPreview] = useState(null);
   const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
-  // Carregar dados do usuário
+  // 📌 Carregar dados do usuário
   useEffect(() => {
     async function fetchUsuario() {
       try {
@@ -41,14 +46,17 @@ function Perfil() {
         const response = await api.getUsuarioById(userId);
         const userData = response.data.user;
 
-        setUser({
-          id: userData.id_usuario,
+        setUser((prev) => ({
+          ...prev,
+          id_usuario: userData.id_usuario,
           nome: userData.nome || "",
           cpf: userData.cpf || "",
           email: userData.email || "",
-          senha: "",
-          confirmarSenha: "",
-        });
+        }));
+
+        setAvatarPreview(
+          `${api.defaults.baseURL}user/${userId}/imagem?${Date.now()}`
+        ); // força refresh da imagem
       } catch (error) {
         console.error("Erro ao carregar dados do usuário:", error);
       }
@@ -56,11 +64,44 @@ function Perfil() {
     fetchUsuario();
   }, [userId]);
 
-  // Atualizar dados do usuário
+  // 📤 Upload de nova imagem
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setUser((prev) => ({ ...prev, imagem: file }));
+      setAvatarPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current.click();
+  };
+
+  // ✏️ Atualizar dados e imagem
   const handleUpdate = async () => {
+    if (user.senha && user.senha !== user.confirmarSenha) {
+      alert("As senhas não coincidem.");
+      return;
+    }
+
     try {
-      const response = await api.putUsuario(user);
-      alert(response.data.message);
+      const formData = new FormData();
+      formData.append("nome", user.nome);
+      formData.append("email", user.email);
+      if (user.senha) formData.append("senha", user.senha);
+      if (user.imagem) formData.append("imagem", user.imagem);
+
+      const response = await api.put("/user", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      alert(response.data.message || "Perfil atualizado com sucesso!");
+
+      // Atualiza avatar sem precisar recarregar
+      setAvatarPreview(
+        `${api.defaults.baseURL}user/${userId}/imagem?${Date.now()}`
+      );
+      setUser((prev) => ({ ...prev, senha: "", confirmarSenha: "", imagem: null }));
     } catch (error) {
       console.error("Erro ao atualizar os dados:", error);
       alert(
@@ -69,7 +110,7 @@ function Perfil() {
     }
   };
 
-  // Confirmar logoff
+  // 🚪 Confirmar logoff
   const handleConfirmLogout = () => {
     localStorage.clear();
     setOpenLogoutDialog(false);
@@ -79,10 +120,10 @@ function Perfil() {
     }, 2000);
   };
 
-  // Deletar conta
+  // 🗑️ Deletar conta
   const handleDelete = async () => {
     try {
-      const response = await api.deleteUsuario(user.id);
+      const response = await api.deleteUsuario(user.id_usuario);
       alert(response.data.message);
       navigate("/");
     } catch (error) {
@@ -90,6 +131,7 @@ function Perfil() {
       alert(error.response?.data?.error || "Erro ao excluir o usuário.");
     }
   };
+
   const onChange = (event) => {
     const { name, value } = event.target;
     setUser({ ...user, [name]: value });
@@ -105,7 +147,6 @@ function Perfil() {
         flexDirection: "column",
         alignItems: "center",
         boxSizing: "border-box",
-        
       }}
     >
       {/* Cabeçalho */}
@@ -117,19 +158,55 @@ function Perfil() {
           position: "absolute",
         }}
       >
-        <Avatar
-          src="/path/to/your/image.jpg"
-          alt="Foto do perfil"
+        <Box
           sx={{
-            width: 120,
-            height: 120,
             position: "absolute",
             bottom: -60,
             left: "50%",
             transform: "translateX(-50%)",
+            width: 120,
+            height: 120,
+            borderRadius: "50%",
             border: "4px solid white",
+            overflow: "hidden",
+            cursor: "pointer",
+            "&:hover .overlay": { opacity: 1 },
           }}
-        />
+          onClick={handleAvatarClick}
+        >
+          <Avatar
+            src={avatarPreview}
+            alt="Foto do perfil"
+            sx={{ width: "100%", height: "100%" }}
+          />
+          {/* Overlay */}
+          <Box
+            className="overlay"
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              backgroundColor: "rgba(0,0,0,0.5)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              opacity: 0,
+              transition: "opacity 0.3s",
+              color: "white",
+            }}
+          >
+            <CameraAltIcon />
+          </Box>
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            style={{ display: "none" }}
+            onChange={handleImageChange}
+          />
+        </Box>
       </Box>
 
       {/* Formulário */}
@@ -143,47 +220,64 @@ function Perfil() {
           flexDirection: "column",
           gap: 2,
           alignItems: "center",
-        
         }}
       >
         <TextField
+          fullWidth
+          required
           label="Nome"
           name="nome"
           value={user.nome}
           onChange={onChange}
-          fullWidth
+          variant="filled"
+          InputProps={{
+            disableUnderline: true,
+            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
+          }}
+          InputLabelProps={{ sx: { color: "#000" } }}
         />
+
         <TextField
+          fullWidth
           label="CPF"
           name="cpf"
           value={user.cpf}
-          onChange={onChange}
-          fullWidth
           disabled
+          variant="filled"
+          InputProps={{
+            disableUnderline: true,
+            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
+          }}
+          InputLabelProps={{ sx: { color: "#000" } }}
         />
+
         <TextField
+          fullWidth
+          required
           label="Email"
           name="email"
-          type="email"
           value={user.email}
           onChange={onChange}
-          fullWidth
+          variant="filled"
+          InputProps={{
+            disableUnderline: true,
+            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
+          }}
+          InputLabelProps={{ sx: { color: "#000" } }}
         />
-        <TextField
-          label="Senha"
+
+        <PasswordField
+          label="Nova Senha"
           name="senha"
-          type="password"
           value={user.senha}
           onChange={onChange}
-          fullWidth
         />
-        <TextField
-          label="Confirma senha"
-          name="senha"
-          type="password"
-          value={user.senha}
+
+        <PasswordField
+          label="Confirmar Nova Senha"
+          name="confirmarSenha"
+          value={user.confirmarSenha}
           onChange={onChange}
-          fullWidth
         />
 
         {/* Botões */}

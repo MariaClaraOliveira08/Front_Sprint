@@ -20,15 +20,26 @@ api.postCadastro = (user) => api.post("/user", user);
 api.postLogin = (user) => api.post("/login", user);
 //api.getbuscarEstabelecimento = () => api.get("/buscar");
 api.getUsuarioById = (id) => api.get(`/user/${id}`);
-api.putUsuario = (user) =>
-  api.put("/user", {
-    id: user.id,
-    nome: user.nome,
-    cpf: user.cpf,
-    email: user.email,
-    senha: user.senha,
-    confirmarSenha: user.confirmarSenha || user.senha, // validação
+api.putUsuario = (user) => {
+  const formData = new FormData();
+  formData.append("nome", user.nome);
+  formData.append("cpf", user.cpf);
+  formData.append("email", user.email);
+  if (user.senha) formData.append("senha", user.senha);
+  if (user.confirmarSenha)
+    formData.append("confirmarSenha", user.confirmarSenha);
+
+  // 👇 se tiver imagem, adiciona também
+  if (user.imagem) {
+    formData.append("imagem", user.imagem);
+  }
+
+  return api.put("/user", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
   });
+};
 
   api.deleteUsuario = (id) => api.delete(`/user/${id}`);
 
