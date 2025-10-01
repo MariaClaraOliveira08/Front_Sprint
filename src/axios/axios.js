@@ -29,7 +29,6 @@ api.putUsuario = (user) => {
   if (user.confirmarSenha)
     formData.append("confirmarSenha", user.confirmarSenha);
 
-  // 👇 se tiver imagem, adiciona também
   if (user.imagem) {
     formData.append("imagem", user.imagem);
   }
@@ -42,6 +41,9 @@ api.putUsuario = (user) => {
 };
 
   api.deleteUsuario = (id) => api.delete(`/user/${id}`);
-
+  api.buscarEstabelecimentosGoogle = (location, radius, type) =>
+  api.get("/buscar", {
+    params: { location, radius, type },
+  });
 
 export default api;

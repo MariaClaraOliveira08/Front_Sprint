@@ -18,6 +18,7 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import api from "../axios/axios";
 import { useNavigate } from "react-router-dom";
 import PasswordField from "../components/PasswordField";
+import HamburgerDrawer from "../components/HamburgerDrawer"; // <-- import do menu
 
 function Perfil() {
   const navigate = useNavigate();
@@ -38,7 +39,6 @@ function Perfil() {
   const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
-  // 📌 Carregar dados do usuário
   useEffect(() => {
     async function fetchUsuario() {
       try {
@@ -56,7 +56,7 @@ function Perfil() {
 
         setAvatarPreview(
           `${api.defaults.baseURL}user/${userId}/imagem?${Date.now()}`
-        ); // força refresh da imagem
+        );
       } catch (error) {
         console.error("Erro ao carregar dados do usuário:", error);
       }
@@ -64,7 +64,6 @@ function Perfil() {
     fetchUsuario();
   }, [userId]);
 
-  // 📤 Upload de nova imagem
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -77,7 +76,6 @@ function Perfil() {
     fileInputRef.current.click();
   };
 
-  // ✏️ Atualizar dados e imagem
   const handleUpdate = async () => {
     if (user.senha && user.senha !== user.confirmarSenha) {
       alert("As senhas não coincidem.");
@@ -96,8 +94,6 @@ function Perfil() {
       });
 
       alert(response.data.message || "Perfil atualizado com sucesso!");
-
-      // Atualiza avatar sem precisar recarregar
       setAvatarPreview(
         `${api.defaults.baseURL}user/${userId}/imagem?${Date.now()}`
       );
@@ -110,7 +106,6 @@ function Perfil() {
     }
   };
 
-  // 🚪 Confirmar logoff
   const handleConfirmLogout = () => {
     localStorage.clear();
     setOpenLogoutDialog(false);
@@ -120,7 +115,6 @@ function Perfil() {
     }, 2000);
   };
 
-  // 🗑️ Deletar conta
   const handleDelete = async () => {
     try {
       const response = await api.deleteUsuario(user.id_usuario);
@@ -149,6 +143,9 @@ function Perfil() {
         boxSizing: "border-box",
       }}
     >
+      {/* Menu Hamburger */}
+      <HamburgerDrawer />
+
       {/* Cabeçalho */}
       <Box
         sx={{
@@ -179,7 +176,6 @@ function Perfil() {
             alt="Foto do perfil"
             sx={{ width: "100%", height: "100%" }}
           />
-          {/* Overlay */}
           <Box
             className="overlay"
             sx={{
@@ -236,7 +232,6 @@ function Perfil() {
           }}
           InputLabelProps={{ sx: { color: "#000" } }}
         />
-
         <TextField
           fullWidth
           label="CPF"
@@ -250,7 +245,6 @@ function Perfil() {
           }}
           InputLabelProps={{ sx: { color: "#000" } }}
         />
-
         <TextField
           fullWidth
           required
@@ -265,14 +259,12 @@ function Perfil() {
           }}
           InputLabelProps={{ sx: { color: "#000" } }}
         />
-
         <PasswordField
           label="Nova Senha"
           name="senha"
           value={user.senha}
           onChange={onChange}
         />
-
         <PasswordField
           label="Confirmar Nova Senha"
           name="confirmarSenha"
@@ -280,7 +272,6 @@ function Perfil() {
           onChange={onChange}
         />
 
-        {/* Botões */}
         <Box sx={{ display: "flex", gap: 2, width: "100%", mb: 2 }}>
           <Button
             variant="contained"
@@ -317,7 +308,7 @@ function Perfil() {
         </Box>
       </Box>
 
-      {/* Modal de confirmação de logout */}
+      {/* Modal logout */}
       <Dialog
         open={openLogoutDialog}
         onClose={() => setOpenLogoutDialog(false)}
@@ -336,7 +327,6 @@ function Perfil() {
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar */}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={2000}

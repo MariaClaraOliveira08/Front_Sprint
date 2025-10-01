@@ -1,116 +1,220 @@
-import React, { useState } from "react";
-import { FaUser } from "react-icons/fa";
-import { FiLogOut } from "react-icons/fi";
-import Logoff from "../components/Logoff"; // importa o componente de sair
-import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined"; // ícone de localização
-import SearchIcon from "@mui/icons-material/Search"; // ícone lupa na barra de pesquisa
+import React, { useState, useEffect } from "react";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import SearchIcon from "@mui/icons-material/Search";
+import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
+import ParkIcon from "@mui/icons-material/Park";
+import StorefrontIcon from "@mui/icons-material/Storefront";
+import HamburgerDrawer from "../components/HamburgerDrawer";
+import DetalhesModal from "../components/Modal";
+import api from "../axios/axios";
 import { useNavigate } from "react-router-dom";
-import { alignItems, justifyContent } from "@mui/system";
-
-
 
 const Home = () => {
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState("praia");
-  const [lugarSelecionado, setLugarSelecionado] = useState(1);
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
+  const [subcategoriaSelecionada, setSubcategoriaSelecionada] = useState(null);
+  const [lugares, setLugares] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [termoBusca, setTermoBusca] = useState("");
+  const [openModal, setOpenModal] = useState(false);
+  const [enderecoSelecionado, setEnderecoSelecionado] = useState(null);
+
   const navigate = useNavigate();
 
-
   const categorias = [
-    { id: "comida", emoji: "🍽️" },
-    { id: "praia", emoji: "🏖️" },
-    { id: "shopping", emoji: "🏛️" }
+    {
+      nome: "Restaurantes",
+      type: "restaurant",
+      icon: <RestaurantMenuIcon sx={{ fontSize: 40 }} />,
+      subcategorias: [
+        { nome: "Pizzarias", type: "pizzeria" },
+        { nome: "Hamburguerias", type: "burger" },
+        { nome: "Bares", type: "bar" },
+      ],
+    },
+    {
+      nome: "Lojas",
+      type: "store",
+      icon: <StorefrontIcon sx={{ fontSize: 40 }} />,
+      subcategorias: [
+        { nome: "Mercados", type: "supermarket" },
+        { nome: "Shopping", type: "shopping_mall" },
+        { nome: "Farmácias", type: "pharmacy" },
+      ],
+    },
+    {
+      nome: "Parques",
+      type: "park",
+      icon: <ParkIcon sx={{ fontSize: 40 }} />,
+      subcategorias: [
+        { nome: "Jardins Botânicos", type: "botanical_garden" },
+        { nome: "Parques Urbanos", type: "city_park" },
+      ],
+    },
   ];
 
-  const lugares = [
-    { id: 1, nome: "Restaurante Sabor da Casa" },
-    { id: 2, nome: "Pizzaria Brazetto" },
-    { id: 3, nome: "Loja Do Osmar" },
-    { id: 4, nome: "Sesc" }
-  ];
+  useEffect(() => {
+    const fetchEstabelecimentos = async () => {
+      if (!categoriaSelecionada) return;
+      setLoading(true);
+
+      try {
+        const categoria = categorias.find(
+          (cat) => cat.nome.toLowerCase() === categoriaSelecionada
+        );
+        if (!categoria) return;
+
+        const response = await api.get("/buscar", {
+          params: {
+            location: "-20.5381,-47.4008",
+            radius: 17000,
+            type: subcategoriaSelecionada || categoria.type,
+          },
+        });
+
+        const dados = (response.data.estabelecimentos || []).map((item) => ({
+          nome: item.nome || "Nome não disponível",
+          endereco: item.endereco || "Não disponível",
+          categoria: subcategoriaSelecionada || categoria.nome,
+          telefone: item.telefone || "Não disponível",
+          horarios: item.horarios || "Não disponível",
+          avaliacao: item.avaliacao || "Não disponível",
+          place_id: item.place_id,
+          lat: item.latitude,
+          lng: item.longitude,
+          comentarios: item.comentarios || [],
+          photos: item.photos || [],
+        }));
+
+        setLugares(dados);
+      } catch (error) {
+        console.error("Erro ao carregar estabelecimentos:", error);
+        setLugares([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEstabelecimentos();
+  }, [categoriaSelecionada, subcategoriaSelecionada]);
+
+  const lugaresFiltrados = lugares.filter((lugar) =>
+    (lugar.nome || "").toLowerCase().includes(termoBusca.toLowerCase())
+  );
+
+  if (loading)
+    return (
+      <div style={styles.loadingContainer}>
+        <p>Carregando...</p>
+      </div>
+    );
 
   return (
-    <div style={styles.container}  >
-      {/* MENU LATERAL */}
-      <div style={styles.sidebar}>
-        <div style={styles.perfil}
-          onClick={() => navigate("/perfil")}>
-          <FaUser size={18} />
-          <span style={styles.sidebarText}>Perfil</span>
-        </div>
-
-        <div style={styles.line}></div>
-
-        
-
-        <div style={styles.menu}>
-          <span style={styles.menuItem}>Sobre nós</span>
-          <div style={styles.menuItemSair}>
-            <FiLogOut size={16} />
-            <Logoff />
-          </div>
-        </div>
-      </div>
-
-      {/* CONTEÚDO PRINCIPAL */}
+    <div style={styles.container}>
+      <HamburgerDrawer />
       <div style={styles.main}>
         <div style={styles.logoWrapper}>
           <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
-          <h2 style={styles.logo}>{"Glimp"}</h2>
-
+          <h2 style={styles.logo}>Glimp</h2>
         </div>
-        <p style={styles.subtitulo} >
-
+        <p style={styles.subtitulo}>
           Grandes Lugares Inspiram Momentos Perfeitos.
-
         </p>
 
-        {/* BARRA DE PESQUISA */}
+        {/* Campo de busca */}
         <div style={styles.searchWrapper}>
           <input
             type="text"
             placeholder="Pesquisar..."
             style={styles.search}
+            value={termoBusca}
+            onChange={(e) => setTermoBusca(e.target.value)}
           />
           <SearchIcon style={styles.searchIcon} />
         </div>
 
-
-        {/* CATEGORIAS */}
+        {/* Categorias Pai */}
         <div style={styles.categorias}>
           {categorias.map((cat) => (
             <button
-              key={cat.id}
-              onClick={() => setCategoriaSelecionada(cat.id)}
+              key={cat.nome}
+              onClick={() => {
+                setCategoriaSelecionada(cat.nome.toLowerCase());
+                setSubcategoriaSelecionada(null);
+              }}
               style={{
                 ...styles.botaoCategoria,
                 backgroundColor:
-                  categoriaSelecionada === cat.id ? "#4a5a87" : "#d9d9d9",
-                color: categoriaSelecionada === cat.id ? "#fff" : "#000"
+                  categoriaSelecionada === cat.nome.toLowerCase()
+                    ? "#4a5a87"
+                    : "#d9d9d9",
+                color:
+                  categoriaSelecionada === cat.nome.toLowerCase()
+                    ? "#fff"
+                    : "#000",
               }}
             >
-              {cat.emoji}
+              {cat.icon}
             </button>
           ))}
         </div>
 
-        {/* LUGARES */}
+        {/* Subcategorias */}
+        {categoriaSelecionada && (
+          <div style={styles.subcategorias}>
+            {categorias
+              .find((cat) => cat.nome.toLowerCase() === categoriaSelecionada)
+              ?.subcategorias.map((sub) => (
+                <button
+                  key={sub.nome}
+                  onClick={() => setSubcategoriaSelecionada(sub.type)}
+                  style={{
+                    ...styles.botaoSubcategoria,
+                    backgroundColor:
+                      subcategoriaSelecionada === sub.type
+                        ? "#4a5a87"
+                        : "#d9d9d9",
+                    color:
+                      subcategoriaSelecionada === sub.type ? "#fff" : "#000",
+                  }}
+                >
+                  {sub.nome}
+                </button>
+              ))}
+          </div>
+        )}
+
+        {/* Lista de lugares */}
         <div style={styles.lugares}>
-          {lugares.map((lugar) => (
+          {lugaresFiltrados.map((lugar, index) => (
             <div
-              key={lugar.id}
-              onClick={() => setLugarSelecionado(lugar.id)}
-              style={{
-                ...styles.lugar,
-                backgroundColor:
-                  lugarSelecionado === lugar.id ? "#4a5a87" : "#fff",
-                color: lugarSelecionado === lugar.id ? "#fff" : "#000"
+              key={lugar.place_id || index}
+              onClick={() => {
+                setEnderecoSelecionado(index);
+                setOpenModal(true);
+                navigate("/mapa", {
+                  state: {
+                    lugares: lugaresFiltrados,
+                    lugar: lugar,
+                    categoria: subcategoriaSelecionada || categoriaSelecionada,
+                  },
+                });
               }}
+              style={styles.lugar}
             >
               {lugar.nome}
             </div>
           ))}
         </div>
       </div>
+
+      {/* Modal de detalhes */}
+      <DetalhesModal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        lugar={
+          enderecoSelecionado !== null ? lugares[enderecoSelecionado] : null
+        }
+      />
     </div>
   );
 };
@@ -118,133 +222,85 @@ const Home = () => {
 const styles = {
   container: {
     display: "flex",
-    height: "100vh",
-    width: "100%",
+    minHeight: "100vh",
+    width: "100vw",
     fontFamily: "Segoe UI, sans-serif",
     overflow: "hidden",
-    marginLeft: -55
   },
-  sidebar: {
-    width: 200,
-    backgroundColor: "#e6e6e6",  // Cor de fundo mais suave
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    padding: "60px 10px 10px 40px",  // Ajuste no padding
-    color: "#333"
-  },
-  perfil: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center", // Alinha horizontalmente os itens
-    marginLeft: "-25px",  // Mover um pouco para a esquerda
-    gap: 10,
-    fontWeight: "bold",
-    fontSize: 16,
-    cursor: "pointer",
-    color: "#4a5a87"  // Cor de destaque para o perfil
-  },
-  sidebarText: {
-    fontSize: 16,
-    color: "#4a5a87"
-  },
-  menu: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 50,
-    fontSize: 16
-  },
-  menuItem: {
-    cursor: "pointer",
-    color: "#333",
-    gap: 10,
-  },
-
-  menuItemSair: {
-    color: "red",
-    fontWeight: "bold",
-    display: "flex",
-    alignItems: "center",
-    gap: 5,
-    cursor: "pointer"
-  },
-  main: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",  // Cor de fundo mais suave
-    padding: 50,
-    overflow: "hidden"
-  },
-  logoWrapper: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,  // Espaço entre o ícone e o texto
-  },
-  logo: {
-    margin: 0,
-    fontSize: 26,
-    color: "#4a5a87"  // Cor da logo mais próxima do protótipo
-  },
-  subtitulo: {
-    fontSize: 14,
-    color: "#777",
-    marginBottom: 20
-  },
+  main: { flex: 1, backgroundColor: "#f5f5f5", padding: 50, paddingLeft: 200 },
+  logoWrapper: { display: "flex", alignItems: "center", gap: 10 },
+  logo: { margin: 0, fontSize: 26, color: "#4a5a87" },
+  subtitulo: { fontSize: 14, color: "#777", marginBottom: 20 },
   searchWrapper: {
     display: "flex",
     alignItems: "center",
     width: "70%",
     backgroundColor: "#fff",
-    borderRadius: 25,  // Borda arredondada da barra de pesquisa
+    borderRadius: 25,
     padding: "0 15px",
     border: "1px solid #ccc",
-    marginBottom: 30
+    marginBottom: 40,
   },
   search: {
     flex: 1,
     border: "none",
     outline: "none",
-    padding: "12px 10px",  // Ajuste no padding
+    padding: "12px 10px",
     fontSize: 14,
   },
-  searchIcon: {
-    color: "#555",
-    fontSize: 24,
-    cursor: "pointer",
-    marginLeft: 8
-  },
+  searchIcon: { color: "#555", fontSize: 24, cursor: "pointer", marginLeft: 8 },
   categorias: {
     display: "flex",
-    justifyContent: "space-between",  // Ajuste no alinhamento das categorias
+    justifyContent: "center",
+    alignItems: "center",
     gap: 20,
-    marginBottom: 30
+    marginBottom: 20,
+    marginRight: 210,
+  },
+  subcategorias: {
+    display: "flex",
+    justifyContent: "center",
+    gap: 10,
+    marginBottom: 30,
   },
   botaoCategoria: {
     width: 80,
     height: 80,
     borderRadius: 15,
     border: "none",
-    fontSize: 36,  // Ajuste no tamanho do ícone
-    backgroundColor: "#f4f4f4",  // Fundo suave
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    cursor: "pointer"
+    cursor: "pointer",
+    fontSize: 40,
+    fontWeight: "bold",
   },
-  lugares: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 15
+  botaoSubcategoria: {
+    padding: "8px 16px",
+    borderRadius: 20,
+    border: "none",
+    cursor: "pointer",
+    fontSize: 14,
+    fontWeight: "bold",
   },
+  lugares: { display: "flex", flexDirection: "column", gap: 15 },
   lugar: {
     padding: "15px 20px",
     borderRadius: 8,
     fontWeight: "bold",
     cursor: "pointer",
-    backgroundColor: "#f4f4f4",  // Fundo suave
+    backgroundColor: "#fff",
     color: "#333",
-    transition: "0.2s"
-  }
+    transition: "0.2s",
+  },
+  loadingContainer: {
+    display: "flex",
+    height: "100vh",
+    justifyContent: "center",
+    alignItems: "center",
+    fontSize: 18,
+    color: "#777",
+  },
 };
-
 
 export default Home;
