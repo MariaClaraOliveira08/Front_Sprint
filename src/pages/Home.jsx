@@ -6,7 +6,7 @@ import ParkIcon from "@mui/icons-material/Park";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import HamburgerDrawer from "../components/HamburgerDrawer";
 import DetalhesModal from "../components/Modal";
-import api from "../axios/axios";
+import api from "../axios/axios"; // Mantido para o caso de busca por texto na Home
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
@@ -26,8 +26,8 @@ const Home = () => {
       type: "restaurant",
       icon: <RestaurantMenuIcon sx={{ fontSize: 40 }} />,
       subcategorias: [
-        { nome: "Pizzarias", type: "pizzeria" },
-        { nome: "Hamburguerias", type: "burger" },
+        { nome: "Pizzarias", type: "pizza_restaurant" },
+        { nome: "Hamburguerias", type: "burger_joint" },
         { nome: "Bares", type: "bar" },
       ],
     },
@@ -52,29 +52,43 @@ const Home = () => {
     },
   ];
 
+  // A busca aqui é mantida para que a lista na Home (abaixo dos filtros) seja preenchida,
+  // permitindo que o usuário clique em um item específico.
   useEffect(() => {
     const fetchEstabelecimentos = async () => {
+      // Se não houver filtro, ou se a busca for apenas por termo, não dispara o fetch
       if (!categoriaSelecionada) return;
+      
       setLoading(true);
 
-      try {
-        const categoria = categorias.find(
+      const categoriaPai = categorias.find(
           (cat) => cat.nome.toLowerCase() === categoriaSelecionada
         );
-        if (!categoria) return;
+      
+      const tipoBusca = subcategoriaSelecionada || categoriaPai?.type;
 
+      if (!tipoBusca) {
+        setLoading(false);
+        return;
+      }
+      
+      try {
         const response = await api.get("/buscar", {
           params: {
-            location: "-20.5381,-47.4008",
+            location: "-20.5381,-47.4008", // Franca
             radius: 17000,
-            type: subcategoriaSelecionada || categoria.type,
+            type: tipoBusca, 
           },
         });
+
+        const categoriaNome = subcategoriaSelecionada ? categoriaPai
+          .subcategorias.find(s => s.type === subcategoriaSelecionada)?.nome || 'Categoria Desconhecida'
+          : categoriaPai.nome;
 
         const dados = (response.data.estabelecimentos || []).map((item) => ({
           nome: item.nome || "Nome não disponível",
           endereco: item.endereco || "Não disponível",
-          categoria: subcategoriaSelecionada || categoria.nome,
+          categoria: categoriaNome,
           telefone: item.telefone || "Não disponível",
           horarios: item.horarios || "Não disponível",
           avaliacao: item.avaliacao || "Não disponível",
@@ -95,13 +109,14 @@ const Home = () => {
     };
 
     fetchEstabelecimentos();
-  }, [categoriaSelecionada, subcategoriaSelecionada]);
+  }, [categoriaSelecionada, subcategoriaSelecionada]); 
+
 
   const lugaresFiltrados = lugares.filter((lugar) =>
     (lugar.nome || "").toLowerCase().includes(termoBusca.toLowerCase())
   );
 
-  if (loading)
+  if (loading && categoriaSelecionada) // Só mostra loading se uma categoria foi selecionada
     return (
       <div style={styles.loadingContainer}>
         <p>Carregando...</p>
@@ -139,7 +154,14 @@ const Home = () => {
               key={cat.nome}
               onClick={() => {
                 setCategoriaSelecionada(cat.nome.toLowerCase());
-                setSubcategoriaSelecionada(null);
+                setSubcategoriaSelecionada(null); // Reseta subcategoria
+                
+                // NOVO: Navegar para o mapa com a categoria pai como filtro
+                navigate("/mapa", {
+                  state: {
+                    categoria: cat.type, 
+                  },
+                });
               }}
               style={{
                 ...styles.botaoCategoria,
@@ -166,7 +188,16 @@ const Home = () => {
               ?.subcategorias.map((sub) => (
                 <button
                   key={sub.nome}
-                  onClick={() => setSubcategoriaSelecionada(sub.type)}
+                  onClick={() => {
+                    setSubcategoriaSelecionada(sub.type);
+                    
+                    // AÇÃO PRINCIPAL: Redireciona para o mapa com o filtro de subcategoria
+                    navigate("/mapa", {
+                      state: {
+                        categoria: sub.type, // Tipo de busca do Google Maps (ex: "pizza_restaurant")
+                      },
+                    });
+                  }}
                   style={{
                     ...styles.botaoSubcategoria,
                     backgroundColor:
@@ -183,7 +214,11 @@ const Home = () => {
           </div>
         )}
 
-        {/* Lista de lugares */}
+        {/* Lista de lugares (Preenchida pelo useEffect acima, reage ao filtro) */}
+        {lugaresFiltrados.length > 0 && categoriaSelecionada && (
+            <h3>Lugares em Franca ({lugaresFiltrados.length})</h3>
+        )}
+
         <div style={styles.lugares}>
           {lugaresFiltrados.map((lugar, index) => (
             <div
@@ -191,11 +226,11 @@ const Home = () => {
               onClick={() => {
                 setEnderecoSelecionado(index);
                 setOpenModal(true);
+                // Navegação para o mapa com um item específico para centralizar e o filtro
                 navigate("/mapa", {
                   state: {
-                    lugares: lugaresFiltrados,
-                    lugar: lugar,
-                    categoria: subcategoriaSelecionada || categoriaSelecionada,
+                    lugar: lugar, 
+                    categoria: subcategoriaSelecionada || categorias.find(c => c.nome.toLowerCase() === categoriaSelecionada)?.type,
                   },
                 });
               }}
@@ -204,6 +239,9 @@ const Home = () => {
               {lugar.nome}
             </div>
           ))}
+          {lugaresFiltrados.length === 0 && categoriaSelecionada && !loading && (
+             <p style={{ color: '#777', textAlign: 'center', marginTop: 20 }}>Nenhum lugar encontrado com este filtro. Tente outra busca ou categoria.</p>
+          )}
         </div>
       </div>
 
@@ -227,7 +265,7 @@ const styles = {
     fontFamily: "Segoe UI, sans-serif",
     overflow: "hidden",
   },
-  main: { flex: 1, backgroundColor: "#f5f5f5", padding: 50, paddingLeft: 200 },
+  main: { flex: 1, backgroundColor: "#f5f5f5", padding: 50, paddingLeft: 100 },
   logoWrapper: { display: "flex", alignItems: "center", gap: 10 },
   logo: { margin: 0, fontSize: 26, color: "#4a5a87" },
   subtitulo: { fontSize: 14, color: "#777", marginBottom: 20 },
@@ -241,7 +279,7 @@ const styles = {
     border: "1px solid #ccc",
     marginBottom: 40,
   },
-  search: {
+    search: {
     flex: 1,
     border: "none",
     outline: "none",
