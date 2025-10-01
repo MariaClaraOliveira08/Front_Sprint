@@ -4,11 +4,6 @@ import {
   TextField,
   Button,
   Avatar,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   Snackbar,
   Alert,
 } from "@mui/material";
@@ -18,7 +13,7 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import api from "../axios/axios";
 import { useNavigate } from "react-router-dom";
 import PasswordField from "../components/PasswordField";
-import HamburgerDrawer from "../components/HamburgerDrawer"; // <-- import do menu
+import HamburgerDrawer from "../components/HamburgerDrawer"; // menu lateral
 
 function Perfil() {
   const navigate = useNavigate();
@@ -39,6 +34,7 @@ function Perfil() {
   const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
+  // 📌 Carrega dados do usuário ao abrir a página
   useEffect(() => {
     async function fetchUsuario() {
       try {
@@ -64,6 +60,7 @@ function Perfil() {
     fetchUsuario();
   }, [userId]);
 
+  // Alterar imagem do avatar
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -76,6 +73,7 @@ function Perfil() {
     fileInputRef.current.click();
   };
 
+  // Atualizar dados do perfil
   const handleUpdate = async () => {
     if (user.senha && user.senha !== user.confirmarSenha) {
       alert("As senhas não coincidem.");
@@ -106,15 +104,22 @@ function Perfil() {
     }
   };
 
+  //  Logout confirmado
   const handleConfirmLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem("userId");
+    localStorage.removeItem("token");
+    localStorage.removeItem("authenticated");
+    sessionStorage.clear();
+
     setOpenLogoutDialog(false);
     setOpenSnackbar(true);
+
     setTimeout(() => {
-      navigate("/login");
-    }, 2000);
+      navigate("/login", { replace: true });
+    }, 1500);
   };
 
+  //  Excluir conta
   const handleDelete = async () => {
     try {
       const response = await api.deleteUsuario(user.id_usuario);
@@ -143,10 +148,9 @@ function Perfil() {
         boxSizing: "border-box",
       }}
     >
-      {/* Menu Hamburger */}
       <HamburgerDrawer />
 
-      {/* Cabeçalho */}
+      {/* Cabeçalho com avatar */}
       <Box
         sx={{
           width: "100%",
@@ -284,7 +288,7 @@ function Perfil() {
           <Button
             variant="contained"
             startIcon={<ExitToAppIcon />}
-            sx={{ backgroundColor: "#7681A1", flex: 1 }}
+            sx={{ backgroundColor: "red", flex: 1 }}
             onClick={() => setOpenLogoutDialog(true)}
           >
             Sair
@@ -308,28 +312,32 @@ function Perfil() {
         </Box>
       </Box>
 
-      {/* Modal logout */}
-      <Dialog
-        open={openLogoutDialog}
-        onClose={() => setOpenLogoutDialog(false)}
-      >
-        <DialogTitle>Encerrar sessão</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Tem certeza que deseja encerrar sua sessão?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenLogoutDialog(false)}>Cancelar</Button>
-          <Button onClick={handleConfirmLogout} color="error" autoFocus>
-            Sair
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* MODAL DE CONFIRMAÇÃO DE LOGOUT */}
+      {openLogoutDialog && (
+        <div style={styles.overlay}>
+          <div style={styles.modal}>
+            <h3 style={styles.titulo}>Encerrar sessão</h3>
+            <p style={styles.texto}>Você realmente deseja sair da sua conta?</p>
 
+            <div style={styles.botoes}>
+              <button
+                style={styles.botaoCancelar}
+                onClick={() => setOpenLogoutDialog(false)}
+              >
+                Cancelar
+              </button>
+              <button style={styles.botaoConfirmar} onClick={handleConfirmLogout}>
+                Sair
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Snackbar */}
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={2000}
+        autoHideDuration={1500}
         onClose={() => setOpenSnackbar(false)}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
@@ -341,4 +349,68 @@ function Perfil() {
   );
 }
 
+
+const styles = {
+  overlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999,
+  },
+  modal: {
+    backgroundColor: "#fff",
+    padding: "25px 30px",
+    borderRadius: 10,
+    width: 350,
+    boxShadow: "0px 4px 15px rgba(0,0,0,0.3)",
+    textAlign: "center",
+    fontFamily: "Segoe UI, sans-serif",
+  },
+  titulo: {
+    margin: 0,
+    marginBottom: 10,
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  texto: {
+    fontSize: 14,
+    color: "#555",
+    marginBottom: 20,
+  },
+  botoes: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 15,
+  },
+  botaoCancelar: {
+    flex: 1,
+    padding: "10px",
+    borderRadius: 8,
+    border: "1px solid #ccc",
+    backgroundColor: "#f3f4f6",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+  botaoConfirmar: {
+    flex: 1,
+    padding: "10px",
+    borderRadius: 8,
+    border: "none",
+    backgroundColor: "red",
+    color: "#fff",
+    fontWeight: "bold",
+    cursor: "pointer",
+  },
+};
+
 export default Perfil;
+ 
+
+
