@@ -27,11 +27,11 @@ function AvaliacoesUsuario() {
   const buscarAvaliacoesUsuario = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/avaliacao");
-      // Garantir que o nome do estabelecimento exista
+      const res = await api.get("/avaliacao"); // rota listByUser
       const dados = res.data.avaliacoes?.map((a) => ({
         ...a,
         nome_estabelecimento: a.nome_estabelecimento || "Estabelecimento",
+        usuario: a.usuario || "Você", // fallback caso nao venha usuario
       })) || [];
       setAvaliacoes(dados);
     } catch (err) {
@@ -101,7 +101,7 @@ function AvaliacoesUsuario() {
                         {avaliacao.nome_estabelecimento}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {avaliacao.google_place_id || "-"}
+                        {avaliacao.usuario} {/* exibe o nome do usuário */}
                       </Typography>
                     </Box>
                     <Rating value={avaliacao.nota || 0} readOnly precision={0.5} />
@@ -157,7 +157,9 @@ function AvaliacoesUsuario() {
               </Typography>
 
               <Box display="flex" justifyContent="space-between" mb={2}>
-                <Typography variant="subtitle1">{avaliacaoModal?.usuario || "Usuário"}</Typography>
+                <Typography variant="subtitle1">
+                  {avaliacaoModal?.usuario || "Você"}
+                </Typography>
                 <Rating value={avaliacaoModal?.nota || 0} readOnly size="small" />
               </Box>
 

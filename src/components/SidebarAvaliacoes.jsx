@@ -9,29 +9,28 @@ import {
   Button,
   CircularProgress,
   Snackbar,
-  Alert
+  Alert,
 } from "@mui/material";
 import api from "../axios/axios";
 
-const SidebarAvaliacoes = ({ googlePlaceId, userId }) => {
+const SidebarAvaliacoes = ({ googlePlaceId, nomeEstabelecimento, endereco }) => {
   const [avaliacoes, setAvaliacoes] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [comentario, setComentario] = useState("");
   const [nota, setNota] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
 
-  // Buscar avaliações do estabelecimento
+  // Busca avaliações do local
   const fetchAvaliacoes = async () => {
     setLoading(true);
     try {
       const res = await api.get(`/avaliacoes/${googlePlaceId}`);
-      const dados = res.data.avaliacoes?.map(a => ({
-        ...a,
-        usuario: a.usuario || "Usuário",
-        nome_estabelecimento: a.nome_estabelecimento || "Estabelecimento"
-      })) || [];
-      setAvaliacoes(dados);
+      setAvaliacoes(res.data.avaliacoes || []);
     } catch (err) {
       console.error("Erro ao buscar avaliações:", err.response || err);
       setAvaliacoes([]);
@@ -44,93 +43,102 @@ const SidebarAvaliacoes = ({ googlePlaceId, userId }) => {
     if (googlePlaceId) fetchAvaliacoes();
   }, [googlePlaceId]);
 
-  // Adicionar avaliação do usuário
+  // Envia nova avaliação
   const handleSubmit = async () => {
     if (!comentario || nota === 0) {
-      setSnackbar({ open: true, message: "Preencha o comentário e a nota", severity: "warning" });
-      return;
-    }
-
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setSnackbar({ open: true, message: "Você precisa estar logado para avaliar", severity: "warning" });
+      setSnackbar({
+        open: true,
+        message: "Preencha comentário e nota",
+        severity: "warning",
+      });
       return;
     }
 
     setSubmitting(true);
     try {
-      await api.post(
-        "/avaliacao",
-        { id_usuario: userId, google_place_id: googlePlaceId, comentario, nota },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.post("/avaliacao", {
+        google_place_id: googlePlaceId,
+        comentario,
+        nota,
+        nome_estabelecimento: nomeEstabelecimento || "Nome não informado",
+        endereco: endereco || "",
+      });
 
-      // Limpar campos após envio
       setComentario("");
       setNota(0);
-      setSnackbar({ open: true, message: "Avaliação enviada com sucesso!", severity: "success" });
-
-      // Atualiza lista de avaliações
+      setSnackbar({
+        open: true,
+        message: "Avaliação enviada com sucesso!",
+        severity: "success",
+      });
       fetchAvaliacoes();
     } catch (err) {
       console.error("Erro ao enviar avaliação:", err.response || err);
-      setSnackbar({ open: true, message: "Erro ao enviar avaliação", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Erro ao enviar avaliação",
+        severity: "error",
+      });
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleCloseSnackbar = (event, reason) => {
-    if (reason === "clickaway") return;
-    setSnackbar(prev => ({ ...prev, open: false }));
-  };
-
   return (
     <Box
       sx={{
-        position: "fixed",
-        top: 0,
-        right: 0,
-        width: { xs: "90%", sm: 400 },
-        height: "100vh",
-        bgcolor: "#f9f9f9",
-        p: 3,
+        position: "absolute",
+        top: 16,
+        right: 16,
+        width: { xs: "95%", sm: 500 },
+        maxHeight: "90vh",
         overflowY: "auto",
-        zIndex: 1200,
-        boxShadow: "0 0 10px rgba(0,0,0,0.3)"
+        bgcolor: "background.paper",
+        boxShadow: 3,
+        borderRadius: 2,
+        p: 3,
+        zIndex: 1000,
       }}
     >
-      <Typography variant="h6" sx={{ mb: 2 }}>Avaliações</Typography>
+      <Typography variant="h6" gutterBottom>
+        Avaliações
+      </Typography>
 
       {loading ? (
         <Box display="flex" justifyContent="center" my={2}>
           <CircularProgress />
         </Box>
       ) : avaliacoes.length === 0 ? (
-        <Typography sx={{ color: "#777" }}>Nenhuma avaliação ainda.</Typography>
+        <Typography color="text.secondary">Nenhuma avaliação ainda.</Typography>
       ) : (
-        avaliacoes.map(avaliacao => (
-          <Paper key={avaliacao.id_avaliacao} sx={{ p: 2, mb: 2, borderRadius: 2 }}>
+        avaliacoes.map((a) => (
+          <Paper key={a.id_avaliacao} sx={{ p: 2, mb: 2, borderRadius: 2 }}>
             <Box display="flex" alignItems="center" gap={1} mb={1}>
               <Avatar sx={{ bgcolor: "#7681A1", width: 30, height: 30 }}>
-                {avaliacao.usuario?.[0]?.toUpperCase() || "U"}
+                {a.usuario?.[0]?.toUpperCase() || "U"}
               </Avatar>
               <Box>
-                <Typography variant="subtitle2">{avaliacao.usuario}</Typography>
+                <Typography variant="subtitle2">{a.usuario}</Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {avaliacao.nome_estabelecimento}
+                  {a.nome_estabelecimento || a.endereco || a.google_place_id}
                 </Typography>
               </Box>
-              <Rating value={avaliacao.nota || 0} readOnly size="small" sx={{ ml: "auto" }} />
+              <Rating
+                value={a.nota || 0}
+                readOnly
+                size="small"
+                sx={{ ml: "auto" }}
+              />
             </Box>
-            <Typography variant="body2">{avaliacao.comentario}</Typography>
+            <Typography variant="body2">{a.comentario}</Typography>
           </Paper>
         ))
       )}
 
-      {/* Adicionar nova avaliação */}
       <Box mt={3}>
-        <Typography variant="subtitle1" sx={{ mb: 1 }}>Adicionar Avaliação</Typography>
+        <Typography variant="subtitle1" sx={{ mb: 1 }}>
+          Adicionar Avaliação
+        </Typography>
         <TextField
           label="Comentário"
           multiline
@@ -161,10 +169,14 @@ const SidebarAvaliacoes = ({ googlePlaceId, userId }) => {
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>

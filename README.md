@@ -6,7 +6,7 @@ Este projeto fornece a estrutura inicial para um sistema com telas de **Login** 
 
 - **Estilizar** as telas existentes.
 - **Implementar funcionalidades**.
-- **Criar as devidas telas referentes ao nosso projeto** chamadas "Home","Sobre Nós", "Perfil" e as demais telas com o mapa.
+- **Criar as devidas telas referentes ao nosso projeto** chamadas "Home","Sobre Nós", "Perfil", "Favoritos" e as demais telas.
 - **Realizar a integração** das telas com uma API utilizando.
 
 ## Instalação do Projeto final
@@ -40,11 +40,11 @@ Este projeto fornece a estrutura inicial para um sistema com telas de **Login** 
 4. Mui Material Icons
    - Instala os ícones do Material UI:
   ```sh
-  npm install @mui/icons-material
+    npm install @mui/icons-material
 
 5. Mapa
     - biblioteca para instalar o mapa:
    ```sh
-    npm install @react-google-maps/api
+   npm install @react-google-maps/api
 
 
