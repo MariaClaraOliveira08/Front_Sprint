@@ -13,12 +13,15 @@ import {
 } from "@mui/material";
 import HamburgerDrawer from "../components/HamburgerDrawer";
 import api from "../axios/axios";
+import { useNavigate } from "react-router-dom";
 
 function AvaliacoesUsuario() {
   const [avaliacoes, setAvaliacoes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [avaliacaoModal, setAvaliacaoModal] = useState(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     buscarAvaliacoesUsuario();
@@ -28,11 +31,12 @@ function AvaliacoesUsuario() {
     setLoading(true);
     try {
       const res = await api.get("/avaliacao"); // rota listByUser
-      const dados = res.data.avaliacoes?.map((a) => ({
-        ...a,
-        nome_estabelecimento: a.nome_estabelecimento || "Estabelecimento",
-        usuario: a.usuario || "Você", // fallback caso nao venha usuario
-      })) || [];
+      const dados =
+        res.data.avaliacoes?.map((a) => ({
+          ...a,
+          nome_estabelecimento: a.nome_estabelecimento || "Estabelecimento",
+          usuario: a.usuario || "Você",
+        })) || [];
       setAvaliacoes(dados);
     } catch (err) {
       console.warn(err.response?.data?.message || "Erro ao buscar avaliações");
@@ -52,12 +56,33 @@ function AvaliacoesUsuario() {
     setAvaliacaoModal(null);
   };
 
+  const handleDeleteAvalicao = async (avaliacao) => {
+    if (!avaliacao) return;
+    try {
+      await api.deletarAvaliacao(avaliacao.id_avaliacao);
+      setAvaliacoes((prev) =>
+        prev.filter((a) => a.id_avaliacao !== avaliacao.id_avaliacao)
+      );
+      handleCloseModal();
+    } catch (err) {
+      console.error(
+        "Erro ao deletar avaliação:",
+        err.response?.data || err.message
+      );
+      alert("Não foi possível deletar a avaliação.");
+    }
+  };
+
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
       <HamburgerDrawer />
 
       <Box sx={{ flex: 1, p: { xs: 2, sm: 5 }, maxWidth: 900, margin: "auto" }}>
-        <Typography variant="h4" gutterBottom sx={{ color: "#4a5a87", fontWeight: 700 }}>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{ color: "#4a5a87", fontWeight: 700 }}
+        >
           Minhas Avaliações
         </Typography>
 
@@ -94,14 +119,14 @@ function AvaliacoesUsuario() {
                 >
                   <Box display="flex" alignItems="center" gap={2}>
                     <Avatar sx={{ bgcolor: "#7681A1" }}>
-                      {(avaliacao.usuario?.[0]?.toUpperCase()) || "U"}
+                      {avaliacao.usuario?.[0]?.toUpperCase() || "U"}
                     </Avatar>
                     <Box flex={1}>
                       <Typography variant="subtitle1" fontWeight={600}>
-                        {avaliacao.nome_estabelecimento}
+                        Estabelecimento: {avaliacao.nome_estabelecimento}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {avaliacao.usuario} {/* exibe o nome do usuário */}
+                        Usuário: {avaliacao.usuario}
                       </Typography>
                     </Box>
                     <Rating value={avaliacao.nota || 0} readOnly precision={0.5} />
@@ -115,20 +140,31 @@ function AvaliacoesUsuario() {
                       : "-"}
                   </Typography>
 
-                  <Button
-                    variant="text"
-                    size="small"
-                    onClick={() => handleOpenModal(avaliacao)}
-                    sx={{ alignSelf: "flex-start" }}
-                  >
-                    Ver mais
-                  </Button>
+                  <Box sx={{ display: "flex", gap: 1 }}>
+                    <Button
+                      variant="text"
+                      size="small"
+                      onClick={() => handleOpenModal(avaliacao)}
+                    >
+                      Ver mais
+                    </Button>
+
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      onClick={() => handleDeleteAvalicao(avaliacao)}
+                    >
+                      Deletar
+                    </Button>
+                  </Box>
                 </Paper>
               ))
             )}
           </Box>
         )}
 
+        {/* Modal para detalhes da avaliação */}
         <Modal
           open={openModal}
           onClose={handleCloseModal}
@@ -156,6 +192,12 @@ function AvaliacoesUsuario() {
                 {avaliacaoModal?.nome_estabelecimento || "Estabelecimento"}
               </Typography>
 
+              {avaliacaoModal?.endereco && (
+                <Typography variant="body2" sx={{ color: "#666", mb: 1 }}>
+                  Endereço: {avaliacaoModal.endereco}
+                </Typography>
+              )}
+
               <Box display="flex" justifyContent="space-between" mb={2}>
                 <Typography variant="subtitle1">
                   {avaliacaoModal?.usuario || "Você"}
@@ -167,7 +209,17 @@ function AvaliacoesUsuario() {
                 {avaliacaoModal?.comentario || "-"}
               </Typography>
 
-              <Box mt={3}>
+              <Box mt={3} sx={{ display: "flex", gap: 1 }}>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={() => handleDeleteAvalicao(avaliacaoModal)}
+                  fullWidth
+                  sx={{ borderRadius: 2 }}
+                >
+                  Deletar Avaliação
+                </Button>
+
                 <Button
                   variant="outlined"
                   onClick={handleCloseModal}

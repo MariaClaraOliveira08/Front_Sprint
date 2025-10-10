@@ -10,7 +10,6 @@ const Logoff = () => {
     const userId = localStorage.getItem("userId");
     console.log("Usuário desconectado:", userId);
 
-    // 🔴 Limpa TODOS os dados de autenticação
     localStorage.removeItem("userId");
     localStorage.removeItem("token");
     localStorage.removeItem("authenticated");

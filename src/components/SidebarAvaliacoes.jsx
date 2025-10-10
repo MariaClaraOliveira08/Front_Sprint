@@ -10,7 +10,9 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
+  IconButton,
 } from "@mui/material";
+import { Favorite, FavoriteBorder } from "@mui/icons-material";
 import api from "../axios/axios";
 
 const SidebarAvaliacoes = ({ googlePlaceId, nomeEstabelecimento, endereco }) => {
@@ -19,13 +21,16 @@ const SidebarAvaliacoes = ({ googlePlaceId, nomeEstabelecimento, endereco }) => 
   const [nota, setNota] = useState(0);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [curtido, setCurtido] = useState(false); // Se o estabelecimento já está favoritado
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "info",
   });
 
-  // Busca avaliações do local
+  const userId = localStorage.getItem("userId");
+
+  // 🔹 Busca avaliações
   const fetchAvaliacoes = async () => {
     setLoading(true);
     try {
@@ -39,11 +44,75 @@ const SidebarAvaliacoes = ({ googlePlaceId, nomeEstabelecimento, endereco }) => 
     }
   };
 
+  // 🔹 Verifica se o local já está favoritado
+  const checkFavorito = async () => {
+    if (!userId || !googlePlaceId) return;
+    try {
+      const res = await api.get(`/favoritos/${userId}`);
+      const favoritos = res.data.favoritos || [];
+      const jaFavoritado = favoritos.some(
+        (f) => f.google_place_id === googlePlaceId
+      );
+      setCurtido(jaFavoritado);
+    } catch (err) {
+      console.error("Erro ao verificar favorito:", err);
+    }
+  };
+
   useEffect(() => {
-    if (googlePlaceId) fetchAvaliacoes();
+    if (googlePlaceId) {
+      fetchAvaliacoes();
+      checkFavorito();
+    }
   }, [googlePlaceId]);
 
-  // Envia nova avaliação
+  // 🔹 Adiciona ou remove favorito
+  const toggleFavorito = async () => {
+    if (!userId) {
+      setSnackbar({
+        open: true,
+        message: "Você precisa estar logado para favoritar um local.",
+        severity: "warning",
+      });
+      return;
+    }
+
+    try {
+      if (curtido) {
+        // 🔸 Se já é favorito → remover
+        await api.delete(`/favoritos/user/${userId}/place/${googlePlaceId}`);
+        setCurtido(false);
+        setSnackbar({
+          open: true,
+          message: "Removido dos favoritos 💔",
+          severity: "info",
+        });
+      } else {
+        // 🔹 Se ainda não é favorito → adicionar
+        await api.post("/favoritos", {
+          id_usuario: userId,
+          google_place_id: googlePlaceId,
+          nome_estabelecimento: nomeEstabelecimento,
+          endereco: endereco || "",
+        });
+        setCurtido(true);
+        setSnackbar({
+          open: true,
+          message: "Adicionado aos favoritos ❤️",
+          severity: "success",
+        });
+      }
+    } catch (err) {
+      console.error("Erro ao alternar favorito:", err);
+      setSnackbar({
+        open: true,
+        message: "Erro ao atualizar favorito. Tente novamente.",
+        severity: "error",
+      });
+    }
+  };
+
+  // 🔹 Envia nova avaliação
   const handleSubmit = async () => {
     if (!comentario || nota === 0) {
       setSnackbar({
@@ -60,7 +129,7 @@ const SidebarAvaliacoes = ({ googlePlaceId, nomeEstabelecimento, endereco }) => 
         google_place_id: googlePlaceId,
         comentario,
         nota,
-        nome_estabelecimento: nomeEstabelecimento || "Nome não informado",
+        nome_estabelecimento: nomeEstabelecimento,
         endereco: endereco || "",
       });
 
@@ -100,6 +169,19 @@ const SidebarAvaliacoes = ({ googlePlaceId, nomeEstabelecimento, endereco }) => 
         zIndex: 1000,
       }}
     >
+      {/* ❤️ Coração fixo no topo */}
+      <IconButton
+        onClick={toggleFavorito}
+        sx={{
+          position: "absolute",
+          top: 8,
+          right: 8,
+          color: curtido ? "red" : "gray",
+        }}
+      >
+        {curtido ? <Favorite /> : <FavoriteBorder />}
+      </IconButton>
+
       <Typography variant="h6" gutterBottom>
         Avaliações
       </Typography>
@@ -118,9 +200,15 @@ const SidebarAvaliacoes = ({ googlePlaceId, nomeEstabelecimento, endereco }) => 
                 {a.usuario?.[0]?.toUpperCase() || "U"}
               </Avatar>
               <Box>
-                <Typography variant="subtitle2">{a.usuario}</Typography>
+                <Typography variant="subtitle2">
+                  {a.usuario}{" "}
+                  {a.nome_estabelecimento &&
+                  a.nome_estabelecimento !== "Nome não informado"
+                    ? `- ${a.nome_estabelecimento}`
+                    : ""}
+                </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {a.nome_estabelecimento || a.endereco || a.google_place_id}
+                  {a.endereco || a.google_place_id}
                 </Typography>
               </Box>
               <Rating

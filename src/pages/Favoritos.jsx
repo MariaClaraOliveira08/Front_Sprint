@@ -1,9 +1,7 @@
-// Favoritos.jsx
-
 import React, { useState, useEffect } from "react";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import SearchIcon from "@mui/icons-material/Search";
-import FavoriteIcon from "@mui/icons-material/Favorite"; // coração cheio
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import HamburgerDrawer from "../components/HamburgerDrawer";
 import api from "../axios/axios";
 import Snackbar from "@mui/material/Snackbar";
@@ -15,24 +13,27 @@ const Favoritos = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [deletingId, setDeletingId] = useState(null);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
 
   const fetchFavoritos = async () => {
     const token = localStorage.getItem("token");
-
     if (!token) {
-      console.warn("Token do usuário ausente");
       setError("Você precisa estar logado para ver seus favoritos.");
       setLoading(false);
       return;
     }
 
     try {
-      const userId = localStorage.getItem("userId"); // 👈 garante que pega o ID do usuário
-      const response = await api.get(`/favoritos/${userId}`);
-      setFavoritos(response.data.favoritos || []);
-    } catch (error) {
-      setError("Erro ao carregar seus favoritos. Tente novamente.");
+      const userId = localStorage.getItem("userId");
+      const res = await api.get(`/favoritos/${userId}`);
+      setFavoritos(res.data.favoritos || []);
+    } catch (err) {
+      console.error(err);
+      setError("Erro ao carregar favoritos.");
     } finally {
       setLoading(false);
     }
@@ -44,22 +45,28 @@ const Favoritos = () => {
 
   const favoritosFiltrados = favoritos.filter((fav) => {
     const textoBusca = searchTerm.toLowerCase();
-    return (
-      fav.nome_estabelecimento.toLowerCase().includes(textoBusca) ||
-      (fav.endereco && fav.endereco.toLowerCase().includes(textoBusca))
-    );
+    const nome = fav?.nome_estabelecimento?.toLowerCase() || "";
+    const endereco = fav?.endereco?.toLowerCase() || "";
+    return nome.includes(textoBusca) || endereco.includes(textoBusca);
   });
 
-  // 🔹 Corrigido: Delete favorito de fato
   const toggleFavorito = async (id) => {
     setDeletingId(id);
     try {
-      await api.delete(`/favoritos/${id}`); // 👈 agora chama corretamente sua rota DELETE
+      await api.delete(`/favoritos/${id}`);
       setFavoritos((prev) => prev.filter((fav) => fav.id_favorito !== id));
-      setSnackbar({ open: true, message: "Favorito removido com sucesso!", severity: "success" });
-    } catch (error) {
-      console.error("Erro ao remover favorito:", error);
-      setSnackbar({ open: true, message: "Erro ao remover favorito. Tente novamente.", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Favorito removido com sucesso!",
+        severity: "success",
+      });
+    } catch (err) {
+      console.error(err);
+      setSnackbar({
+        open: true,
+        message: "Erro ao remover favorito.",
+        severity: "error",
+      });
     } finally {
       setDeletingId(null);
     }
@@ -73,12 +80,22 @@ const Favoritos = () => {
   return (
     <div style={styles.wrapper}>
       <HamburgerDrawer />
+
+      {/* ❤️ Coração fixo no canto superior direito */}
+      <div style={styles.topHeart}>
+        <FavoriteIcon sx={{ fontSize: 40, color: "#e91e63" }} />
+      </div>
+
       <main style={styles.container}>
         <header style={styles.header}>
-          <LocationOnOutlinedIcon sx={{ fontSize: 32, color: "#000000ff" }} />
+          <LocationOnOutlinedIcon sx={{ fontSize: 32, color: "#000" }} />
           <h1 style={styles.logoText}>Glimp</h1>
         </header>
-        <p style={styles.subtitulo}>Grandes Lugares Inspiram Momentos Perfeitos.</p>
+
+        <p style={styles.subtitulo}>
+          Grandes Lugares Inspiram Momentos Perfeitos.
+        </p>
+
         <div style={styles.searchBox}>
           <input
             type="text"
@@ -89,6 +106,7 @@ const Favoritos = () => {
           />
           <SearchIcon sx={{ fontSize: 22, color: "#888" }} />
         </div>
+
         {loading ? (
           <p>Carregando favoritos...</p>
         ) : error ? (
@@ -96,27 +114,20 @@ const Favoritos = () => {
         ) : (
           <section style={styles.listaFavoritos}>
             {favoritosFiltrados.length > 0 ? (
-              favoritosFiltrados.map((favorito) => (
-                <div key={favorito.id_favorito} style={styles.card}>
+              favoritosFiltrados.map((fav) => (
+                <div key={fav.id_favorito} style={styles.card}>
+                  <div style={styles.infoContainer}>
+                    <div style={styles.nome}>{fav.nome_estabelecimento}</div>
+                    <div style={styles.endereco}>{fav.endereco}</div>
+                  </div>
+
                   <button
-                    onClick={() => toggleFavorito(favorito.id_favorito)}
-                    aria-label="Remover favorito"
-                    disabled={deletingId === favorito.id_favorito}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      position: "absolute",
-                      top: 10,
-                      right: 10,
-                    }}
+                    onClick={() => toggleFavorito(fav.id_favorito)}
+                    disabled={deletingId === fav.id_favorito}
+                    style={styles.deleteButton}
                   >
                     <FavoriteIcon sx={{ fontSize: 26, color: "#e91e63" }} />
                   </button>
-                  <div style={styles.infoContainer}>
-                    <div style={styles.nome}>{favorito.nome_estabelecimento}</div>
-                    <div style={styles.endereco}>{favorito.endereco}</div>
-                  </div>
                 </div>
               ))
             ) : (
@@ -132,7 +143,11 @@ const Favoritos = () => {
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
@@ -145,10 +160,11 @@ const styles = {
     display: "flex",
     height: "100vh",
     width: "100vw",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    fontFamily: "Arial, sans-serif",
     backgroundColor: "#f0f2f5",
-    marginBottom: -10,
+    position: "relative",
   },
+  topHeart: { position: "absolute", top: 20, right: 30, zIndex: 10 },
   container: {
     flex: 1,
     padding: 32,
@@ -156,25 +172,9 @@ const styles = {
     display: "flex",
     flexDirection: "column",
   },
-  header: {
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-    marginBottom: 40,
-  },
-  logoText: {
-    margin: 5,
-    fontSize: 32,
-    fontWeight: "700",
-    color: "#000000ff",
-    userSelect: "none",
-  },
-  subtitulo: {
-    fontSize: 14,
-    color: "#777",
-    marginBottom: 20,
-    marginTop: -40,
-  },
+  header: { display: "flex", alignItems: "center", gap: 12, marginBottom: 40 },
+  logoText: { margin: 5, fontSize: 32, fontWeight: 700, color: "#000" },
+  subtitulo: { fontSize: 14, color: "#777", marginBottom: 20, marginTop: -40 },
   searchBox: {
     display: "flex",
     alignItems: "center",
@@ -195,13 +195,9 @@ const styles = {
     backgroundColor: "transparent",
     fontSize: 16,
     color: "#333",
-    fontWeight: "500",
+    fontWeight: 500,
   },
-  listaFavoritos: {
-    display: "grid",
-    gridTemplateColumns: "1fr",
-    gap: 24,
-  },
+  listaFavoritos: { display: "grid", gridTemplateColumns: "1fr", gap: 24 },
   card: {
     backgroundColor: "#fff",
     padding: 24,
@@ -215,20 +211,16 @@ const styles = {
     marginLeft: -180,
     position: "relative",
   },
-  infoContainer: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 6,
-    flex: 1,
-  },
-  nome: {
-    fontWeight: "700",
-    fontSize: 18,
-    color: "#000",
-  },
-  endereco: {
-    fontSize: 16,
-    color: "#555",
+  infoContainer: { display: "flex", flexDirection: "column", gap: 6, flex: 1 },
+  nome: { fontWeight: 700, fontSize: 18, color: "#000" },
+  endereco: { fontSize: 16, color: "#555" },
+  deleteButton: {
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    position: "absolute",
+    top: 10,
+    right: 10,
   },
 };
 
