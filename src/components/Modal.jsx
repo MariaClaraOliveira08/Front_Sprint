@@ -29,13 +29,7 @@ const DetalhesModal = ({ open, onClose, lugar }) => {
         <Typography><strong>Horários:</strong> {lugar.horarios}</Typography>
         <Typography><strong>Avaliação:</strong> {lugar.avaliacao}</Typography>
 
-        <Link
-          onClick={() => navigate("/mapa", { state: { lugar } })}
-          underline="hover"
-          sx={{ display: "block", textAlign: "center", mb: 2, color: "#4a5a87", fontWeight: "bold", cursor: "pointer" }}
-        >
-          Ver no mapa
-        </Link>
+      
 
         <Divider sx={{ my: 2 }} />
         <Typography variant="subtitle1" mb={1}>Comentários:</Typography>

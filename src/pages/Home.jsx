@@ -27,32 +27,52 @@ const Home = () => {
       type: "restaurant", // Tipo principal
       icon: <RestaurantMenuIcon sx={{ fontSize: 40 }} />,
       subcategorias: [
-        // CORRIGIDO: Usamos o type principal 'restaurant' e filtramos pelo nome no backend.
         { nome: "Pizzarias", type: "restaurant" }, 
         { nome: "Hamburguerias", type: "restaurant" }, 
-        { nome: "Bares", type: "bar" }, // Type oficial, pode ser usado
+        { nome: "Bares", type: "bar" }, 
       ],
     },
     {
       nome: "Lojas",
-      type: "store", // Tipo principal
+      type: "store", 
       icon: <StorefrontIcon sx={{ fontSize: 40 }} />,
       subcategorias: [
-        { nome: "Mercados", type: "supermarket" }, // Tipo oficial
-        { nome: "Shopping", type: "shopping_mall" }, // Tipo oficial
-        { nome: "Farmácias", type: "pharmacy" }, // Tipo oficial
+        { nome: "Mercados", type: "supermarket" }, 
+        { nome: "Shopping", type: "shopping_mall" }, 
+        { nome: "Farmácias", type: "pharmacy" }, 
       ],
     },
     {
       nome: "Parques",
-      type: "park", // Tipo principal
+      type: "park", 
       icon: <ParkIcon sx={{ fontSize: 40 }} />,
       subcategorias: [
-        { nome: "Jardins Botânicos", type: "botanical_garden" }, // Tipo oficial
-        { nome: "Parques Urbanos", type: "park" }, // Usando o type principal/oficial
+        { nome: "Jardins Botânicos", type: "botanical_garden" }, 
+        { nome: "Parques Urbanos", type: "park" }, 
       ],
     },
   ];
+
+  // Função para lidar com a abertura do Modal de Detalhes
+  const handleOpenDetalhes = (lugar) => {
+    const index = lugares.findIndex(item => item.place_id === lugar.place_id);
+    if (index !== -1) {
+      setEnderecoSelecionado(index);
+      setOpenModal(true);
+    }
+  };
+
+  // Função para lidar com a navegação para o Mapa
+  const handleNavigateToMapa = (lugar, typeParaMapa) => {
+    navigate("/mapa", {
+      state: {
+        lugares: lugaresFiltrados,
+        lugar: lugar,
+        categoriaType: typeParaMapa, 
+      },
+    });
+  };
+
 
   // Efeito para buscar estabelecimentos quando a categoria ou subcategoria muda
   useEffect(() => {
@@ -70,12 +90,9 @@ const Home = () => {
         const subcategoriaObj = categorias
           .flatMap(c => c.subcategorias)
           .find(sub => sub.type === subcategoriaSelecionada);
-        
-        // Se subcategoria selecionada for Restaurantes/Hamburguerias/Pizzarias, 
-        // o type é 'restaurant'. Se for Bares, o type é 'bar'.
+        
         const typeToSearch = subcategoriaSelecionada || categoria.type; 
-        
-        // NOVO: Determina o nome da categoria/subcategoria para ser usado como filtro de nome no backend
+        
         const categoryName = subcategoriaObj?.nome || categoria.nome;
 
 
@@ -85,7 +102,7 @@ const Home = () => {
             location: "-20.5381,-47.4008", // Franca/SP
             radius: 17000, // Raio de 17km
             type: typeToSearch, 
-            categoryName: categoryName // ENVIANDO O NOME DA CATEGORIA/SUBCATEGORIA
+            categoryName: categoryName 
           },
         });
 
@@ -147,7 +164,7 @@ const Home = () => {
           Grandes Lugares Inspiram Momentos Perfeitos.
         </p>
 
-        {/* Campo de busca */}
+        {/* Campo de busca (código omitido, é o mesmo) */}
         <div style={styles.searchWrapper}>
           <input
             type="text"
@@ -159,7 +176,7 @@ const Home = () => {
           <SearchIcon style={styles.searchIcon} />
         </div>
 
-        {/* Categorias Pai (Ícones) */}
+        {/* Categorias Pai (código omitido, é o mesmo) */}
         <div style={styles.categorias}>
           {categorias.map((cat) => (
             <button
@@ -185,7 +202,7 @@ const Home = () => {
           ))}
         </div>
 
-        {/* Subcategorias (Botões de texto) */}
+        {/* Subcategorias (código omitido, é o mesmo) */}
         {categoriaSelecionada && (
           <div style={styles.subcategorias}>
             {categorias
@@ -210,26 +227,34 @@ const Home = () => {
           </div>
         )}
 
-        {/* Lista de lugares */}
+        {/* Lista de lugares - NOVO LAYOUT DE AÇÃO */}
         <div style={styles.lugares}>
           {lugaresFiltrados.map((lugar, index) => (
             <div
               key={lugar.place_id || index}
-              onClick={() => {
-                setEnderecoSelecionado(index);
-                setOpenModal(true);
-                // ATENÇÃO: Envia 'categoriaType' (string) para o Mapa
-                navigate("/mapa", {
-                  state: {
-                    lugares: lugaresFiltrados,
-                    lugar: lugar,
-                    categoriaType: typeParaMapa, // Passa o 'type' específico
-                  },
-                });
-              }}
               style={styles.lugar}
             >
-              {lugar.nome}
+              <div style={styles.lugarNome}>
+                {lugar.nome}
+              </div>
+
+              <div style={styles.lugarBotoes}>
+                {/* Botão para Detalhes (abre Modal) */}
+                <button
+                  onClick={() => handleOpenDetalhes(lugar)}
+                  style={{ ...styles.botaoAcao, backgroundColor: '#5c6c9e' }}
+                >
+                  Detalhes
+                </button>
+
+                {/* Botão para Ver no Mapa (navega) */}
+                <button
+                  onClick={() => handleNavigateToMapa(lugar, typeParaMapa)}
+                  style={{ ...styles.botaoAcao, backgroundColor: '#4a5a87' }}
+                >
+                  Ver no Mapa
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -240,13 +265,16 @@ const Home = () => {
         open={openModal}
         onClose={() => setOpenModal(false)}
         lugar={
-          enderecoSelecionado !== null ? lugares[enderecoSelecionado] : null
+          enderecoSelecionado !== null && enderecoSelecionado < lugares.length 
+            ? lugares[enderecoSelecionado] 
+            : null
         }
       />
     </div>
   );
 };
 
+// Adicionando novos estilos
 const styles = {
   container: {
     display: "flex",
@@ -323,12 +351,33 @@ const styles = {
   lugar: {
     padding: "15px 20px",
     borderRadius: 8,
-    fontWeight: "bold",
-    cursor: "pointer",
+    cursor: "default", // Não é mais clicável como um todo
     backgroundColor: "#fff",
     color: "#333",
+    display: 'flex', // NOVO: Container flex para nome e botões
+    justifyContent: 'space-between',
+    alignItems: 'center',
     transition: "0.2s",
   },
+  lugarNome: { // NOVO: Estilo para o nome do lugar
+    fontWeight: 'bold',
+    fontSize: 16,
+    flexGrow: 1, // Permite que o nome use o espaço restante
+  },
+  lugarBotoes: { // NOVO: Container para os botões de ação
+    display: 'flex',
+    gap: 10,
+  },
+  botaoAcao: { // NOVO: Estilo para os botões Detalhes/Mapa
+    padding: '8px 15px',
+    borderRadius: 8,
+    border: 'none',
+    color: 'white',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    fontSize: 14,
+    minWidth: 100,
+  },
   loadingContainer: {
     display: "flex",
     height: "100vh",
