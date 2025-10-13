@@ -28,9 +28,9 @@ const Favoritos = () => {
     }
 
     try {
-      const userId = localStorage.getItem("userId");
-      const res = await api.get(`/favoritos/${userId}`);
+      const res = await api.get("/favoritos"); 
       setFavoritos(res.data.favoritos || []);
+      console.log(res.data.favoritos);
     } catch (err) {
       console.error(err);
       setError("Erro ao carregar favoritos.");
@@ -81,7 +81,7 @@ const Favoritos = () => {
     <div style={styles.wrapper}>
       <HamburgerDrawer />
 
-      {/* ❤️ Coração fixo no canto superior direito */}
+      {/*Coração fixo no canto superior direito */}
       <div style={styles.topHeart}>
         <FavoriteIcon sx={{ fontSize: 40, color: "#e91e63" }} />
       </div>
@@ -197,7 +197,15 @@ const styles = {
     color: "#333",
     fontWeight: 500,
   },
-  listaFavoritos: { display: "grid", gridTemplateColumns: "1fr", gap: 24 },
+  listaFavoritos: {
+    display: "grid",
+    gridTemplateColumns: "1fr",
+    gap: 24,
+    maxHeight: "70vh",  
+    overflowY: "auto",  
+    paddingRight: 16,
+  },
+  
   card: {
     backgroundColor: "#fff",
     padding: 24,
@@ -208,12 +216,14 @@ const styles = {
     boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
     cursor: "default",
     userSelect: "none",
-    marginLeft: -180,
     position: "relative",
   },
   infoContainer: { display: "flex", flexDirection: "column", gap: 6, flex: 1 },
+
   nome: { fontWeight: 700, fontSize: 18, color: "#000" },
+
   endereco: { fontSize: 16, color: "#555" },
+
   deleteButton: {
     background: "none",
     border: "none",

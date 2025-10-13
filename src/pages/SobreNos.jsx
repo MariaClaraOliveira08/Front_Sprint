@@ -65,13 +65,13 @@ const styles = {
     height: "100vh",
     overflowY: "auto",
     display: "flex",
-    justifyContent: "center", // centraliza o conteúdo
-    alignItems: "flex-start", // alinha ao topo
+    justifyContent: "center", 
+    alignItems: "flex-start", 
     padding: 40,
     boxSizing: "border-box",
   },
   content: {
-    maxWidth: 800, // limita largura do conteúdo centralizado
+    maxWidth: 800, 
     width: "100%",
   },
   logoWrapper: {

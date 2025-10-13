@@ -11,11 +11,12 @@ const Inicio = () => {
       backgroundColor: "#e5e5e5",
       display: "flex",
       flexDirection: "column",
-      justifyContent: "flex-start", // tudo começa do topo
-      alignItems: "flex-start", // mantém margemLeft no texto
-      height: "100vh",
-      width: "100%",
-      padding: "40px",
+      justifyContent: "flex-start",
+      alignItems: "flex-start",
+      width: "100vw", 
+      height: "100vh", 
+      margin: 0, 
+      padding: 0, 
       position: "relative",
     },
     logo: {
@@ -47,11 +48,11 @@ const Inicio = () => {
       justifyContent: "center",
       alignItems: "center",
       cursor: "pointer",
-      position: "relative", 
-      top: 40, 
+      position: "relative",
+      top: 40,
     },
     Link: {
-      whiteSpace: "nowrap", // evita quebra de linha
+      whiteSpace: "nowrap",
     },
   };
 
@@ -68,9 +69,9 @@ const Inicio = () => {
       <div
         style={{
           display: "flex",
-          flexDirection: "column", // empilha verticalmente
-          alignItems: "center", // centraliza horizontalmente
-          gap: "8px", // espaço entre botão e link
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "8px",
           marginTop: "200px",
           marginLeft: 950,
         }}
@@ -85,7 +86,7 @@ const Inicio = () => {
             textDecoration: "none",
             color: "#4a5a87",
             fontWeight: 600,
-            whiteSpace: "nowrap", // evita quebra
+            whiteSpace: "nowrap",
             marginTop: 40,
           }}
         >

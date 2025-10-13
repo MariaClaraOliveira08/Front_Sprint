@@ -46,5 +46,3 @@ Este projeto fornece a estrutura inicial para um sistema com telas de **Login** 
     - biblioteca para instalar o mapa:
    ```sh
    npm install @react-google-maps/api
-
-

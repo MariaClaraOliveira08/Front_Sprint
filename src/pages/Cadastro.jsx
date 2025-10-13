@@ -11,7 +11,8 @@ import {
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import sheets from "../axios/axios";
 import PasswordField from "../components/PasswordField";
-import CustomSnackbar from "../components/CustomSnackbar"; // importa o snackbar
+import CustomSnackbar from "../components/CustomSnackbar";
+import ValidacaoCodigo from "../components/ValidacaoCodigo"; 
 
 export default function Cadastro() {
   const navigate = useNavigate();
@@ -32,6 +33,8 @@ export default function Cadastro() {
     message: "",
     severity: "success",
   });
+
+  const [openModal, setOpenModal] = useState(false); // controla o modal
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -57,23 +60,15 @@ export default function Cadastro() {
         confirmarSenha: user.confirmarSenha,
       };
 
-      const response = await sheets.postCadastro(usuario);
-
-      // exibe o snackbar em vez de alert
+      const response = await sheets.post("/user", usuario);
       setSnackbar({
         open: true,
-        message: response.data.message || "Cadastro realizado com sucesso!",
+        message: response.data.message || "Código enviado para seu e-mail!",
         severity: "success",
       });
 
-      if (response.data.token) {
-        localStorage.setItem("token", response.data.token);
-      }
-
-      // aguarda 1,5s e redireciona para login
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
+      // abre modal de confirmação
+      setOpenModal(true);
     } catch (err) {
       console.error("Erro ao cadastrar:", err.response?.data || err.message);
       setSnackbar({
@@ -102,7 +97,6 @@ export default function Cadastro() {
     >
       <CssBaseline />
 
-      {/* Logo */}
       <Box display="flex" flexDirection="column" alignItems="center" mb={1}>
         <Box display="flex" alignItems="center" gap={1}>
           <LocationOnOutlinedIcon sx={{ fontSize: 30, color: "#000" }} />
@@ -115,7 +109,6 @@ export default function Cadastro() {
         </Typography>
       </Box>
 
-      {/* Formulário */}
       <Box
         component="form"
         sx={{
@@ -260,6 +253,14 @@ export default function Cadastro() {
         message={snackbar.message}
         severity={snackbar.severity}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
+      />
+
+      {/* Modal de verificação */}
+      <ModalVerificarCodigo
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        email={user.email}
+        onSuccess={() => navigate("/login")}
       />
     </Box>
   );

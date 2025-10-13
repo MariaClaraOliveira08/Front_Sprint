@@ -14,13 +14,13 @@ const Logoff = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("authenticated");
 
-    // ✅ Garante que não fica nada na sessão
+    // Garante que não fica nada na sessão
     sessionStorage.clear();
 
     // Fecha modal
     setMostrarModal(false);
 
-    // 🔄 Redireciona para o login
+    // Redireciona para o login
     navigate("/login", { replace: true });
   };
 

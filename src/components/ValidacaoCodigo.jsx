@@ -1,111 +1,115 @@
 import React, { useState } from "react";
 import {
-  Modal,
   Box,
-  Typography,
-  TextField,
   Button,
+  TextField,
+  Typography,
   CircularProgress,
+  Snackbar,
+  Alert,
+  Modal,
+  Paper,
 } from "@mui/material";
-import api from "../axios/axios"; // seu axios configurado
+import api from "../axios/axios";
 
-export default function ValidacaoEmail({ open, onClose, email, onSuccess }) {
+const ValidacaoCodigo = ({ email, onClose, onVerificationSuccess }) => {
   const [codigo, setCodigo] = useState("");
   const [loading, setLoading] = useState(false);
-  const [erro, setErro] = useState("");
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
 
-  const handleConfirmar = async () => {
-    setErro("");
+  const handleConfirmarCodigo = async () => {
+    if (!codigo) {
+      setSnackbar({
+        open: true,
+        message: "Digite o código recebido por e-mail",
+        severity: "warning",
+      });
+      return;
+    }
+
     setLoading(true);
-
     try {
-      // Chama a API real de verificação
-      const response = await api.post("/verificar-email", {
+      const response = await api.post("/user/confirm", {
         email,
-        codigo,
+        code: codigo,
       });
 
-      if (response.data.success) {
-        onSuccess(); // código correto → redireciona para login
-      } else {
-        setErro(response.data.message || "Código inválido. Tente novamente.");
-      }
+      setSnackbar({
+        open: true,
+        message: response.data.message || "Código confirmado!",
+        severity: "success",
+      });
+
+      // Chama a função do parent para indicar sucesso
+      onVerificationSuccess();
     } catch (err) {
-      console.error("Erro ao validar código:", err);
-      setErro("Erro na validação. Tente novamente.");
+      console.error("Erro ao confirmar código:", err.response?.data || err);
+      setSnackbar({
+        open: true,
+        message:
+          "Erro ao confirmar código: " + (err.response?.data?.error || err.message),
+        severity: "error",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Modal open={open} onClose={onClose}>
-      <Box
-        sx={{
-          bgcolor: "white",
-          borderRadius: 3,
-          p: 4,
-          width: "100%",
-          maxWidth: 400,
-          mx: "auto",
-          mt: "20vh",
-          textAlign: "center",
-          boxShadow: 5,
-        }}
-      >
-        <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-          Verificação de E-mail
+    <Modal open onClose={onClose} sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Paper sx={{ p: 4, width: 350, borderRadius: 2, textAlign: "center" }}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Confirme seu cadastro
         </Typography>
-
         <Typography variant="body2" sx={{ mb: 2 }}>
-          Enviamos um código de verificação para <b>{email}</b>.
-          <br />
-          Digite-o abaixo para confirmar seu cadastro.
+          Enviamos um código para o e-mail <strong>{email}</strong>
         </Typography>
-
         <TextField
           fullWidth
-          label="Código de Verificação"
+          label="Código"
           value={codigo}
           onChange={(e) => setCodigo(e.target.value)}
           sx={{ mb: 2 }}
         />
-
-        {erro && (
-          <Typography sx={{ color: "red", mb: 2, fontSize: 14 }}>
-            {erro}
-          </Typography>
-        )}
-
         <Button
-          fullWidth
           variant="contained"
-          onClick={handleConfirmar}
-          disabled={loading || !codigo}
-          sx={{
-            bgcolor: "#69819A",
-            color: "#000",
-            fontWeight: "bold",
-            borderRadius: 2,
-            textTransform: "none",
-          }}
+          fullWidth
+          onClick={handleConfirmarCodigo}
+          disabled={loading}
         >
-          {loading ? <CircularProgress size={24} sx={{ color: "#000" }} /> : "Confirmar"}
+          {loading ? <CircularProgress size={24} /> : "Confirmar Código"}
         </Button>
 
         <Button
+          variant="text"
           fullWidth
+          sx={{ mt: 1 }}
           onClick={onClose}
-          sx={{
-            mt: 1.5,
-            textTransform: "none",
-            fontWeight: "bold",
-            color: "#62798B",
-          }}
         >
           Cancelar
         </Button>
-      </Box>
+
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={4000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+            severity={snackbar.severity}
+            sx={{ width: "100%" }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Paper>
     </Modal>
   );
-}
+};
+
+export default ValidacaoCodigo;
