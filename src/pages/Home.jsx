@@ -20,6 +20,7 @@ const Home = () => {
 
   const navigate = useNavigate();
 
+  // Definição das Categorias e Subcategorias com seus 'types'
   const categorias = [
     {
       nome: "Restaurantes",
@@ -52,6 +53,7 @@ const Home = () => {
     },
   ];
 
+  // Efeito para buscar estabelecimentos quando a categoria ou subcategoria muda
   useEffect(() => {
     const fetchEstabelecimentos = async () => {
       if (!categoriaSelecionada) return;
@@ -63,18 +65,23 @@ const Home = () => {
         );
         if (!categoria) return;
 
+        // Determina o 'type' para a busca:
+        const typeToSearch = subcategoriaSelecionada || categoria.type;
+
+        // Requisição API para buscar lugares em Franca/SP (coordenadas -20.5381,-47.4008)
         const response = await api.get("/buscar", {
           params: {
-            location: "-20.5381,-47.4008",
-            radius: 17000,
-            type: subcategoriaSelecionada || categoria.type,
+            location: "-20.5381,-47.4008", // Franca/SP
+            radius: 17000, // Raio de 17km
+            type: typeToSearch, // Tipo específico ou principal
           },
         });
 
+        // Mapeamento dos dados para o estado 'lugares'
         const dados = (response.data.estabelecimentos || []).map((item) => ({
           nome: item.nome || "Nome não disponível",
           endereco: item.endereco || "Não disponível",
-          categoria: subcategoriaSelecionada || categoria.nome,
+          categoria: subcategoriaSelecionada || categoria.nome, 
           telefone: item.telefone || "Não disponível",
           horarios: item.horarios || "Não disponível",
           avaliacao: item.avaliacao || "Não disponível",
@@ -95,11 +102,19 @@ const Home = () => {
     };
 
     fetchEstabelecimentos();
-  }, [categoriaSelecionada, subcategoriaSelecionada]);
+  }, [categoriaSelecionada, subcategoriaSelecionada]); 
 
+  // Filtra lugares pelo termo de busca
   const lugaresFiltrados = lugares.filter((lugar) =>
     (lugar.nome || "").toLowerCase().includes(termoBusca.toLowerCase())
   );
+
+  // Determina o 'type' exato para ser passado ao Mapa
+  const categoriaAtiva = categorias.find(
+    (cat) => cat.nome.toLowerCase() === categoriaSelecionada
+  );
+  const typeParaMapa = subcategoriaSelecionada || (categoriaAtiva ? categoriaAtiva.type : null);
+
 
   if (loading)
     return (
@@ -132,14 +147,14 @@ const Home = () => {
           <SearchIcon style={styles.searchIcon} />
         </div>
 
-        {/* Categorias Pai */}
+        {/* Categorias Pai (Ícones) */}
         <div style={styles.categorias}>
           {categorias.map((cat) => (
             <button
               key={cat.nome}
               onClick={() => {
                 setCategoriaSelecionada(cat.nome.toLowerCase());
-                setSubcategoriaSelecionada(null);
+                setSubcategoriaSelecionada(null); 
               }}
               style={{
                 ...styles.botaoCategoria,
@@ -158,7 +173,7 @@ const Home = () => {
           ))}
         </div>
 
-        {/* Subcategorias */}
+        {/* Subcategorias (Botões de texto) */}
         {categoriaSelecionada && (
           <div style={styles.subcategorias}>
             {categorias
@@ -191,11 +206,12 @@ const Home = () => {
               onClick={() => {
                 setEnderecoSelecionado(index);
                 setOpenModal(true);
+                // ATENÇÃO: Envia 'categoriaType' (string) para o Mapa
                 navigate("/mapa", {
                   state: {
                     lugares: lugaresFiltrados,
                     lugar: lugar,
-                    categoria: subcategoriaSelecionada || categoriaSelecionada,
+                    categoriaType: typeParaMapa, // Passa o 'type' específico
                   },
                 });
               }}
@@ -247,6 +263,7 @@ const styles = {
     outline: "none",
     padding: "12px 10px",
     fontSize: 14,
+  
   },
   searchIcon: { color: "#555", fontSize: 24, cursor: "pointer", marginLeft: 8 },
   categorias: {
@@ -262,6 +279,8 @@ const styles = {
     justifyContent: "center",
     gap: 10,
     marginBottom: 30,
+    marginRight: 200,
+    
   },
   botaoCategoria: {
     width: 80,
@@ -283,7 +302,12 @@ const styles = {
     fontSize: 14,
     fontWeight: "bold",
   },
-  lugares: { display: "flex", flexDirection: "column", gap: 15 },
+  lugares: { 
+    display: "flex", 
+    flexDirection: "column", 
+    gap: 15,
+    marginRight: 200,
+  },
   lugar: {
     padding: "15px 20px",
     borderRadius: 8,

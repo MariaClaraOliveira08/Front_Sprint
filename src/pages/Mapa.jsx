@@ -26,15 +26,16 @@ const Mapa = ({ latitude = -20.5381, longitude = -47.4008 }) => {
     }
   }, [location.state]);
 
-  // Busca todos os lugares da categoria selecionada
+  // Busca todos os lugares da categoria selecionada (usando o 'type' que veio do Home)
   useEffect(() => {
-    if (mapRef.current && location.state?.categoria) {
+    // ATENÇÃO: Agora esperamos 'categoriaType', que é uma string (ex: 'pizzeria', 'restaurant')
+    if (mapRef.current && location.state?.categoriaType) { 
       const service = new window.google.maps.places.PlacesService(mapRef.current);
 
       const request = {
         location: new window.google.maps.LatLng(latitude, longitude),
         radius: 3000, // raio de busca em metros
-        type: location.state.categoria.type, // ex: "pizzeria", "restaurant", "bar"
+        type: location.state.categoriaType, // USA A STRING DO TYPE
       };
 
       service.nearbySearch(request, (results, status) => {
@@ -43,7 +44,7 @@ const Mapa = ({ latitude = -20.5381, longitude = -47.4008 }) => {
         }
       });
     }
-  }, [location.state?.categoria]);
+  }, [location.state?.categoriaType]); // DEPENDÊNCIA ALTERADA
 
   // Gera URL da foto do Google Places
   const getFotoURL = (lugar) => {

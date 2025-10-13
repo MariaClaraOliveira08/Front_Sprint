@@ -1,266 +1,335 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import {
-  Box,
-  TextField,
-  Button,
-  Typography,
-  CssBaseline,
-  Link as MuiLink,
-} from "@mui/material";
+import React, { useState, useEffect } from "react";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
-import sheets from "../axios/axios";
-import PasswordField from "../components/PasswordField";
-import CustomSnackbar from "../components/CustomSnackbar"; // importa o snackbar
+import SearchIcon from "@mui/icons-material/Search";
+import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
+import ParkIcon from "@mui/icons-material/Park";
+import StorefrontIcon from "@mui/icons-material/Storefront";
+import HamburgerDrawer from "../components/HamburgerDrawer";
+import DetalhesModal from "../components/Modal";
+import api from "../axios/axios";
+import { useNavigate } from "react-router-dom";
 
-export default function Cadastro() {
-  const navigate = useNavigate();
+const Home = () => {
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
+  const [subcategoriaSelecionada, setSubcategoriaSelecionada] = useState(null);
+  const [lugares, setLugares] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [termoBusca, setTermoBusca] = useState("");
+  const [openModal, setOpenModal] = useState(false);
+  const [enderecoSelecionado, setEnderecoSelecionado] = useState(null);
 
-  const [user, setUser] = useState({
-    nome: "",
-    cpf: "",
-    email: "",
-    senha: "",
-    confirmarSenha: "",
-  });
+  const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(false);
-  const [btnHover, setBtnHover] = useState(false);
-  const [mensagem, setMensagem] = useState("");
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  // Definição das Categorias e Subcategorias com seus 'types'
+  const categorias = [
+    {
+      nome: "Restaurantes",
+      type: "restaurant", // Tipo principal
+      icon: <RestaurantMenuIcon sx={{ fontSize: 40 }} />,
+      subcategorias: [
+        // CORRIGIDO: Usando 'meal_takeaway' (entrega/para viagem) que é oficial e bom para Pizzarias.
+        { nome: "Pizzarias", type: "meal_takeaway" }, 
+        // CORRIGIDO: Usando 'food' (comida em geral) que é oficial, pois 'burger' não é.
+        { nome: "Hamburguerias", type: "food" }, 
+        { nome: "Bares", type: "bar" }, // Tipo oficial
+      ],
+    },
+    {
+      nome: "Lojas",
+      type: "store", // Tipo principal
+      icon: <StorefrontIcon sx={{ fontSize: 40 }} />,
+      subcategorias: [
+        { nome: "Mercados", type: "supermarket" }, // Tipo oficial
+        { nome: "Shopping", type: "shopping_mall" }, // Tipo oficial
+        { nome: "Farmácias", type: "pharmacy" }, // Tipo oficial
+      ],
+    },
+    {
+      nome: "Parques",
+      type: "park", // Tipo principal
+      icon: <ParkIcon sx={{ fontSize: 40 }} />,
+      subcategorias: [
+        { nome: "Jardins Botânicos", type: "botanical_garden" }, // Tipo oficial
+        { nome: "Parques Urbanos", type: "park" }, // Usando o type principal/oficial
+      ],
+    },
+  ];
 
-  const onChange = (e) => {
-    const { name, value } = e.target;
-    setUser({ ...user, [name]: value });
-  };
+  // Efeito para buscar estabelecimentos quando a categoria ou subcategoria muda
+  useEffect(() => {
+    const fetchEstabelecimentos = async () => {
+      if (!categoriaSelecionada) return;
+      setLoading(true);
 
-  const handleCadastro = async () => {
-    setMensagem("");
-    setLoading(true);
+      try {
+        const categoria = categorias.find(
+          (cat) => cat.nome.toLowerCase() === categoriaSelecionada
+        );
+        if (!categoria) return;
 
-    if (user.senha !== user.confirmarSenha) {
-      setMensagem("As senhas não coincidem.");
-      setLoading(false);
-      return;
-    }
+        // Determina o 'type' para a busca: (Prioriza a subcategoria se selecionada)
+        const typeToSearch = subcategoriaSelecionada || categoria.type;
 
-    try {
-      const usuario = {
-        nome: user.nome,
-        cpf: user.cpf.replace(/\D/g, ""),
-        email: user.email,
-        senha: user.senha,
-        confirmarSenha: user.confirmarSenha,
-      };
+        // Requisição API para buscar lugares em Franca/SP (coordenadas -20.5381,-47.4008)
+        const response = await api.get("/buscar", {
+          params: {
+            location: "-20.5381,-47.4008", // Franca/SP
+            radius: 17000, // Raio de 17km
+            type: typeToSearch, // Tipo específico ou principal
+          },
+        });
 
-      const response = await sheets.postCadastro(usuario);
+        // Mapeamento dos dados para o estado 'lugares'
+        const dados = (response.data.estabelecimentos || []).map((item) => ({
+          nome: item.nome || "Nome não disponível",
+          endereco: item.endereco || "Não disponível",
+          // Usa o nome da subcategoria se selecionada, senão o nome da categoria principal
+          categoria: 
+            categorias.flatMap(c => c.subcategorias).find(sub => sub.type === subcategoriaSelecionada)?.nome 
+            || categoria.nome,
+          telefone: item.telefone || "Não disponível",
+          horarios: item.horarios || "Não disponível",
+          avaliacao: item.avaliacao || "Não disponível",
+          place_id: item.place_id,
+          lat: item.latitude,
+          lng: item.longitude,
+          comentarios: item.comentarios || [],
+          photos: item.photos || [],
+        }));
 
-      // exibe o snackbar em vez de alert
-      setSnackbar({
-        open: true,
-        message: response.data.message || "Cadastro realizado com sucesso!",
-        severity: "success",
-      });
+        setLugares(dados);
+      } catch (error) {
+        console.error("Erro ao carregar estabelecimentos:", error);
+        setLugares([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      if (response.data.token) {
-        localStorage.setItem("token", response.data.token);
-      }
+    fetchEstabelecimentos();
+  }, [categoriaSelecionada, subcategoriaSelecionada]); 
 
-      // aguarda 1,5s e redireciona para login
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
-    } catch (err) {
-      console.error("Erro ao cadastrar:", err.response?.data || err.message);
-      setSnackbar({
-        open: true,
-        message:
-          "Erro ao cadastrar: " + (err.response?.data?.error || err.message),
-        severity: "error",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Filtra lugares pelo termo de busca
+  const lugaresFiltrados = lugares.filter((lugar) =>
+    (lugar.nome || "").toLowerCase().includes(termoBusca.toLowerCase())
+  );
 
-  return (
-    <Box
-      sx={{
-        width: "100%",
-        minHeight: "100vh",
-        bgcolor: "#e5e5e5",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        py: 2,
-      }}
-    >
-      <CssBaseline />
+  // Determina o 'type' exato para ser passado ao Mapa
+  const categoriaAtiva = categorias.find(
+    (cat) => cat.nome.toLowerCase() === categoriaSelecionada
+  );
+  const typeParaMapa = subcategoriaSelecionada || (categoriaAtiva ? categoriaAtiva.type : null);
 
-      {/* Logo */}
-      <Box display="flex" flexDirection="column" alignItems="center" mb={1}>
-        <Box display="flex" alignItems="center" gap={1}>
-          <LocationOnOutlinedIcon sx={{ fontSize: 30, color: "#000" }} />
-          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-            Glimp
-          </Typography>
-        </Box>
-        <Typography variant="caption" sx={{ mt: 0.5, fontSize: 14 }}>
-          Grandes Lugares Inspiram Momentos Perfeitos.
-        </Typography>
-      </Box>
 
-      {/* Formulário */}
-      <Box
-        component="form"
-        sx={{
-          width: "100%",
-          maxWidth: 450,
-          display: "flex",
-          flexDirection: "column",
-          gap: 1.5,
-        }}
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleCadastro();
-        }}
-      >
-        <TextField
-          fullWidth
-          required
-          label="Nome"
-          name="nome"
-          value={user.nome}
-          onChange={onChange}
-          variant="filled"
-          InputProps={{
-            disableUnderline: true,
-            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
-          }}
-          InputLabelProps={{ sx: { color: "#000" } }}
-          disabled={loading}
-        />
-        <TextField
-          fullWidth
-          required
-          label="CPF"
-          name="cpf"
-          value={user.cpf}
-          onChange={onChange}
-          variant="filled"
-          InputProps={{
-            disableUnderline: true,
-            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
-          }}
-          InputLabelProps={{ sx: { color: "#000" } }}
-          disabled={loading}
-        />
-        <TextField
-          fullWidth
-          required
-          label="Email"
-          name="email"
-          value={user.email}
-          onChange={onChange}
-          variant="filled"
-          InputProps={{
-            disableUnderline: true,
-            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
-          }}
-          InputLabelProps={{ sx: { color: "#000" } }}
-          disabled={loading}
-        />
-        <PasswordField
-          fullWidth
-          required
-          label="Senha"
-          name="senha"
-          type="password"
-          value={user.senha}
-          onChange={onChange}
-          variant="filled"
-          InputProps={{
-            disableUnderline: true,
-            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
-          }}
-          InputLabelProps={{ sx: { color: "#000" } }}
-          disabled={loading}
-        />
-        <PasswordField
-          fullWidth
-          required
-          label="Confirmar Senha"
-          name="confirmarSenha"
-          type="password"
-          value={user.confirmarSenha}
-          onChange={onChange}
-          variant="filled"
-          InputProps={{
-            disableUnderline: true,
-            sx: { bgcolor: "#A6B4CE", borderRadius: 2, color: "#000" },
-          }}
-          InputLabelProps={{ sx: { color: "#000" } }}
-          disabled={loading}
-        />
+  if (loading)
+    return (
+      <div style={styles.loadingContainer}>
+        <p>Carregando...</p>
+      </div>
+    );
 
-        <Typography variant="caption" sx={{ mt: 1, textAlign: "center" }}>
-          Já possui cadastro?{" "}
-          <MuiLink
-            component={Link}
-            to="/login"
-            sx={{ fontWeight: "bold", color: "#62798B" }}
-          >
-            Logar
-          </MuiLink>
-        </Typography>
+  return (
+    <div style={styles.container}>
+      <HamburgerDrawer />
+      <div style={styles.main}>
+        <div style={styles.logoWrapper}>
+          <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
+          <h2 style={styles.logo}>Glimp</h2>
+        </div>
+        <p style={styles.subtitulo}>
+          Grandes Lugares Inspiram Momentos Perfeitos.
+        </p>
 
-        <Button
-          type="submit"
-          variant="contained"
-          onMouseEnter={() => !loading && setBtnHover(true)}
-          onMouseLeave={() => setBtnHover(false)}
-          disabled={loading}
-          sx={{
-            bgcolor: btnHover ? "#4b5c75" : "#69819A",
-            color: "#000",
-            borderRadius: 2,
-            py: 1,
-            mt: 1,
-            fontWeight: "bold",
-            textTransform: "none",
-            width: 150,
-            alignSelf: "center",
-          }}
-        >
-          {loading ? "Cadastrando..." : "Cadastrar"}
-        </Button>
+        {/* Campo de busca */}
+        <div style={styles.searchWrapper}>
+          <input
+            type="text"
+            placeholder="Pesquisar..."
+            style={styles.search}
+            value={termoBusca}
+            onChange={(e) => setTermoBusca(e.target.value)}
+          />
+          <SearchIcon style={styles.searchIcon} />
+        </div>
 
-        {mensagem && (
-          <Typography
-            sx={{
-              mt: 1,
-              color: "red",
-              fontWeight: "bold",
-              textAlign: "center",
-            }}
-          >
-            {mensagem}
-          </Typography>
-        )}
-      </Box>
+        {/* Categorias Pai (Ícones) */}
+        <div style={styles.categorias}>
+          {categorias.map((cat) => (
+            <button
+              key={cat.nome}
+              onClick={() => {
+                setCategoriaSelecionada(cat.nome.toLowerCase());
+                setSubcategoriaSelecionada(null); // Reseta a subcategoria
+              }}
+              style={{
+                ...styles.botaoCategoria,
+                backgroundColor:
+                  categoriaSelecionada === cat.nome.toLowerCase()
+                    ? "#4a5a87"
+                    : "#d9d9d9",
+                color:
+                  categoriaSelecionada === cat.nome.toLowerCase()
+                    ? "#fff"
+                    : "#000",
+              }}
+            >
+              {cat.icon}
+            </button>
+          ))}
+        </div>
 
-      {/* Snackbar */}
-      <CustomSnackbar
-        open={snackbar.open}
-        message={snackbar.message}
-        severity={snackbar.severity}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      />
-    </Box>
-  );
-}
+        {/* Subcategorias (Botões de texto) */}
+        {categoriaSelecionada && (
+          <div style={styles.subcategorias}>
+            {categorias
+              .find((cat) => cat.nome.toLowerCase() === categoriaSelecionada)
+              ?.subcategorias.map((sub) => (
+                <button
+                  key={sub.nome}
+                  onClick={() => setSubcategoriaSelecionada(sub.type)}
+                  style={{
+                    ...styles.botaoSubcategoria,
+                    backgroundColor:
+                      subcategoriaSelecionada === sub.type
+                        ? "#4a5a87"
+                        : "#d9d9d9",
+                    color:
+                      subcategoriaSelecionada === sub.type ? "#fff" : "#000",
+                  }}
+                >
+                  {sub.nome}
+                </button>
+              ))}
+          </div>
+        )}
+
+        {/* Lista de lugares */}
+        <div style={styles.lugares}>
+          {lugaresFiltrados.map((lugar, index) => (
+            <div
+              key={lugar.place_id || index}
+              onClick={() => {
+                setEnderecoSelecionado(index);
+                setOpenModal(true);
+                // ATENÇÃO: Envia 'categoriaType' (string) para o Mapa
+                navigate("/mapa", {
+                  state: {
+                    lugares: lugaresFiltrados,
+                    lugar: lugar,
+                    categoriaType: typeParaMapa, // Passa o 'type' específico
+                  },
+                });
+              }}
+              style={styles.lugar}
+            >
+              {lugar.nome}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Modal de detalhes */}
+      <DetalhesModal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        lugar={
+          enderecoSelecionado !== null ? lugares[enderecoSelecionado] : null
+        }
+      />
+    </div>
+  );
+};
+
+const styles = {
+  container: {
+    display: "flex",
+    minHeight: "100vh",
+    width: "100vw",
+    fontFamily: "Segoe UI, sans-serif",
+    overflow: "hidden",
+  },
+  main: { flex: 1, backgroundColor: "#f5f5f5", padding: 50, paddingLeft: 200 },
+  logoWrapper: { display: "flex", alignItems: "center", gap: 10 },
+  logo: { margin: 0, fontSize: 26, color: "#4a5a87" },
+  subtitulo: { fontSize: 14, color: "#777", marginBottom: 20 },
+  searchWrapper: {
+    display: "flex",
+    alignItems: "center",
+    width: "70%",
+    backgroundColor: "#fff",
+    borderRadius: 25,
+    padding: "0 15px",
+    border: "1px solid #ccc",
+    marginBottom: 40,
+  },
+  search: {
+    flex: 1,
+    border: "none",
+    outline: "none",
+    padding: "12px 10px",
+    fontSize: 14,
+  
+  },
+  searchIcon: { color: "#555", fontSize: 24, cursor: "pointer", marginLeft: 8 },
+  categorias: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 20,
+    marginBottom: 20,
+    marginRight: 210,
+  },
+  subcategorias: {
+    display: "flex",
+    justifyContent: "center",
+    gap: 10,
+    marginBottom: 30,
+    marginRight: 200,
+    
+  },
+  botaoCategoria: {
+    width: 80,
+    height: 80,
+    borderRadius: 15,
+    border: "none",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    cursor: "pointer",
+    fontSize: 40,
+    fontWeight: "bold",
+  },
+  botaoSubcategoria: {
+    padding: "8px 16px",
+    borderRadius: 20,
+    border: "none",
+    cursor: "pointer",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  lugares: { 
+    display: "flex", 
+    flexDirection: "column", 
+    gap: 15,
+    marginRight: 200,
+  },
+  lugar: {
+    padding: "15px 20px",
+    borderRadius: 8,
+    fontWeight: "bold",
+    cursor: "pointer",
+    backgroundColor: "#fff",
+    color: "#333",
+    transition: "0.2s",
+  },
+  loadingContainer: {
+    display: "flex",
+    height: "100vh",
+    justifyContent: "center",
+    alignItems: "center",
+    fontSize: 18,
+    color: "#777",
+  },
+};
+
+export default Home;
