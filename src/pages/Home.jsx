@@ -6,7 +6,7 @@ import ParkIcon from "@mui/icons-material/Park";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import HamburgerDrawer from "../components/HamburgerDrawer";
 import DetalhesModal from "../components/Modal";
-import api from "../axios/axios"; // Mantido para o caso de busca por texto na Home
+import api from "../axios/axios";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -18,7 +18,6 @@ const Home = () => {
   const [termoBusca, setTermoBusca] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [enderecoSelecionado, setEnderecoSelecionado] = useState(null);
-
   const navigate = useNavigate();
 
   const categorias = [
@@ -27,9 +26,9 @@ const Home = () => {
       type: "restaurant",
       icon: <RestaurantMenuIcon sx={{ fontSize: 40 }} />,
       subcategorias: [
-        { nome: "Pizzarias", type: "pizza_restaurant" },
-        { nome: "Hamburguerias", type: "burger_joint" },
-        { nome: "Bares", type: "bar" },
+        { nome: "Pizzarias", type: "restaurant", keyword: "pizzaria" },
+        { nome: "Hamburguerias", type: "restaurant", keyword: "hamburgueria" },
+        { nome: "Bares", type: "bar", keyword: "bar" },
       ],
     },
     {
@@ -37,9 +36,9 @@ const Home = () => {
       type: "store",
       icon: <StorefrontIcon sx={{ fontSize: 40 }} />,
       subcategorias: [
-        { nome: "Mercados", type: "supermarket" },
-        { nome: "Shopping", type: "shopping_mall" },
-        { nome: "Farmácias", type: "pharmacy" },
+        { nome: "Mercados", type: "supermarket", keyword: "mercado" },
+        { nome: "Shopping", type: "shopping_mall", keyword: "shopping" },
+        { nome: "Farmácias", type: "pharmacy", keyword: "farmácia" },
       ],
     },
     {
@@ -47,80 +46,17 @@ const Home = () => {
       type: "park",
       icon: <ParkIcon sx={{ fontSize: 40 }} />,
       subcategorias: [
-        { nome: "Jardins Botânicos", type: "botanical_garden" },
-        { nome: "Parques Urbanos", type: "city_park" },
+        { nome: "Jardins Botânicos", type: "park", keyword: "jardim botânico" },
+        { nome: "Parques Urbanos", type: "park", keyword: "parque urbano" },
       ],
     },
   ];
-
-  // Busca para preencher a lista na Home.
-  useEffect(() => {
-    const fetchEstabelecimentos = async () => {
-      // Se não houver filtro pai, não dispara fetch
-      if (!categoriaSelecionada) {
-        setLugares([]);
-        return;
-      }
-
-      setLoading(true);
-
-      const categoriaPai = categorias.find(
-        (cat) => cat.nome.toLowerCase() === categoriaSelecionada
-      );
-
-      // Se houver subcategoria selecionada (string do tipo), usá-la, caso contrário usar o type do pai
-      const tipoBusca = subcategoriaSelecionada || categoriaPai?.type;
-
-      if (!tipoBusca) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await api.get("/buscar", {
-          params: {
-            location: "-20.5381,-47.4008", // Franca
-            radius: 17000,
-            type: tipoBusca,
-          },
-        });
-
-        const categoriaNome = subcategoriaSelecionada
-          ? categoriaPai.subcategorias.find((s) => s.type === subcategoriaSelecionada)?.nome || "Categoria Desconhecida"
-          : categoriaPai.nome;
-
-        const dados = (response.data.estabelecimentos || []).map((item) => ({
-          nome: item.nome || "Nome não disponível",
-          endereco: item.endereco || "Não disponível",
-          categoria: categoriaNome,
-          telefone: item.telefone || "Não disponível",
-          horarios: item.horarios || "Não disponível",
-          avaliacao: item.avaliacao || "Não disponível",
-          place_id: item.place_id,
-          lat: item.latitude,
-          lng: item.longitude,
-          comentarios: item.comentarios || [],
-          photos: item.photos || [],
-        }));
-
-        setLugares(dados);
-      } catch (error) {
-        console.error("Erro ao carregar estabelecimentos:", error);
-        setLugares([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEstabelecimentos();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoriaSelecionada, subcategoriaSelecionada]);
 
   const lugaresFiltrados = lugares.filter((lugar) =>
     (lugar.nome || "").toLowerCase().includes(termoBusca.toLowerCase())
   );
 
-  if (loading && categoriaSelecionada) // Só mostra loading se uma categoria foi selecionada
+  if (loading && categoriaSelecionada)
     return (
       <div style={styles.loadingContainer}>
         <p>Carregando...</p>
@@ -157,7 +93,6 @@ const Home = () => {
             <button
               key={cat.nome}
               onClick={() => {
-                // Apenas expande/contrai a categoria pai; não navega
                 if (categoriaSelecionada === cat.nome.toLowerCase()) {
                   setCategoriaSelecionada(null);
                   setSubcategoriaSelecionada(null);
@@ -183,7 +118,7 @@ const Home = () => {
           ))}
         </div>
 
-        {/* Subcategorias com animação (aparece somente quando um pai está selecionado) */}
+        {/* Subcategorias */}
         <AnimatePresence>
           {categoriaSelecionada && (
             <motion.div
@@ -191,7 +126,7 @@ const Home = () => {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.22 }}
+              transition={{ duration: 0.25 }}
               style={styles.subcategoriasWrapper}
             >
               <div style={styles.subcategorias}>
@@ -202,10 +137,10 @@ const Home = () => {
                       key={sub.nome}
                       onClick={() => {
                         setSubcategoriaSelecionada(sub.type);
-                        // Navegar para mapa com a subcategoria escolhida
                         navigate("/mapa", {
                           state: {
                             categoria: sub.type,
+                            keyword: sub.keyword,
                           },
                         });
                       }}
@@ -226,48 +161,7 @@ const Home = () => {
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Lista de lugares (Preenchida pelo useEffect acima, reage ao filtro) */}
-        {lugaresFiltrados.length > 0 && categoriaSelecionada && (
-          <h3 style={{ marginTop: 10 }}>Lugares em Franca ({lugaresFiltrados.length})</h3>
-        )}
-
-        <div style={styles.lugares}>
-          {lugaresFiltrados.map((lugar, index) => (
-            <div
-              key={lugar.place_id || index}
-              onClick={() => {
-                setEnderecoSelecionado(index);
-                setOpenModal(true);
-                // Navegação para o mapa com um item específico para centralizar
-                navigate("/mapa", {
-                  state: {
-                    lugar: lugar,
-                    categoria:
-                      subcategoriaSelecionada ||
-                      categorias.find((c) => c.nome.toLowerCase() === categoriaSelecionada)?.type,
-                  },
-                });
-              }}
-              style={styles.lugar}
-            >
-              {lugar.nome}
-            </div>
-          ))}
-          {lugaresFiltrados.length === 0 && categoriaSelecionada && !loading && (
-            <p style={{ color: "#777", textAlign: "center", marginTop: 20 }}>
-              Nenhum lugar encontrado com este filtro. Tente outra busca ou categoria.
-            </p>
-          )}
-        </div>
       </div>
-
-      {/* Modal de detalhes */}
-      <DetalhesModal
-        open={openModal}
-        onClose={() => setOpenModal(false)}
-        lugar={enderecoSelecionado !== null ? lugares[enderecoSelecionado] : null}
-      />
     </div>
   );
 };
@@ -342,16 +236,6 @@ const styles = {
     cursor: "pointer",
     fontSize: 14,
     fontWeight: "bold",
-  },
-  lugares: { display: "flex", flexDirection: "column", gap: 15, marginTop: 10 },
-  lugar: {
-    padding: "15px 20px",
-    borderRadius: 8,
-    fontWeight: "bold",
-    cursor: "pointer",
-    backgroundColor: "#fff",
-    color: "#333",
-    transition: "0.2s",
   },
   loadingContainer: {
     display: "flex",
