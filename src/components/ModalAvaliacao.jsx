@@ -42,8 +42,8 @@ function AvaliacoesUsuario() {
   };
 
   const handleOpenModal = (avaliacao) => {
-    setAvaliacaoModal(avaliacao);  // Define a avaliação que será mostrada
-    setOpenModal(true);  // Abre o modal
+    setAvaliacaoModal(avaliacao);
+    setOpenModal(true);
   };
 
   const handleCloseModal = () => {
@@ -51,12 +51,12 @@ function AvaliacoesUsuario() {
     setAvaliacaoModal(null);
   };
 
-  const handleDeleteAvalicao = async () => {
-    if (!avaliacaoModal) return;
+  const handleDeleteAvalicao = async (avaliacao) => {
+    if (!avaliacao) return;
     try {
-      await api.deletarAvaliacao(avaliacaoModal.id_avaliacao);
+      await api.deletarAvaliacao(avaliacao.id_avaliacao);
       setAvaliacoes((prev) =>
-        prev.filter((a) => a.id_avaliacao !== avaliacaoModal.id_avaliacao)
+        prev.filter((a) => a.id_avaliacao !== avaliacao.id_avaliacao)
       );
       handleCloseModal();
     } catch (err) {
@@ -142,9 +142,18 @@ function AvaliacoesUsuario() {
                 <Button
                   variant="text"
                   size="small"
-                  onClick={() => handleOpenModal(avaliacao)} // Abre o modal de avaliação
+                  onClick={() => handleOpenModal(avaliacao)}
                 >
                   Ver mais
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  color="error"
+                  size="small"
+                  onClick={() => handleDeleteAvalicao(avaliacao)}
+                >
+                  Deletar
                 </Button>
               </Box>
             </Paper>
@@ -156,7 +165,7 @@ function AvaliacoesUsuario() {
         open={openModal}
         onClose={handleCloseModal}
         avaliacao={avaliacaoModal}
-        onDelete={handleDeleteAvalicao} // Passa a função de deletar para o modal
+        onDelete={handleDeleteAvalicao}
       />
     </Box>
   );
