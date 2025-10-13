@@ -27,8 +27,8 @@ const Home = () => {
       type: "restaurant", // Tipo principal
       icon: <RestaurantMenuIcon sx={{ fontSize: 40 }} />,
       subcategorias: [
-        { nome: "Pizzarias", type: "restaurant" }, 
-        { nome: "Hamburguerias", type: "restaurant" }, 
+        // ALTERAÇÃO AQUI: Subcategoria única com um type que representa "restaurante"
+        { nome: "Pizzarias / Hamburguerias", type: "restaurant" }, 
         { nome: "Bares", type: "bar" }, 
       ],
     },
@@ -86,12 +86,14 @@ const Home = () => {
         );
         if (!categoria) return;
 
-        // Determina o 'type' a ser enviado ao backend (USA O TYPE DO OBJETO)
+        // Determina o 'type' a ser enviado ao backend
+        // O subcategoriaSelecionada agora é o 'type' da subcategoria (ex: "restaurant")
+        const typeToSearch = subcategoriaSelecionada || categoria.type; 
+        
+        // Procura o nome correto da subcategoria (agora "Pizzarias/Hamburguerias")
         const subcategoriaObj = categorias
           .flatMap(c => c.subcategorias)
           .find(sub => sub.type === subcategoriaSelecionada);
-        
-        const typeToSearch = subcategoriaSelecionada || categoria.type; 
         
         const categoryName = subcategoriaObj?.nome || categoria.nome;
 
@@ -102,11 +104,14 @@ const Home = () => {
             location: "-20.5381,-47.4008", // Franca/SP
             radius: 17000, // Raio de 17km
             type: typeToSearch, 
+            // O categoryName vai para o backend como "Pizzarias/Hamburguerias"
+            // O backend (que você não forneceu) deve usar esse nome para 
+            // refinar a busca para "pizza" E "hamburguer" DENTRO do type "restaurant"
             categoryName: categoryName 
           },
         });
 
-        // Mapeamento dos dados para o estado 'lugares'
+        // Mapeamento dos dados para o estado 'lugares' (código omitido, é o mesmo)
         const dados = (response.data.estabelecimentos || []).map((item) => ({
           nome: item.nome || "Nome não disponível",
           endereco: item.endereco || "Não disponível",
@@ -133,12 +138,12 @@ const Home = () => {
     fetchEstabelecimentos();
   }, [categoriaSelecionada, subcategoriaSelecionada]); 
 
-  // Filtra lugares pelo termo de busca
+  // Filtra lugares pelo termo de busca (código omitido, é o mesmo)
   const lugaresFiltrados = lugares.filter((lugar) =>
     (lugar.nome || "").toLowerCase().includes(termoBusca.toLowerCase())
   );
 
-  // Determina o 'type' exato para ser passado ao Mapa
+  // Determina o 'type' exato para ser passado ao Mapa (código omitido, é o mesmo)
   const categoriaAtiva = categorias.find(
     (cat) => cat.nome.toLowerCase() === categoriaSelecionada
   );
@@ -202,7 +207,7 @@ const Home = () => {
           ))}
         </div>
 
-        {/* Subcategorias (código omitido, é o mesmo) */}
+        {/* Subcategorias */}
         {categoriaSelecionada && (
           <div style={styles.subcategorias}>
             {categorias
@@ -210,7 +215,8 @@ const Home = () => {
               ?.subcategorias.map((sub) => (
                 <button
                   key={sub.nome}
-                  onClick={() => setSubcategoriaSelecionada(sub.type)}
+                  // Usa o 'type' (agora "restaurant" ou "bar") para a seleção
+                  onClick={() => setSubcategoriaSelecionada(sub.type)} 
                   style={{
                     ...styles.botaoSubcategoria,
                     backgroundColor:
@@ -221,13 +227,14 @@ const Home = () => {
                       subcategoriaSelecionada === sub.type ? "#fff" : "#000",
                   }}
                 >
-                  {sub.nome}
+                  {/* Usa o nome do objeto (agora "Pizzarias/Hamburguerias") para o texto */}
+                  {sub.nome} 
                 </button>
               ))}
           </div>
         )}
 
-        {/* Lista de lugares - NOVO LAYOUT DE AÇÃO */}
+        {/* Lista de lugares - NOVO LAYOUT DE AÇÃO (código omitido, é o mesmo) */}
         <div style={styles.lugares}>
           {lugaresFiltrados.map((lugar, index) => (
             <div
@@ -260,21 +267,21 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Modal de detalhes */}
+      {/* Modal de detalhes (código omitido, é o mesmo) */}
       <DetalhesModal
         open={openModal}
         onClose={() => setOpenModal(false)}
         lugar={
           enderecoSelecionado !== null && enderecoSelecionado < lugares.length 
-            ? lugares[enderecoSelecionado] 
-            : null
+            ? lugares[enderecoSelecionado] 
+            : null
         }
       />
     </div>
   );
 };
 
-// Adicionando novos estilos
+// ... (Restante do styles é o mesmo)
 const styles = {
   container: {
     display: "flex",
@@ -355,29 +362,29 @@ const styles = {
     backgroundColor: "#fff",
     color: "#333",
     display: 'flex', // NOVO: Container flex para nome e botões
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     transition: "0.2s",
   },
-  lugarNome: { // NOVO: Estilo para o nome do lugar
-    fontWeight: 'bold',
-    fontSize: 16,
-    flexGrow: 1, // Permite que o nome use o espaço restante
-  },
-  lugarBotoes: { // NOVO: Container para os botões de ação
-    display: 'flex',
-    gap: 10,
-  },
-  botaoAcao: { // NOVO: Estilo para os botões Detalhes/Mapa
-    padding: '8px 15px',
-    borderRadius: 8,
-    border: 'none',
-    color: 'white',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    fontSize: 14,
-    minWidth: 100,
-  },
+  lugarNome: { // NOVO: Estilo para o nome do lugar
+    fontWeight: 'bold',
+    fontSize: 16,
+    flexGrow: 1, // Permite que o nome use o espaço restante
+  },
+  lugarBotoes: { // NOVO: Container para os botões de ação
+    display: 'flex',
+    gap: 10,
+  },
+  botaoAcao: { // NOVO: Estilo para os botões Detalhes/Mapa
+    padding: '8px 15px',
+    borderRadius: 8,
+    border: 'none',
+    color: 'white',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    fontSize: 14,
+    minWidth: 100,
+  },
   loadingContainer: {
     display: "flex",
     height: "100vh",
