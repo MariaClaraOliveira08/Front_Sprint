@@ -126,4 +126,3 @@ const styles = {
 };
 
 export default Logoff;
-
