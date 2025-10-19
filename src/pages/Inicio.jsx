@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaChevronUp } from "react-icons/fa";
-
+import logoImg from "../assets/img.png";
 import Mapa from "../components/Mapa"; // 👈 Importe o componente Mapa
 
 const Inicio = () => {
