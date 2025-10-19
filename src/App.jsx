@@ -1,5 +1,3 @@
-
-
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
@@ -10,8 +8,7 @@ import Home from "./pages/Home";
 import Perfil from "./pages/Perfil";
 import SobreNos from "./pages/SobreNos";
 import Favoritos from "./pages/Favoritos";
-import Avaliacao from "./pages/Avaliacao";
-
+import Avaliacoes from "./pages/Avaliacao";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Mapa from "./pages/Mapa";
 
@@ -20,7 +17,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/" element={<Inicio/>} />
+          <Route path="/" element={<Inicio />} />
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/home" element={<Home />} />
@@ -34,7 +31,7 @@ function App() {
             }
           />
 
-            <Route
+          <Route
             path="/mapa"
             element={
               <ProtectedRoute>
@@ -60,15 +57,15 @@ function App() {
             }
           />
 
-<Route
+          <Route
             path="/avaliacao"
             element={
-           
-                <Favoritos />
-
+              <ProtectedRoute>
+                <Avaliacoes />
+              </ProtectedRoute>
             }
           />
-        
+
         </Route>
       </Routes>
     </BrowserRouter>

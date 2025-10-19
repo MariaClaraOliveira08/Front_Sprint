@@ -8,11 +8,12 @@ import {
   Rating,
   Button,
 } from "@mui/material";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import HamburgerDrawer from "../components/HamburgerDrawer";
 import api from "../axios/axios";
 import ModalAvaliacao from "../components/ModalAvaliacao";
 
-function AvaliacoesUsuario() {
+function Avaliacoes() {
   const [avaliacoes, setAvaliacoes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
@@ -42,8 +43,8 @@ function AvaliacoesUsuario() {
   };
 
   const handleOpenModal = (avaliacao) => {
-    setAvaliacaoModal(avaliacao);  // Define a avaliação que será mostrada
-    setOpenModal(true);  // Abre o modal
+    setAvaliacaoModal(avaliacao);
+    setOpenModal(true);
   };
 
   const handleCloseModal = () => {
@@ -51,7 +52,7 @@ function AvaliacoesUsuario() {
     setAvaliacaoModal(null);
   };
 
-  const handleDeleteAvalicao = async () => {
+  const handleDeleteAvaliacao = async () => {
     if (!avaliacaoModal) return;
     try {
       await api.deletarAvaliacao(avaliacaoModal.id_avaliacao);
@@ -75,16 +76,45 @@ function AvaliacoesUsuario() {
       <Box
         sx={{
           flex: 1,
-          p: 2,
+          p: 5,
           display: "flex",
           flexDirection: "column",
           gap: 3,
           width: "100%",
           overflowY: "auto",
           maxHeight: "100vh",
-          alignItems: "center", // centraliza os cards
+          alignItems: "center",
+          backgroundColor: "#f3f4f6",
+          fontFamily: "Segoe UI, sans-serif",
         }}
       >
+        {/* ✅ Cabeçalho igual ao da Home */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
+            <Typography
+              variant="h5"
+              sx={{ fontWeight: 700, color: "#4a5a87", margin: 0 }}
+            >
+              Glimp
+            </Typography>
+          </Box>
+          <Typography
+            variant="subtitle2"
+            sx={{ color: "#777", mt: 0.5, textAlign: "center" }}
+          >
+            Grandes Lugares Inspiram Momentos Perfeitos.
+          </Typography>
+        </Box>
+
+        {/* 🔹 Título da página */}
         <Typography
           variant="h4"
           gutterBottom
@@ -114,8 +144,8 @@ function AvaliacoesUsuario() {
                 gap: 1,
                 transition: "0.3s",
                 width: "100%",
-                maxWidth: 600, // define largura máxima do card
-                margin: "0 auto", // centraliza horizontalmente
+                maxWidth: 600,
+                margin: "0 auto",
                 "&:hover": { transform: "scale(1.01)", boxShadow: 6 },
               }}
             >
@@ -142,7 +172,7 @@ function AvaliacoesUsuario() {
                 <Button
                   variant="text"
                   size="small"
-                  onClick={() => handleOpenModal(avaliacao)} // Abre o modal de avaliação
+                  onClick={() => handleOpenModal(avaliacao)}
                 >
                   Ver mais
                 </Button>
@@ -156,10 +186,10 @@ function AvaliacoesUsuario() {
         open={openModal}
         onClose={handleCloseModal}
         avaliacao={avaliacaoModal}
-        onDelete={handleDeleteAvalicao} // Passa a função de deletar para o modal
+        onDelete={handleDeleteAvaliacao}
       />
     </Box>
   );
 }
 
-export default AvaliacoesUsuario;
+export default Avaliacoes;

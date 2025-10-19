@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://10.89.240.89:3000/projeto_final/",
+  baseURL: "http://localhost:3000/projeto_final/",
   headers: {
     accept: "application/json",
   },
@@ -18,7 +18,6 @@ api.interceptors.request.use((config) => {
 // Endpoints
 api.postCadastro = (user) => api.post("/user", user);
 api.postLogin = (user) => api.post("/login", user);
-//api.getbuscarEstabelecimento = () => api.get("/buscar");
 api.getUsuarioById = (id) => api.get(`/user/${id}`);
 api.putUsuario = (user) => {
   const formData = new FormData();

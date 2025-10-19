@@ -8,15 +8,19 @@ import {
   CircularProgress,
   Alert,
   Snackbar,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import api from "../axios/axios";
 
 export default function RedefinirSenhaModal({ open, onClose, onSuccess }) {
-  const [step, setStep] = useState(1); // 1 = enviar email, 2 = redefinir senha
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [codigo, setCodigo] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // 👁️ controle do olho
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -24,7 +28,7 @@ export default function RedefinirSenhaModal({ open, onClose, onSuccess }) {
     severity: "success",
   });
 
-  // Step 1: enviar código para o email
+  // Enviar código
   const handleEnviarCodigo = async () => {
     if (!email.trim()) {
       setSnackbar({ open: true, message: "Informe o email.", severity: "error" });
@@ -47,7 +51,7 @@ export default function RedefinirSenhaModal({ open, onClose, onSuccess }) {
     }
   };
 
-  // Step 2: redefinir senha
+  // Redefinir senha
   const handleRedefinirSenha = async () => {
     if (!codigo.trim() || !novaSenha.trim()) {
       setSnackbar({ open: true, message: "Todos os campos são obrigatórios.", severity: "error" });
@@ -89,7 +93,11 @@ export default function RedefinirSenhaModal({ open, onClose, onSuccess }) {
 
   return (
     <>
-      <Modal open={open} onClose={handleClose} sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Modal
+        open={open}
+        onClose={handleClose}
+        sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+      >
         <Box
           sx={{
             width: 400,
@@ -103,7 +111,9 @@ export default function RedefinirSenhaModal({ open, onClose, onSuccess }) {
         >
           {step === 1 ? (
             <>
-              <Typography variant="h6" textAlign="center">Redefinir Senha</Typography>
+              <Typography variant="h6" textAlign="center">
+                Redefinir Senha
+              </Typography>
               <TextField
                 label="Email"
                 value={email}
@@ -116,12 +126,15 @@ export default function RedefinirSenhaModal({ open, onClose, onSuccess }) {
                 onClick={handleEnviarCodigo}
                 disabled={loading}
               >
-                {loading ? <CircularProgress size={24} /> : "Enviar Código"}
+                {loading ? <CircularProgress size={24}  /> : "Enviar Código"}
               </Button>
             </>
           ) : (
             <>
-              <Typography variant="h6" textAlign="center">Digite o Código e Nova Senha</Typography>
+              <Typography variant="h6" textAlign="center">
+                Digite o Código e Nova Senha
+              </Typography>
+
               <TextField
                 label="Código"
                 value={codigo}
@@ -129,14 +142,29 @@ export default function RedefinirSenhaModal({ open, onClose, onSuccess }) {
                 fullWidth
                 disabled={loading}
               />
+
+              {/* 🧩 Campo com botão de olho */}
               <TextField
                 label="Nova Senha"
                 value={novaSenha}
                 onChange={(e) => setNovaSenha(e.target.value)}
-                type="password"
+                type={showPassword ? "text" : "password"}
                 fullWidth
                 disabled={loading}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
+
               <Button
                 variant="contained"
                 onClick={handleRedefinirSenha}

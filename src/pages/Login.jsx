@@ -12,15 +12,19 @@ import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import api from "../axios/axios";
 import CustomSnackbar from "../components/CustomSnackbar";
 import PasswordField from "../components/PasswordField";
+import RedefinirSenhaModal from "../components/RedefinirSenhaModal"; // 🔹 Modal importado
 
 function Login() {
   const [user, setUser] = useState({ email: "", senha: "" });
   const navigate = useNavigate();
 
-  // 🔔 Estados do Snackbar
+  // 🔔 Snackbar
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+  // 🔒 Modal redefinição
+  const [openRedefinirModal, setOpenRedefinirModal] = useState(false);
 
   const handleOpenSnackbar = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -52,12 +56,8 @@ function Login() {
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("authenticated", true);
 
-      // ✅ Mostra mensagem antes de navegar
       handleOpenSnackbar("Usuário logado com sucesso!", "success");
-
-      setTimeout(() => {
-        navigate("/home");
-      }, 1500);
+      setTimeout(() => navigate("/home"), 1500);
     } catch (error) {
       handleOpenSnackbar(
         error.response?.data?.error || "Erro ao fazer login.",
@@ -76,8 +76,8 @@ function Login() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          pt: "40px", // padding para não ficar sob o header
-          pb: "40px", // padding para não ficar sob o footer
+          pt: "40px",
+          pb: "40px",
           minHeight: "100vh",
         }}
       >
@@ -120,23 +120,13 @@ function Login() {
             }}
             InputLabelProps={{ sx: { color: "#000" } }}
           />
+
           <PasswordField
             label="Senha"
             name="senha"
             value={user.senha}
             onChange={onChange}
           />
-
-          <Typography variant="caption" sx={{ mt: 2, textAlign: "center" }}>
-            Não possui login?{" "}
-            <MuiLink
-              component={Link}
-              to="/cadastro"
-              sx={{ fontWeight: "bold", color: "#62798B" }}
-            >
-              Cadastro
-            </MuiLink>
-          </Typography>
 
           <Button
             type="submit"
@@ -153,6 +143,30 @@ function Login() {
           >
             Entrar
           </Button>
+
+          {/* 🔹 Esqueceu senha (agora acima do "Não possui login?") */}
+          <Typography
+            variant="body2"
+            sx={{ textAlign: "center", mt: 1 }}
+          >
+            <MuiLink
+              sx={{ color: "#62798B", fontWeight: "bold", cursor: "pointer" }}
+              onClick={() => setOpenRedefinirModal(true)}
+            >
+              Esqueceu sua senha?
+            </MuiLink>
+          </Typography>
+
+          <Typography variant="caption" sx={{ mt: 1, textAlign: "center" }}>
+            Não possui login?{" "}
+            <MuiLink
+              component={Link}
+              to="/cadastro"
+              sx={{ fontWeight: "bold", color: "#62798B" }}
+            >
+              Cadastro
+            </MuiLink>
+          </Typography>
         </Box>
 
         {/* Snackbar */}
@@ -161,6 +175,15 @@ function Login() {
           message={snackbarMessage}
           severity={snackbarSeverity}
           onClose={handleCloseSnackbar}
+        />
+
+        {/* 🧩 Modal redefinir senha */}
+        <RedefinirSenhaModal
+          open={openRedefinirModal}
+          onClose={() => setOpenRedefinirModal(false)}
+          onSuccess={() =>
+            handleOpenSnackbar("Senha alterada com sucesso!", "success")
+          }
         />
       </Box>
     </Box>

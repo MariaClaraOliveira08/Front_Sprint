@@ -130,7 +130,7 @@ function Perfil() {
 
       setTimeout(() => {
         navigate("/");
-      }, 1500);
+      }, 4000);
     } catch (error) {
       console.error("Erro ao excluir o usuário:", error);
     }
