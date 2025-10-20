@@ -1,3 +1,4 @@
+// src/pages/Perfil.jsx
 import React, { useEffect, useState, useRef } from "react";
 import {
   Box,
@@ -27,8 +28,9 @@ function Perfil() {
     nome: "",
     cpf: "",
     email: "",
-    senha: "",
-    confirmarSenha: "",
+    senha_atual: "",
+    nova_senha: "",
+    confirmar_senha: "",
     imagem: null,
   });
 
@@ -80,7 +82,8 @@ function Perfil() {
 
   // Atualizar dados do perfil
   const handleUpdate = async () => {
-    if (user.senha && user.senha !== user.confirmarSenha) {
+    if (user.nova_senha && user.nova_senha !== user.confirmar_senha) {
+      alert("A confirmação da nova senha não confere.");
       return;
     }
 
@@ -88,7 +91,12 @@ function Perfil() {
       const formData = new FormData();
       formData.append("nome", user.nome);
       formData.append("email", user.email);
-      if (user.senha) formData.append("senha", user.senha);
+
+      if (user.senha_atual && user.nova_senha) {
+        formData.append("senha_atual", user.senha_atual);
+        formData.append("nova_senha", user.nova_senha);
+      }
+
       if (user.imagem) formData.append("imagem", user.imagem);
 
       await api.put("/user", formData, {
@@ -100,9 +108,20 @@ function Perfil() {
       setAvatarPreview(
         `${api.defaults.baseURL}user/${userId}/imagem?${Date.now()}`
       );
-      setUser((prev) => ({ ...prev, senha: "", confirmarSenha: "", imagem: null }));
+
+      setUser((prev) => ({
+        ...prev,
+        senha_atual: "",
+        nova_senha: "",
+        confirmar_senha: "",
+        imagem: null,
+      }));
     } catch (error) {
       console.error("Erro ao atualizar os dados:", error);
+      alert(
+        error.response?.data?.error ||
+          "Ocorreu um erro ao atualizar o perfil."
+      );
     }
   };
 
@@ -268,16 +287,24 @@ function Perfil() {
           }}
           InputLabelProps={{ sx: { color: "#000" } }}
         />
+
+        {/* Campos de senha */}
         <PasswordField
-          label="Nova Senha"
-          name="senha"
-          value={user.senha}
+          label="Senha atual"
+          name="senha_atual"
+          value={user.senha_atual}
           onChange={onChange}
         />
         <PasswordField
-          label="Confirmar Nova Senha"
-          name="confirmarSenha"
-          value={user.confirmarSenha}
+          label="Nova senha"
+          name="nova_senha"
+          value={user.nova_senha}
+          onChange={onChange}
+        />
+        <PasswordField
+          label="Confirmar nova senha"
+          name="confirmar_senha"
+          value={user.confirmar_senha}
           onChange={onChange}
         />
 
@@ -317,7 +344,7 @@ function Perfil() {
         </Box>
       </Box>
 
-      {/* MODAL DE LOGOUT */}
+      {/* MODAIS e SNACKBARS */}
       {openLogoutDialog && (
         <div style={styles.overlay}>
           <div style={styles.modal}>
@@ -338,7 +365,6 @@ function Perfil() {
         </div>
       )}
 
-      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */}
       {openDeleteConfirm && (
         <div style={styles.overlay}>
           <div style={styles.modal}>
@@ -361,13 +387,11 @@ function Perfil() {
         </div>
       )}
 
-      {/* MODAL SUCESSO EXCLUSÃO */}
       <SuccessDeleteDialog
         open={openDeleteSuccess}
         onClose={() => setOpenDeleteSuccess(false)}
       />
 
-      {/* SNACKBARS */}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={1500}
