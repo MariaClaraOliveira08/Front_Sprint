@@ -7,26 +7,24 @@ export default function Layout() {
   return (
     <div
       style={{
-        minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
+        minHeight: "100vh",
       }}
     >
       <Header />
-
       <main
         style={{
-          display: "flex",
-          justifyContent: "center", // centraliza horizontalmente
-          alignItems: "center", // centraliza verticalmente
-          height: "100vh", // ocupa a altura total da viewport
+          flex: 1,
           width: "100%",
-          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          overflowY: "auto",
+          minHeight: 0,
         }}
       >
         <Outlet />
       </main>
-
       <Footer />
     </div>
   );

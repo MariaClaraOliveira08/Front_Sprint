@@ -13,21 +13,19 @@ const Home = () => {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
   const [subcategoriaSelecionada, setSubcategoriaSelecionada] = useState(null);
   const [lugares, setLugares] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); 
   const [termoBusca, setTermoBusca] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [enderecoSelecionado, setEnderecoSelecionado] = useState(null);
 
   const navigate = useNavigate();
 
-  // Definição das Categorias e Subcategorias com seus 'types'
   const categorias = [
     {
       nome: "Restaurantes",
-      type: "restaurant", // Tipo principal
+      type: "restaurant",
       icon: <RestaurantMenuIcon sx={{ fontSize: 40 }} />,
       subcategorias: [
-        // ALTERAÇÃO AQUI: Subcategoria única com um type que representa "restaurante"
         { nome: "Pizzarias / Hamburguerias", type: "restaurant" }, 
         { nome: "Bares", type: "bar" }, 
       ],
@@ -53,7 +51,6 @@ const Home = () => {
     },
   ];
 
-  // Função para lidar com a abertura do Modal de Detalhes
   const handleOpenDetalhes = (lugar) => {
     const index = lugares.findIndex(item => item.place_id === lugar.place_id);
     if (index !== -1) {
@@ -62,7 +59,6 @@ const Home = () => {
     }
   };
 
-  // Função para lidar com a navegação para o Mapa
   const handleNavigateToMapa = (lugar, typeParaMapa) => {
     navigate("/mapa", {
       state: {
@@ -73,8 +69,6 @@ const Home = () => {
     });
   };
 
-
-  // Efeito para buscar estabelecimentos quando a categoria ou subcategoria muda
   useEffect(() => {
     const fetchEstabelecimentos = async () => {
       if (!categoriaSelecionada) return;
@@ -86,32 +80,23 @@ const Home = () => {
         );
         if (!categoria) return;
 
-        // Determina o 'type' a ser enviado ao backend
-        // O subcategoriaSelecionada agora é o 'type' da subcategoria (ex: "restaurant")
         const typeToSearch = subcategoriaSelecionada || categoria.type; 
-        
-        // Procura o nome correto da subcategoria (agora "Pizzarias/Hamburguerias")
+
         const subcategoriaObj = categorias
           .flatMap(c => c.subcategorias)
           .find(sub => sub.type === subcategoriaSelecionada);
         
         const categoryName = subcategoriaObj?.nome || categoria.nome;
 
-
-        // Requisição API para buscar lugares em Franca/SP
         const response = await api.get("/buscar", {
           params: {
-            location: "-20.5381,-47.4008", // Franca/SP
-            radius: 17000, // Raio de 17km
+            location: "-20.5381,-47.4008",
+            radius: 17000,
             type: typeToSearch, 
-            // O categoryName vai para o backend como "Pizzarias/Hamburguerias"
-            // O backend (que você não forneceu) deve usar esse nome para 
-            // refinar a busca para "pizza" E "hamburguer" DENTRO do type "restaurant"
             categoryName: categoryName 
           },
         });
 
-        // Mapeamento dos dados para o estado 'lugares' (código omitido, é o mesmo)
         const dados = (response.data.estabelecimentos || []).map((item) => ({
           nome: item.nome || "Nome não disponível",
           endereco: item.endereco || "Não disponível",
@@ -138,17 +123,14 @@ const Home = () => {
     fetchEstabelecimentos();
   }, [categoriaSelecionada, subcategoriaSelecionada]); 
 
-  // Filtra lugares pelo termo de busca (código omitido, é o mesmo)
   const lugaresFiltrados = lugares.filter((lugar) =>
     (lugar.nome || "").toLowerCase().includes(termoBusca.toLowerCase())
   );
 
-  // Determina o 'type' exato para ser passado ao Mapa (código omitido, é o mesmo)
   const categoriaAtiva = categorias.find(
     (cat) => cat.nome.toLowerCase() === categoriaSelecionada
   );
   const typeParaMapa = subcategoriaSelecionada || (categoriaAtiva ? categoriaAtiva.type : null);
-
 
   if (loading)
     return (
@@ -169,7 +151,6 @@ const Home = () => {
           Grandes Lugares Inspiram Momentos Perfeitos.
         </p>
 
-        {/* Campo de busca (código omitido, é o mesmo) */}
         <div style={styles.searchWrapper}>
           <input
             type="text"
@@ -181,7 +162,6 @@ const Home = () => {
           <SearchIcon style={styles.searchIcon} />
         </div>
 
-        {/* Categorias Pai (código omitido, é o mesmo) */}
         <div style={styles.categorias}>
           {categorias.map((cat) => (
             <button
@@ -207,7 +187,6 @@ const Home = () => {
           ))}
         </div>
 
-        {/* Subcategorias */}
         {categoriaSelecionada && (
           <div style={styles.subcategorias}>
             {categorias
@@ -215,7 +194,6 @@ const Home = () => {
               ?.subcategorias.map((sub) => (
                 <button
                   key={sub.nome}
-                  // Usa o 'type' (agora "restaurant" ou "bar") para a seleção
                   onClick={() => setSubcategoriaSelecionada(sub.type)} 
                   style={{
                     ...styles.botaoSubcategoria,
@@ -227,26 +205,28 @@ const Home = () => {
                       subcategoriaSelecionada === sub.type ? "#fff" : "#000",
                   }}
                 >
-                  {/* Usa o nome do objeto (agora "Pizzarias/Hamburguerias") para o texto */}
                   {sub.nome} 
                 </button>
               ))}
           </div>
         )}
 
-        {/* Lista de lugares - NOVO LAYOUT DE AÇÃO (código omitido, é o mesmo) */}
         <div style={styles.lugares}>
           {lugaresFiltrados.map((lugar, index) => (
             <div
               key={lugar.place_id || index}
               style={styles.lugar}
             >
-              <div style={styles.lugarNome}>
-                {lugar.nome}
+              <div style={styles.lugarInfo}>
+                <div style={styles.lugarNome}>{lugar.nome}</div>
+                <div style={styles.lugarHorario}>
+                  {lugar.horarios && lugar.horarios !== "Não disponível"
+                    ? lugar.horarios
+                    : "Horário não disponível"}
+                </div>
               </div>
 
               <div style={styles.lugarBotoes}>
-                {/* Botão para Detalhes (abre Modal) */}
                 <button
                   onClick={() => handleOpenDetalhes(lugar)}
                   style={{ ...styles.botaoAcao, backgroundColor: '#5c6c9e' }}
@@ -254,7 +234,6 @@ const Home = () => {
                   Detalhes
                 </button>
 
-                {/* Botão para Ver no Mapa (navega) */}
                 <button
                   onClick={() => handleNavigateToMapa(lugar, typeParaMapa)}
                   style={{ ...styles.botaoAcao, backgroundColor: '#4a5a87' }}
@@ -267,7 +246,6 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Modal de detalhes (código omitido, é o mesmo) */}
       <DetalhesModal
         open={openModal}
         onClose={() => setOpenModal(false)}
@@ -281,7 +259,6 @@ const Home = () => {
   );
 };
 
-// ... (Restante do styles é o mesmo)
 const styles = {
   container: {
     display: "flex",
@@ -310,7 +287,6 @@ const styles = {
     outline: "none",
     padding: "12px 10px",
     fontSize: 14,
-  
   },
   searchIcon: { color: "#555", fontSize: 24, cursor: "pointer", marginLeft: 8 },
   categorias: {
@@ -327,7 +303,6 @@ const styles = {
     gap: 10,
     marginBottom: 30,
     marginRight: 200,
-    
   },
   botaoCategoria: {
     width: 80,
@@ -358,24 +333,33 @@ const styles = {
   lugar: {
     padding: "15px 20px",
     borderRadius: 8,
-    cursor: "default", // Não é mais clicável como um todo
+    cursor: "default",
     backgroundColor: "#fff",
     color: "#333",
-    display: 'flex', // NOVO: Container flex para nome e botões
+    display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     transition: "0.2s",
   },
-  lugarNome: { // NOVO: Estilo para o nome do lugar
+  lugarInfo: {
+    display: "flex",
+    flexDirection: "column",
+    flexGrow: 1,
+  },
+  lugarNome: {
     fontWeight: 'bold',
     fontSize: 16,
-    flexGrow: 1, // Permite que o nome use o espaço restante
   },
-  lugarBotoes: { // NOVO: Container para os botões de ação
+  lugarHorario: {
+    fontSize: 12,
+    color: "#555",
+    marginTop: 4,
+  },
+  lugarBotoes: {
     display: 'flex',
     gap: 10,
   },
-  botaoAcao: { // NOVO: Estilo para os botões Detalhes/Mapa
+  botaoAcao: {
     padding: '8px 15px',
     borderRadius: 8,
     border: 'none',

@@ -122,7 +122,7 @@ function ModalAvaliacao({ open, onClose, avaliacao, onDelete }) {
               textAlign: "center",
             }}
           >
-            <Typography variant="h6" sx={{ mb: 2, color: "#f44336" }}>
+            <Typography variant="h6" sx={{ mb: 2, color: "#4a5a87" }}>
               Tem certeza que deseja deletar esta avaliação?
             </Typography>
 

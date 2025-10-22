@@ -9,18 +9,29 @@ import {
   Link as MuiLink,
 } from "@mui/material";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+
 import api from "../axios/axios";
 import CustomSnackbar from "../components/CustomSnackbar";
 import PasswordField from "../components/PasswordField";
+import RedefinirSenhaModal from "../components/RedefinirSenhaModal";
 
 function Login() {
-  const [user, setUser] = useState({ email: "", senha: "" });
   const navigate = useNavigate();
 
-  // 🔔 Estados do Snackbar
+  // 📦 Estados
+  const [user, setUser] = useState({ email: "", senha: "" });
+  const [openRedefinirModal, setOpenRedefinirModal] = useState(false);
+
+  // 🔔 Snackbar
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+  // ✏️ Handlers
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    setUser((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleOpenSnackbar = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -32,27 +43,24 @@ function Login() {
     setOpenSnackbar(false);
   };
 
-  const onChange = (e) => {
-    const { name, value } = e.target;
-    setUser({ ...user, [name]: value });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       const response = await api.postLogin(user);
-      const userId = response.data.user.id_usuario;
+      const { id_usuario, nome } = response.data.user;
 
-      if (!userId) {
+      if (!id_usuario) {
         handleOpenSnackbar("Usuário não encontrado.", "error");
         return;
       }
 
-      localStorage.setItem("userId", userId);
+      // Salvar no localStorage
+      localStorage.setItem("userId", id_usuario);
+      localStorage.setItem("nomeUsuario", nome);
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("authenticated", true);
 
-      // ✅ Mostra mensagem antes de navegar
       handleOpenSnackbar("Usuário logado com sucesso!", "success");
 
       setTimeout(() => {
@@ -66,6 +74,7 @@ function Login() {
     }
   };
 
+  // 🖼️ JSX
   return (
     <Box sx={{ width: "100%", height: "100vh", bgcolor: "#e5e5e5" }}>
       <CssBaseline />
@@ -76,12 +85,12 @@ function Login() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          pt: "40px", // padding para não ficar sob o header
-          pb: "40px", // padding para não ficar sob o footer
+          pt: "40px", // padding top para evitar sobreposição com header
+          pb: "40px", // padding bottom para evitar sobreposição com footer
           minHeight: "100vh",
         }}
       >
-        {/* Logo e texto */}
+        {/* Logo e título */}
         <Box display="flex" flexDirection="column" alignItems="center" mb={4}>
           <Box display="flex" alignItems="center" gap={1}>
             <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
@@ -94,7 +103,7 @@ function Login() {
           </Typography>
         </Box>
 
-        {/* Formulário */}
+        {/* Formulário de login */}
         <Box
           component="form"
           onSubmit={handleSubmit}
@@ -120,6 +129,7 @@ function Login() {
             }}
             InputLabelProps={{ sx: { color: "#000" } }}
           />
+
           <PasswordField
             label="Senha"
             name="senha"
@@ -127,6 +137,7 @@ function Login() {
             onChange={onChange}
           />
 
+          {/* Link para cadastro */}
           <Typography variant="caption" sx={{ mt: 2, textAlign: "center" }}>
             Não possui login?{" "}
             <MuiLink
@@ -135,6 +146,16 @@ function Login() {
               sx={{ fontWeight: "bold", color: "#62798B" }}
             >
               Cadastro
+            </MuiLink>
+          </Typography>
+
+          {/* Link para redefinição de senha */}
+          <Typography variant="body2" sx={{ textAlign: "center" }}>
+            <MuiLink
+              sx={{ color: "#62798B", fontWeight: "bold", cursor: "pointer" }}
+              onClick={() => setOpenRedefinirModal(true)}
+            >
+              Esqueceu sua senha?
             </MuiLink>
           </Typography>
 
@@ -155,12 +176,21 @@ function Login() {
           </Button>
         </Box>
 
-        {/* Snackbar */}
+        {/* Snackbar de feedback */}
         <CustomSnackbar
           open={openSnackbar}
           message={snackbarMessage}
           severity={snackbarSeverity}
           onClose={handleCloseSnackbar}
+        />
+
+        {/* Modal de redefinição de senha */}
+        <RedefinirSenhaModal
+          open={openRedefinirModal}
+          onClose={() => setOpenRedefinirModal(false)}
+          onSuccess={() =>
+            handleOpenSnackbar("Senha alterada com sucesso!", "success")
+          }
         />
       </Box>
     </Box>
