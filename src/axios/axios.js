@@ -23,7 +23,6 @@ api.postAvaliacao = (data) => api.post("/avaliacao", data);
 api.buscarAvaliacoesDoUsuario = () => api.get("/avaliacao"); 
 api.buscarAvaliacoesPorEstabelecimento = (google_place_id) =>
   api.get(`/avaliacao/${google_place_id}`); 
-api.atualizarAvaliacao = (data) => api.put("/avaliacao", data);
 api.deletarAvaliacao = (id_avaliacao) => api.delete(`/avaliacao/${id_avaliacao}`);
 
 //favoritos
