@@ -1,5 +1,6 @@
 import React from "react";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import InstagramIcon from "@mui/icons-material/Instagram"; // ← import do ícone do Instagram
 import HamburgerDrawer from "../components/HamburgerDrawer";
 
 const SobreNos = () => {
@@ -7,9 +8,7 @@ const SobreNos = () => {
     <div style={styles.wrapper}>
       <HamburgerDrawer />
 
-      {/* Fundo cinza claro expandido */}
       <div style={styles.container}>
-        {/* Container centralizado com largura fixa */}
         <div style={styles.content}>
           <div style={styles.logoWrapper}>
             <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
@@ -43,6 +42,60 @@ const SobreNos = () => {
               </p>
             </div>
           </div>
+
+          {/* 🔗 Link para Instagram */}
+          <div style={styles.socialWrapper}>
+            <a
+              href="https://www.instagram.com/mahh.oliveira07"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={styles.instagramLink}
+            >
+              <InstagramIcon sx={{ fontSize: 28, color: "#E4405F" }} />
+              <span>@mahh.oliveira07</span>
+            </a>
+
+            <a
+              href="https://www.instagram.com/prieloize"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={styles.instagramLink}
+            >
+              <InstagramIcon sx={{ fontSize: 28, color: "#E4405F" }} />
+              <span>@prieloize</span>
+            </a>
+
+            <a
+              href="https://www.instagram.com/gabb_ignacio"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={styles.instagramLink}
+            >
+              <InstagramIcon sx={{ fontSize: 28, color: "#E4405F" }} />
+              <span>@gabb_ignacio</span>
+            </a>
+
+            <a
+              href="https://www.instagram.com/m.lureys"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={styles.instagramLink}
+            >
+              <InstagramIcon sx={{ fontSize: 28, color: "#E4405F" }} />
+              <span>@m.lureys</span>
+            </a>
+
+            <a
+              href="https://www.instagram.com/livreys"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={styles.instagramLink}
+            >
+              <InstagramIcon sx={{ fontSize: 28, color: "#E4405F" }} />
+              <span>@livreys</span>
+            </a>
+
+          </div>
         </div>
       </div>
     </div>
@@ -65,13 +118,13 @@ const styles = {
     height: "100vh",
     overflowY: "auto",
     display: "flex",
-    justifyContent: "center", 
-    alignItems: "flex-start", 
+    justifyContent: "center",
+    alignItems: "flex-start",
     padding: 40,
     boxSizing: "border-box",
   },
   content: {
-    maxWidth: 800, 
+    maxWidth: 800,
     width: "100%",
   },
   logoWrapper: {
@@ -108,6 +161,20 @@ const styles = {
     backgroundColor: "#ddd",
     padding: 20,
     borderRadius: 8,
+  },
+  socialWrapper: {
+    marginTop: 40,
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+  },
+  instagramLink: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    textDecoration: "none",
+    color: "#5e758f",
+    fontWeight: 500,
   },
 };
 

@@ -31,7 +31,7 @@ function AvaliacoesUsuario() {
         res.data.avaliacoes?.map((a) => ({
           ...a,
           nome_estabelecimento: a.nome_estabelecimento,
-          usuario: a.usuario || nomeUsuario, // ✅ Aqui usamos o nome do localStorage
+          usuario: a.usuario || nomeUsuario, 
         })) || [];
       setAvaliacoes(dados);
     } catch (err) {

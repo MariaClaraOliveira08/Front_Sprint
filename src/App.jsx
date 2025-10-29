@@ -43,9 +43,9 @@ function App() {
           <Route
             path="/sobre"
             element={
-              <ProtectedRoute>
+              
                 <SobreNos />
-              </ProtectedRoute>
+              
             }
           />
           <Route
