@@ -1,19 +1,22 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:3000/projeto_final/",
+  baseURL: "http://10.89.240.79:3000/projeto_final/",
   headers: {
     accept: "application/json",
   },
 });
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`; // 🔴 Importante
-  }
-  return config;
-});
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token"); // o token salvo no login
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 // Endpoints
 api.postCadastro = (user) => api.post("/user", user);

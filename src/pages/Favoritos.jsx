@@ -2,19 +2,22 @@ import React, { useEffect, useState } from "react";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import HamburgerDrawer from "../components/HamburgerDrawer"; // 🔹 Importa o menu lateral
+import HamburgerDrawer from "../components/HamburgerDrawer";
 import api from "../axios/axios";
+import ModalExcluirFavorito from "../components/ModalExcluirFavorito"; // ✅ novo modal
 
 function Favoritos() {
   const [favoritos, setFavoritos] = useState([]);
   const [busca, setBusca] = useState("");
+  const [modalAberto, setModalAberto] = useState(false);
+  const [favoritoSelecionado, setFavoritoSelecionado] = useState(null);
 
+  // 🔹 Buscar favoritos do usuário logado
   useEffect(() => {
     const fetchFavoritos = async () => {
       try {
-        const userId = localStorage.getItem("userId");
-        const response = await api.get(`/favoritos/${userId}`);
-        setFavoritos(response.data);
+        const response = await api.get("/favoritos");
+        setFavoritos(response.data.favoritos || []);
       } catch (error) {
         console.error("Erro ao carregar favoritos:", error);
       }
@@ -22,35 +25,44 @@ function Favoritos() {
     fetchFavoritos();
   }, []);
 
-  const removerFavorito = async (id) => {
-    try {
-      await api.delete(`/favoritos/${id}`);
-      setFavoritos(favoritos.filter((f) => f.id !== id));
-    } catch (error) {
-      console.error("Erro ao remover favorito:", error);
-    }
+  // 🔹 Abrir modal de confirmação
+  const confirmarRemocao = (favorito) => {
+    setFavoritoSelecionado(favorito);
+    setModalAberto(true);
   };
 
+  // 🔹 Fechar modal
+  const fecharModal = () => {
+    setModalAberto(false);
+    setFavoritoSelecionado(null);
+  };
+
+  // 🔹 Callback após exclusão
+  const handleExclusaoSucesso = (idRemovido) => {
+    setFavoritos(favoritos.filter((f) => f.id_favorito !== idRemovido));
+  };
+
+  // 🔹 Filtrar favoritos pelo nome
   const favoritosFiltrados = favoritos.filter((f) =>
-    f.nome.toLowerCase().includes(busca.toLowerCase())
+    f.nome_estabelecimento?.toLowerCase().includes(busca.toLowerCase())
   );
 
   return (
     <div style={styles.wrapper}>
-      {/* 🔹 Menu lateral fixo */}
+      {/* Menu lateral */}
       <HamburgerDrawer />
 
-      {/* 🔹 Conteúdo principal */}
+      {/* Conteúdo principal */}
       <div style={styles.container}>
-        {/* Cabeçalho igual à Home */}
+        {/* Cabeçalho */}
         <header style={styles.header}>
           <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
           <h2 style={styles.logoText}>Glimp</h2>
         </header>
 
-        <p style={styles.subtitulo}>Grandes Lugares Inspiram Momentos Perfeitos.
-
-</p>
+        <p style={styles.subtitulo}>
+          Grandes Lugares Inspiram Momentos Perfeitos.
+        </p>
 
         {/* Campo de busca */}
         <div style={styles.searchBox}>
@@ -63,20 +75,20 @@ function Favoritos() {
           />
         </div>
 
-        {/* Lista de Favoritos */}
+        {/* Lista de favoritos */}
         <div style={styles.listaFavoritos}>
           {favoritosFiltrados.length === 0 ? (
             <p style={{ color: "#666" }}>Nenhum favorito encontrado.</p>
           ) : (
             favoritosFiltrados.map((f) => (
-              <div key={f.id} style={styles.card}>
+              <div key={f.id_favorito} style={styles.card}>
                 <div style={styles.infoContainer}>
-                  <span style={styles.nome}>{f.nome}</span>
+                  <span style={styles.nome}>{f.nome_estabelecimento}</span>
                   <span style={styles.endereco}>{f.endereco}</span>
                 </div>
                 <button
                   style={styles.deleteButton}
-                  onClick={() => removerFavorito(f.id)}
+                  onClick={() => confirmarRemocao(f)}
                 >
                   <DeleteOutlineIcon sx={{ color: "#d11a2a" }} />
                 </button>
@@ -85,11 +97,19 @@ function Favoritos() {
           )}
         </div>
 
-        {/* Ícone decorativo (igual à Home) */}
+        {/* Ícone decorativo */}
         <div style={styles.topHeart}>
           <FavoriteIcon sx={{ fontSize: 36, color: "#d11a2a" }} />
         </div>
       </div>
+
+      {/* ✅ Modal de confirmação */}
+      <ModalExcluirFavorito
+        open={modalAberto}
+        onClose={fecharModal}
+        favorito={favoritoSelecionado}
+        onSuccess={handleExclusaoSucesso}
+      />
     </div>
   );
 }
@@ -110,7 +130,6 @@ const styles = {
   },
   topHeart: { position: "absolute", top: 50, right: 30, zIndex: 10 },
 
-  // Mesmo layout da Home (com padding esquerdo igual)
   container: {
     flex: 1,
     padding: 50,
