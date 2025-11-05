@@ -75,7 +75,7 @@ const Inicio = () => {
       <Typography
         sx={{
           position: "absolute",
-          bottom: 38,
+          bottom: 50,
           right: 20,
           cursor: "pointer",
           fontWeight: "bold",
