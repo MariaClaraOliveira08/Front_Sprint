@@ -1,10 +1,7 @@
 import React from "react";
-import { Modal, Box, Typography, Button, Divider, Link } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { Modal, Box, Typography, Button } from "@mui/material";
 
 const DetalhesModal = ({ open, onClose, lugar }) => {
-  const navigate = useNavigate();
-
   if (!lugar) return null;
 
   return (
@@ -18,27 +15,34 @@ const DetalhesModal = ({ open, onClose, lugar }) => {
           width: 400,
           bgcolor: "background.paper",
           borderRadius: 2,
+          p: 4,
           boxShadow: 24,
-          p: 3,
         }}
       >
-        <Typography variant="h6" mb={2}>{lugar.nome}</Typography>
-        <Typography><strong>Endereço:</strong> {lugar.endereco}</Typography>
-        <Typography><strong>Categoria:</strong> {lugar.categoria}</Typography>
-        <Typography><strong>Telefone:</strong> {lugar.telefone}</Typography>
-        <Typography><strong>Horários:</strong> {lugar.horarios}</Typography>
+        <Typography variant="h6" gutterBottom>
+          {lugar.nome}
+        </Typography>
 
-        <Link
-          onClick={() => navigate("/mapa", { state: { lugar } })}
-          underline="hover"
-          sx={{ display: "block", textAlign: "center", mb: 2, color: "#4a5a87", fontWeight: "bold", cursor: "pointer" }}
+        <Typography variant="body2" gutterBottom>
+          Endereço: {lugar.endereco}
+        </Typography>
+
+        <Typography variant="body2" gutterBottom>
+          Telefone: {lugar.telefone}
+        </Typography>
+
+        <Typography variant="body2" gutterBottom>
+          Horários: {lugar.horarios || "Não disponível"}
+        </Typography>
+
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{ mt: 2 }}
+          onClick={onClose}
         >
-          Ver no mapa
-        </Link>
-
-        <Divider sx={{ my: 2 }} />
-        
-        <Button onClick={onClose} variant="contained" sx={{ mt: 2 }}>Fechar</Button>
+          Fechar
+        </Button>
       </Box>
     </Modal>
   );

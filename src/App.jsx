@@ -8,7 +8,7 @@ import Home from "./pages/Home";
 import Perfil from "./pages/Perfil";
 import SobreNos from "./pages/SobreNos";
 import Favoritos from "./pages/Favoritos";
-import AvaliacoesUsuario from "./pages/Avaliacao";
+import Avaliacoes from "./pages/Avaliacao";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Mapa from "./pages/Mapa";
 
@@ -17,7 +17,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/" element={<Inicio/>} />
+          <Route path="/" element={<Inicio />} />
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/home" element={<Home />} />
@@ -31,7 +31,7 @@ function App() {
             }
           />
 
-            <Route
+          <Route
             path="/mapa"
             element={
               <ProtectedRoute>
@@ -43,10 +43,11 @@ function App() {
           <Route
             path="/sobre"
             element={
+              <ProtectedRoute>
                 <SobreNos />
+              </ProtectedRoute>
             }
           />
-          
           <Route
             path="/favoritos"
             element={
@@ -55,14 +56,16 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/avaliacao"
             element={
               <ProtectedRoute>
-                <AvaliacoesUsuario />
+                <Avaliacoes />
               </ProtectedRoute>
             }
           />
+
         </Route>
       </Routes>
     </BrowserRouter>

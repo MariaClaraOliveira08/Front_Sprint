@@ -18,10 +18,11 @@ import {
   Info,
   Menu as MenuIcon,
 } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const HamburgerDrawer = () => {
   const navigate = useNavigate();
+  const location = useLocation(); // 🔹 pega a rota atual
   const [open, setOpen] = useState(false);
 
   const toggleDrawer = (isOpen) => () => {
@@ -60,10 +61,15 @@ const HamburgerDrawer = () => {
           onClick={toggleDrawer(false)}
           onKeyDown={toggleDrawer(false)}
         >
-          {/* Conteúdo principal com margem superior para ficar mais embaixo */}
-          <Box sx={{ marginTop: 6}}>
+          {/* Conteúdo principal */}
+          <Box sx={{ marginTop: 6 }}>
             <List>
-              <ListItemButton onClick={() => navigate("/perfil")}>
+              <ListItemButton
+                onClick={() => navigate("/perfil")}
+                sx={{
+                  bgcolor: location.pathname === "/perfil" ? "#b0b0b0" : "inherit",
+                }}
+              >
                 <ListItemIcon>
                   <AccountCircle />
                 </ListItemIcon>
@@ -74,6 +80,10 @@ const HamburgerDrawer = () => {
                 <ListItemButton
                   key={item.label}
                   onClick={() => navigate(item.route)}
+                  sx={{
+                    bgcolor:
+                      location.pathname === item.route ? "#b0b0b0" : "inherit",
+                  }}
                 >
                   <ListItemIcon>{item.icon}</ListItemIcon>
                   <ListItemText primary={item.label} />
