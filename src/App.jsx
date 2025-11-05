@@ -43,11 +43,10 @@ function App() {
           <Route
             path="/sobre"
             element={
-              
                 <SobreNos />
-              
             }
           />
+          
           <Route
             path="/favoritos"
             element={
