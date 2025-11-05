@@ -1,3 +1,4 @@
+// src/pages/Perfil.jsx
 import React, { useEffect, useState, useRef } from "react";
 import {
   Box,
@@ -13,7 +14,9 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import api from "../axios/axios";
 import { useNavigate } from "react-router-dom";
 import PasswordField from "../components/PasswordField";
-import HamburgerDrawer from "../components/HamburgerDrawer"; // menu lateral
+import HamburgerDrawer from "../components/HamburgerDrawer";
+import SuccessDeleteDialog from "../components/SuccessDeleteDialog";
+import SuccessUpdateSnackbar from "../components/SuccessUpdateSnackbar";
 
 function Perfil() {
   const navigate = useNavigate();
@@ -25,16 +28,20 @@ function Perfil() {
     nome: "",
     cpf: "",
     email: "",
-    senha: "",
-    confirmarSenha: "",
+    senha_atual: "",
+    nova_senha: "",
+    confirmar_senha: "",
     imagem: null,
   });
 
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
+  const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
+  const [openDeleteSuccess, setOpenDeleteSuccess] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [openUpdateSnackbar, setOpenUpdateSnackbar] = useState(false);
 
-  // 📌 Carrega dados do usuário ao abrir a página
+  // Carrega dados do usuário
   useEffect(() => {
     async function fetchUsuario() {
       try {
@@ -75,8 +82,8 @@ function Perfil() {
 
   // Atualizar dados do perfil
   const handleUpdate = async () => {
-    if (user.senha && user.senha !== user.confirmarSenha) {
-      alert("As senhas não coincidem.");
+    if (user.nova_senha && user.nova_senha !== user.confirmar_senha) {
+      alert("A confirmação da nova senha não confere.");
       return;
     }
 
@@ -84,27 +91,41 @@ function Perfil() {
       const formData = new FormData();
       formData.append("nome", user.nome);
       formData.append("email", user.email);
-      if (user.senha) formData.append("senha", user.senha);
+
+      if (user.senha_atual && user.nova_senha) {
+        formData.append("senha_atual", user.senha_atual);
+        formData.append("nova_senha", user.nova_senha);
+      }
+
       if (user.imagem) formData.append("imagem", user.imagem);
 
-      const response = await api.put("/user", formData, {
+      await api.put("/user", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      alert(response.data.message || "Perfil atualizado com sucesso!");
+      setOpenUpdateSnackbar(true);
+
       setAvatarPreview(
         `${api.defaults.baseURL}user/${userId}/imagem?${Date.now()}`
       );
-      setUser((prev) => ({ ...prev, senha: "", confirmarSenha: "", imagem: null }));
+
+      setUser((prev) => ({
+        ...prev,
+        senha_atual: "",
+        nova_senha: "",
+        confirmar_senha: "",
+        imagem: null,
+      }));
     } catch (error) {
       console.error("Erro ao atualizar os dados:", error);
       alert(
-        error.response?.data?.error || "Erro ao atualizar os dados do usuário."
+        error.response?.data?.error ||
+          "Ocorreu um erro ao atualizar o perfil."
       );
     }
   };
 
-  //  Logout confirmado
+  // Logout confirmado
   const handleConfirmLogout = () => {
     localStorage.removeItem("userId");
     localStorage.removeItem("token");
@@ -119,19 +140,20 @@ function Perfil() {
     }, 1500);
   };
 
-  //  Excluir conta
+  // Exclusão confirmada
   const handleDelete = async () => {
     try {
-      const response = await api.deleteUsuario(user.id_usuario);
-      alert(response.data.message);
-      navigate("/");
+      await api.deleteUsuario(user.id_usuario);
+      setOpenDeleteConfirm(false);
+      setOpenDeleteSuccess(true);
+
+      setTimeout(() => {
+        navigate("/");
+      }, 4000);
     } catch (error) {
       console.error("Erro ao excluir o usuário:", error);
-      alert(error.response?.data?.error || "Erro ao excluir o usuário.");
     }
   };
-
-  
 
   const onChange = (event) => {
     const { name, value } = event.target;
@@ -265,16 +287,24 @@ function Perfil() {
           }}
           InputLabelProps={{ sx: { color: "#000" } }}
         />
+
+        {/* Campos de senha */}
         <PasswordField
-          label="Nova Senha"
-          name="senha"
-          value={user.senha}
+          label="Senha atual"
+          name="senha_atual"
+          value={user.senha_atual}
           onChange={onChange}
         />
         <PasswordField
-          label="Confirmar Nova Senha"
-          name="confirmarSenha"
-          value={user.confirmarSenha}
+          label="Nova senha"
+          name="nova_senha"
+          value={user.nova_senha}
+          onChange={onChange}
+        />
+        <PasswordField
+          label="Confirmar nova senha"
+          name="confirmar_senha"
+          value={user.confirmar_senha}
           onChange={onChange}
         />
 
@@ -307,20 +337,19 @@ function Perfil() {
               padding: "12px",
               mt: -3,
             }}
-            onClick={handleDelete}
+            onClick={() => setOpenDeleteConfirm(true)}
           >
             Excluir conta
           </Button>
         </Box>
       </Box>
 
-      {/* MODAL DE CONFIRMAÇÃO DE LOGOUT */}
+      {/* MODAIS e SNACKBARS */}
       {openLogoutDialog && (
         <div style={styles.overlay}>
           <div style={styles.modal}>
             <h3 style={styles.titulo}>Encerrar sessão</h3>
             <p style={styles.texto}>Você realmente deseja sair da sua conta?</p>
-
             <div style={styles.botoes}>
               <button
                 style={styles.botaoCancelar}
@@ -336,7 +365,33 @@ function Perfil() {
         </div>
       )}
 
-      {/* Snackbar */}
+      {openDeleteConfirm && (
+        <div style={styles.overlay}>
+          <div style={styles.modal}>
+            <h3 style={styles.titulo}>Excluir conta</h3>
+            <p style={styles.texto}>
+              Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.
+            </p>
+            <div style={styles.botoes}>
+              <button
+                style={styles.botaoCancelar}
+                onClick={() => setOpenDeleteConfirm(false)}
+              >
+                Cancelar
+              </button>
+              <button style={styles.botaoConfirmar} onClick={handleDelete}>
+                Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <SuccessDeleteDialog
+        open={openDeleteSuccess}
+        onClose={() => setOpenDeleteSuccess(false)}
+      />
+
       <Snackbar
         open={openSnackbar}
         autoHideDuration={1500}
@@ -347,10 +402,14 @@ function Perfil() {
           Sessão encerrada com sucesso!
         </Alert>
       </Snackbar>
+
+      <SuccessUpdateSnackbar
+        open={openUpdateSnackbar}
+        onClose={() => setOpenUpdateSnackbar(false)}
+      />
     </Box>
   );
 }
-
 
 const styles = {
   overlay: {
@@ -374,23 +433,9 @@ const styles = {
     textAlign: "center",
     fontFamily: "Segoe UI, sans-serif",
   },
-  titulo: {
-    margin: 0,
-    marginBottom: 10,
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  texto: {
-    fontSize: 14,
-    color: "#555",
-    marginBottom: 20,
-  },
-  botoes: {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: 15,
-  },
+  titulo: { margin: 0, marginBottom: 10, fontSize: 20, fontWeight: "bold", color: "#333" },
+  texto: { fontSize: 14, color: "#555", marginBottom: 20 },
+  botoes: { display: "flex", justifyContent: "space-between", gap: 15 },
   botaoCancelar: {
     flex: 1,
     padding: "10px",
@@ -413,4 +458,3 @@ const styles = {
 };
 
 export default Perfil;
- 
