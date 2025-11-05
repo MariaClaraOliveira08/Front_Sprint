@@ -13,7 +13,7 @@ const Home = () => {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
   const [subcategoriaSelecionada, setSubcategoriaSelecionada] = useState(null);
   const [lugares, setLugares] = useState([]);
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
   const [termoBusca, setTermoBusca] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [enderecoSelecionado, setEnderecoSelecionado] = useState(null);
@@ -26,33 +26,33 @@ const Home = () => {
       type: "restaurant",
       icon: <RestaurantMenuIcon sx={{ fontSize: 40 }} />,
       subcategorias: [
-        { nome: "Pizzarias / Hamburguerias", type: "restaurant" }, 
-        { nome: "Bares", type: "bar" }, 
+        { nome: "Pizzarias / Hamburguerias", type: "restaurant" },
+        { nome: "Bares", type: "bar" },
       ],
     },
     {
       nome: "Lojas",
-      type: "store", 
+      type: "store",
       icon: <StorefrontIcon sx={{ fontSize: 40 }} />,
       subcategorias: [
-        { nome: "Mercados", type: "supermarket" }, 
-        { nome: "Shopping", type: "shopping_mall" }, 
-        { nome: "Farmácias", type: "pharmacy" }, 
+        { nome: "Mercados", type: "supermarket" },
+        { nome: "Shopping", type: "shopping_mall" },
+        { nome: "Farmácias", type: "pharmacy" },
       ],
     },
     {
       nome: "Parques",
-      type: "park", 
+      type: "park",
       icon: <ParkIcon sx={{ fontSize: 40 }} />,
       subcategorias: [
-        { nome: "Jardins Botânicos", type: "botanical_garden" }, 
-        { nome: "Parques Urbanos", type: "park" }, 
+        { nome: "Jardins Botânicos", type: "botanical_garden" },
+        { nome: "Parques Urbanos", type: "park" },
       ],
     },
   ];
 
   const handleOpenDetalhes = (lugar) => {
-    const index = lugares.findIndex(item => item.place_id === lugar.place_id);
+    const index = lugares.findIndex((item) => item.place_id === lugar.place_id);
     if (index !== -1) {
       setEnderecoSelecionado(index);
       setOpenModal(true);
@@ -61,14 +61,48 @@ const Home = () => {
 
   const handleNavigateToMapa = (lugar, typeParaMapa) => {
     navigate("/mapa", {
-      state: {
-        lugares: lugaresFiltrados,
-        lugar: lugar,
-        categoriaType: typeParaMapa, 
-      },
+      state: { lugares, lugar, categoriaType: typeParaMapa },
     });
   };
 
+  // 🔍 NOVO: função para buscar por termo digitado
+  const handleSearch = async () => {
+    if (!termoBusca.trim()) return;
+    setLoading(true);
+
+    try {
+      const response = await api.get("/buscar", {
+        params: {
+          query: termoBusca,
+          location: "-20.5381,-47.4008",
+          radius: 17000,
+        },
+      });
+
+      const dados = (response.data.estabelecimentos || []).map((item) => ({
+        nome: item.nome || "Nome não disponível",
+        endereco: item.endereco || "Não disponível",
+        categoria: item.tipo || "Não disponível",
+        telefone: item.telefone || "Não disponível",
+        horarios: item.horarios || "Não disponível",
+        avaliacao: item.avaliacao || "Não disponível",
+        place_id: item.place_id,
+        lat: item.latitude,
+        lng: item.longitude,
+        comentarios: item.comentarios || [],
+        photos: item.photos || [],
+      }));
+
+      setLugares(dados);
+    } catch (error) {
+      console.error("Erro ao buscar estabelecimentos:", error);
+      setLugares([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🔹 busca automática por categoria/subcategoria
   useEffect(() => {
     const fetchEstabelecimentos = async () => {
       if (!categoriaSelecionada) return;
@@ -80,27 +114,20 @@ const Home = () => {
         );
         if (!categoria) return;
 
-        const typeToSearch = subcategoriaSelecionada || categoria.type; 
-
-        const subcategoriaObj = categorias
-          .flatMap(c => c.subcategorias)
-          .find(sub => sub.type === subcategoriaSelecionada);
-        
-        const categoryName = subcategoriaObj?.nome || categoria.nome;
+        const typeToSearch = subcategoriaSelecionada || categoria.type;
 
         const response = await api.get("/buscar", {
           params: {
             location: "-20.5381,-47.4008",
             radius: 17000,
-            type: typeToSearch, 
-            categoryName: categoryName 
+            type: typeToSearch,
           },
         });
 
         const dados = (response.data.estabelecimentos || []).map((item) => ({
           nome: item.nome || "Nome não disponível",
           endereco: item.endereco || "Não disponível",
-          categoria: categoryName, 
+          categoria: categoria.nome,
           telefone: item.telefone || "Não disponível",
           horarios: item.horarios || "Não disponível",
           avaliacao: item.avaliacao || "Não disponível",
@@ -121,16 +148,13 @@ const Home = () => {
     };
 
     fetchEstabelecimentos();
-  }, [categoriaSelecionada, subcategoriaSelecionada]); 
-
-  const lugaresFiltrados = lugares.filter((lugar) =>
-    (lugar.nome || "").toLowerCase().includes(termoBusca.toLowerCase())
-  );
+  }, [categoriaSelecionada, subcategoriaSelecionada]);
 
   const categoriaAtiva = categorias.find(
     (cat) => cat.nome.toLowerCase() === categoriaSelecionada
   );
-  const typeParaMapa = subcategoriaSelecionada || (categoriaAtiva ? categoriaAtiva.type : null);
+  const typeParaMapa =
+    subcategoriaSelecionada || (categoriaAtiva ? categoriaAtiva.type : null);
 
   if (loading)
     return (
@@ -151,6 +175,7 @@ const Home = () => {
           Grandes Lugares Inspiram Momentos Perfeitos.
         </p>
 
+        {/* 🔍 Barra de busca funcional */}
         <div style={styles.searchWrapper}>
           <input
             type="text"
@@ -158,17 +183,19 @@ const Home = () => {
             style={styles.search}
             value={termoBusca}
             onChange={(e) => setTermoBusca(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           />
-          <SearchIcon style={styles.searchIcon} />
+          <SearchIcon style={styles.searchIcon} onClick={handleSearch} />
         </div>
 
+        {/* Botões de categoria */}
         <div style={styles.categorias}>
           {categorias.map((cat) => (
             <button
               key={cat.nome}
               onClick={() => {
                 setCategoriaSelecionada(cat.nome.toLowerCase());
-                setSubcategoriaSelecionada(null); 
+                setSubcategoriaSelecionada(null);
               }}
               style={{
                 ...styles.botaoCategoria,
@@ -187,36 +214,10 @@ const Home = () => {
           ))}
         </div>
 
-        {categoriaSelecionada && (
-          <div style={styles.subcategorias}>
-            {categorias
-              .find((cat) => cat.nome.toLowerCase() === categoriaSelecionada)
-              ?.subcategorias.map((sub) => (
-                <button
-                  key={sub.nome}
-                  onClick={() => setSubcategoriaSelecionada(sub.type)} 
-                  style={{
-                    ...styles.botaoSubcategoria,
-                    backgroundColor:
-                      subcategoriaSelecionada === sub.type
-                        ? "#4a5a87"
-                        : "#d9d9d9",
-                    color:
-                      subcategoriaSelecionada === sub.type ? "#fff" : "#000",
-                  }}
-                >
-                  {sub.nome} 
-                </button>
-              ))}
-          </div>
-        )}
-
+        {/* Lista de lugares */}
         <div style={styles.lugares}>
-          {lugaresFiltrados.map((lugar, index) => (
-            <div
-              key={lugar.place_id || index}
-              style={styles.lugar}
-            >
+          {lugares.map((lugar, index) => (
+            <div key={lugar.place_id || index} style={styles.lugar}>
               <div style={styles.lugarInfo}>
                 <div style={styles.lugarNome}>{lugar.nome}</div>
                 <div style={styles.lugarHorario}>
@@ -229,14 +230,20 @@ const Home = () => {
               <div style={styles.lugarBotoes}>
                 <button
                   onClick={() => handleOpenDetalhes(lugar)}
-                  style={{ ...styles.botaoAcao, backgroundColor: '#5c6c9e' }}
+                  style={{
+                    ...styles.botaoAcao,
+                    backgroundColor: "#5c6c9e",
+                  }}
                 >
                   Detalhes
                 </button>
 
                 <button
                   onClick={() => handleNavigateToMapa(lugar, typeParaMapa)}
-                  style={{ ...styles.botaoAcao, backgroundColor: '#4a5a87' }}
+                  style={{
+                    ...styles.botaoAcao,
+                    backgroundColor: "#4a5a87",
+                  }}
                 >
                   Ver no Mapa
                 </button>
@@ -250,8 +257,8 @@ const Home = () => {
         open={openModal}
         onClose={() => setOpenModal(false)}
         lugar={
-          enderecoSelecionado !== null && enderecoSelecionado < lugares.length 
-            ? lugares[enderecoSelecionado] 
+          enderecoSelecionado !== null && enderecoSelecionado < lugares.length
+            ? lugares[enderecoSelecionado]
             : null
         }
       />
