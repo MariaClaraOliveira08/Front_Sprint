@@ -16,7 +16,11 @@ import {
 import { Favorite, FavoriteBorder, RateReview } from "@mui/icons-material";
 import api from "../axios/axios";
 
-const SidebarAvaliacoes = ({ googlePlaceId, nomeEstabelecimento, endereco }) => {
+const SidebarAvaliacoes = ({
+  googlePlaceId,
+  nomeEstabelecimento,
+  endereco,
+}) => {
   const [avaliacoes, setAvaliacoes] = useState([]);
   const [comentario, setComentario] = useState("");
   const [nota, setNota] = useState(0);
@@ -90,7 +94,8 @@ const SidebarAvaliacoes = ({ googlePlaceId, nomeEstabelecimento, endereco }) => 
     if (!nomeEstabelecimento || !endereco) {
       setSnackbar({
         open: true,
-        message: "Nome e endereço são obrigatórios para adicionar aos favoritos.",
+        message:
+          "Nome e endereço são obrigatórios para adicionar aos favoritos.",
         severity: "warning",
       });
       return;
@@ -177,13 +182,12 @@ const SidebarAvaliacoes = ({ googlePlaceId, nomeEstabelecimento, endereco }) => 
 
   return (
     <>
-      {/* Botão que abre/fecha o modal */}
       <IconButton
         onClick={toggleModal}
         sx={{
           position: "absolute",
           top: 16,
-          right: 16,
+          right: 33, 
           backgroundColor: "white",
           boxShadow: 2,
           "&:hover": { backgroundColor: "#f5f5f5" },
@@ -220,7 +224,7 @@ const SidebarAvaliacoes = ({ googlePlaceId, nomeEstabelecimento, endereco }) => 
             sx={{
               position: "absolute",
               top: 50,
-              right: 20,
+              right: 0,
               color: curtido ? "red" : "gray",
             }}
           >
@@ -236,7 +240,9 @@ const SidebarAvaliacoes = ({ googlePlaceId, nomeEstabelecimento, endereco }) => 
               <CircularProgress />
             </Box>
           ) : avaliacoes.length === 0 ? (
-            <Typography color="text.secondary">Nenhuma avaliação ainda.</Typography>
+            <Typography color="text.secondary">
+              Nenhuma avaliação ainda.
+            </Typography>
           ) : (
             avaliacoes.map((a) => (
               <Paper key={a.id_avaliacao} sx={{ p: 2, mb: 2, borderRadius: 2 }}>
