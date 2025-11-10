@@ -22,8 +22,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 const HamburgerDrawer = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // 🔹 pega a rota atual
+  const location = useLocation();
   const [open, setOpen] = useState(false);
+  const [mostrarModal, setMostrarModal] = useState(false);
 
   const toggleDrawer = (isOpen) => () => {
     setOpen(isOpen);
@@ -36,8 +37,24 @@ const HamburgerDrawer = () => {
     { label: "Sobre nós", icon: <Info />, route: "/sobre" },
   ];
 
+  // 🔹 Função que executa o logout após confirmação
+  const handleConfirmarLogout = () => {
+    const userId = localStorage.getItem("userId");
+    console.log("Usuário desconectado:", userId);
+
+    localStorage.removeItem("userId");
+    localStorage.removeItem("token");
+    localStorage.removeItem("authenticated");
+    sessionStorage.clear();
+
+    setMostrarModal(false);
+    setOpen(false);
+    navigate("/login", { replace: true });
+  };
+
   return (
     <>
+      {/* menu */}
       <IconButton
         onClick={toggleDrawer(true)}
         aria-label="open drawer"
@@ -46,6 +63,7 @@ const HamburgerDrawer = () => {
         <MenuIcon fontSize="large" />
       </IconButton>
 
+      {/* Drawer lateral */}
       <Drawer anchor="left" open={open} onClose={toggleDrawer(false)}>
         <Box
           sx={{
@@ -92,14 +110,14 @@ const HamburgerDrawer = () => {
             </List>
           </Box>
 
-          {/* Botão de sair */}
+          {/* Botão de logout */}
           <Box>
             <Divider />
             <List>
               <ListItemButton
-                onClick={() => {
-                  navigate("/");
-                  setOpen(false);
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMostrarModal(true);
                 }}
                 sx={{ color: "red" }}
               >
@@ -112,8 +130,94 @@ const HamburgerDrawer = () => {
           </Box>
         </Box>
       </Drawer>
+
+      {/*Modal de confirmação de logout */}
+      {mostrarModal && (
+        <div style={styles.overlay}>
+          <div style={styles.modal}>
+            <h3 style={styles.titulo}>Encerrar sessão</h3>
+            <p style={styles.texto}>Você realmente deseja sair da sua conta?</p>
+
+            <div style={styles.botoes}>
+              <button
+                style={styles.botaoCancelar}
+                onClick={() => setMostrarModal(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                style={styles.botaoConfirmar}
+                onClick={handleConfirmarLogout}
+              >
+                Sair
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
+};
+
+//Estilos do modal
+const styles = {
+  overlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999,
+  },
+  modal: {
+    backgroundColor: "#fff",
+    padding: "25px 30px",
+    borderRadius: 10,
+    width: 350,
+    boxShadow: "0px 4px 15px rgba(0,0,0,0.3)",
+    textAlign: "center",
+    fontFamily: "Segoe UI, sans-serif",
+  },
+  titulo: {
+    margin: 0,
+    marginBottom: 10,
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  texto: {
+    fontSize: 14,
+    color: "#555",
+    marginBottom: 20,
+  },
+  botoes: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 15,
+  },
+  botaoCancelar: {
+    flex: 1,
+    padding: "10px",
+    borderRadius: 8,
+    border: "1px solid #ccc",
+    backgroundColor: "#f3f4f6",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+  botaoConfirmar: {
+    flex: 1,
+    padding: "10px",
+    borderRadius: 8,
+    border: "none",
+    backgroundColor: "red",
+    color: "#fff",
+    fontWeight: "bold",
+    cursor: "pointer",
+  },
 };
 
 export default HamburgerDrawer;
