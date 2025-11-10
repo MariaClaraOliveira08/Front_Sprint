@@ -1,15 +1,21 @@
-import React from "react";
+import React, { useEffect } from "react";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import HamburgerDrawer from "../components/HamburgerDrawer";
 
 const SobreNos = () => {
+  useEffect(() => {
+    // 🔒 Impede o scroll da página (igual Login e Cadastro)
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
+
   return (
     <div style={styles.wrapper}>
       <HamburgerDrawer />
 
-      {/* Container principal (mesmo padrão da Home) */}
       <div style={styles.container}>
-        {/* Cabeçalho idêntico ao da Home */}
         <header style={styles.header}>
           <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
           <h2 style={styles.logoText}>Glimp</h2>
@@ -19,7 +25,6 @@ const SobreNos = () => {
           Grandes Lugares Inspiram Momentos Perfeitos.
         </p>
 
-        {/* Seções de conteúdo */}
         <div style={styles.card}>
           <h3>Sobre nós:</h3>
           <p>
@@ -51,21 +56,20 @@ const SobreNos = () => {
 export default SobreNos;
 
 // ========================
-// 🎨 Estilos atualizados
+// 🎨 Estilos originais mantidos
 // ========================
 const styles = {
   wrapper: {
     display: "flex",
-    height: "100vh",
+    height: "100vh", // força ocupar toda a tela
     width: "100vw",
     fontFamily: "Segoe UI, sans-serif",
     backgroundColor: "#f5f5f5",
     margin: 0,
     padding: 0,
     boxSizing: "border-box",
+    overflow: "hidden", // impede rolagem interna
   },
-
-  // Mesmo padrão da Home e Favoritos
   container: {
     flex: 1,
     padding: 50,
@@ -73,10 +77,8 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     backgroundColor: "#f5f5f5",
-    overflowY: "auto",
+    overflow: "hidden", // impede rolagem local
   },
-
-  // Cabeçalho igual à Home
   header: {
     display: "flex",
     alignItems: "center",
@@ -93,8 +95,6 @@ const styles = {
     color: "#777",
     marginBottom: 30,
   },
-
-  // Cards e seções
   card: {
     backgroundColor: "#ddd",
     padding: 24,
