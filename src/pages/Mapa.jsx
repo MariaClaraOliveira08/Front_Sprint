@@ -8,7 +8,7 @@ const containerStyle = {
   height: "100vh",
 };
 
-const GOOGLE_API_KEY = "AIzaSyD3aUrLEdn3S3HUg7SP9xwQoKNxL4AcCfw";
+const GOOGLE_API_KEY = "AIzaSyAGYyG00B3fNe91e3BAtf7k2nK79-HPDBY";
 
 const Mapa = ({ latitude = -20.5381, longitude = -47.4008 }) => {
   const location = useLocation();
