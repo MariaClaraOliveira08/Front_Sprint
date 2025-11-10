@@ -1,5 +1,4 @@
-// 📁 src/pages/Cadastro.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -13,7 +12,7 @@ import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import sheets from "../axios/axios";
 import PasswordField from "../components/PasswordField";
 import CustomSnackbar from "../components/CustomSnackbar";
-import ModalVerificarCodigo from "../components/ModalVerificarCodigo"; // 👈 importamos o modal
+import ModalVerificarCodigo from "../components/ModalVerificarCodigo";
 
 export default function Cadastro() {
   const navigate = useNavigate();
@@ -35,7 +34,15 @@ export default function Cadastro() {
     severity: "success",
   });
 
-  const [openModal, setOpenModal] = useState(false); // controla o modal
+  const [openModal, setOpenModal] = useState(false);
+
+  // 🔹 Remove a rolagem só nesta tela
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -68,7 +75,7 @@ export default function Cadastro() {
         severity: "success",
       });
 
-      // abre modal de confirmação
+      // Abre modal de verificação
       setOpenModal(true);
     } catch (err) {
       console.error("Erro ao cadastrar:", err.response?.data || err.message);
@@ -87,17 +94,18 @@ export default function Cadastro() {
     <Box
       sx={{
         width: "100%",
-        minHeight: "100vh",
+        height: "100vh", // ocupa exatamente a altura visível
         bgcolor: "#e5e5e5",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        py: 2,
+        overflow: "hidden", // impede qualquer rolagem interna
       }}
     >
       <CssBaseline />
 
+      {/* Logo e frase */}
       <Box display="flex" flexDirection="column" alignItems="center" mb={1}>
         <Box display="flex" alignItems="center" gap={1}>
           <LocationOnOutlinedIcon sx={{ fontSize: 30, color: "#000" }} />
@@ -110,10 +118,11 @@ export default function Cadastro() {
         </Typography>
       </Box>
 
+      {/* Formulário */}
       <Box
         component="form"
         sx={{
-          width: "100%",
+          width: "90%",
           maxWidth: 450,
           display: "flex",
           flexDirection: "column",

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -12,7 +12,7 @@ import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import api from "../axios/axios";
 import CustomSnackbar from "../components/CustomSnackbar";
 import PasswordField from "../components/PasswordField";
-import RedefinirSenhaModal from "../components/RedefinirSenhaModal"; // 🔹 Modal importado
+import RedefinirSenhaModal from "../components/RedefinirSenhaModal";
 
 function Login() {
   const [user, setUser] = useState({ email: "", senha: "" });
@@ -25,6 +25,14 @@ function Login() {
 
   // 🔒 Modal redefinição
   const [openRedefinirModal, setOpenRedefinirModal] = useState(false);
+
+  useEffect(() => {
+    // 🔹 Remove rolagem apenas nesta tela
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
 
   const handleOpenSnackbar = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -76,9 +84,8 @@ function Login() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          pt: "40px",
-          pb: "40px",
-          minHeight: "100vh",
+          height: "100vh",
+          overflow: "hidden", // impede qualquer rolagem no conteúdo
         }}
       >
         {/* Logo e texto */}
@@ -144,11 +151,7 @@ function Login() {
             Entrar
           </Button>
 
-          {/* 🔹 Esqueceu senha (agora acima do "Não possui login?") */}
-          <Typography
-            variant="body2"
-            sx={{ textAlign: "center", mt: 1 }}
-          >
+          <Typography variant="body2" sx={{ textAlign: "center", mt: 1 }}>
             <MuiLink
               sx={{ color: "#62798B", fontWeight: "bold", cursor: "pointer" }}
               onClick={() => setOpenRedefinirModal(true)}
