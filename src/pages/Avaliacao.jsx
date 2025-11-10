@@ -31,7 +31,7 @@ function AvaliacoesUsuario() {
         res.data.avaliacoes?.map((a) => ({
           ...a,
           nome_estabelecimento: a.nome_estabelecimento,
-          usuario: a.usuario || nomeUsuario, 
+          usuario: a.usuario || nomeUsuario,
         })) || [];
       setAvaliacoes(dados);
     } catch (err) {
@@ -97,7 +97,7 @@ function AvaliacoesUsuario() {
           sx={{
             flex: 1,
             overflowY: "auto",
-            p: 2,
+            p: 3, // ← aumentei o padding interno
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -124,8 +124,8 @@ function AvaliacoesUsuario() {
                   flexDirection: "column",
                   gap: 1,
                   transition: "0.3s",
-                  width: "100%",
-                  maxWidth: 600,
+                  width: "90%", // ← ocupa mais da tela
+                  maxWidth: 900, // ← aumentei de 600 pra 900
                   "&:hover": { transform: "scale(1.01)", boxShadow: 6 },
                 }}
               >
