@@ -168,7 +168,7 @@ const styles = {
   container: {
     flex: 1,
     padding: 32,
-    paddingLeft: 240,
+    paddingLeft: 100,
     display: "flex",
     flexDirection: "column",
   },
