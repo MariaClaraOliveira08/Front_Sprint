@@ -1,174 +1,151 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Typography,
-  Paper,
-  CircularProgress,
-  Avatar,
-  Rating,
   Button,
+  Rating,
+  Modal,
+  Fade,
+  Backdrop,
 } from "@mui/material";
-import HamburgerDrawer from "../components/HamburgerDrawer";
-import api from "../axios/axios";
-import ModalAvaliacao from "../components/ModalAvaliacao";
 
-function AvaliacoesUsuario() {
-  const [avaliacoes, setAvaliacoes] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [openModal, setOpenModal] = useState(false);
-  const [avaliacaoModal, setAvaliacaoModal] = useState(null);
+function ModalAvaliacao({ open, onClose, avaliacao, onDelete }) {
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
 
-  useEffect(() => {
-    buscarAvaliacoesUsuario();
-  }, []);
+  // Quando clica em "Deletar Avaliação", abre o modal de confirmação
+  const handleDeleteClick = () => {
+    setOpenDeleteModal(true);
+  };
 
-  const buscarAvaliacoesUsuario = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get("/avaliacao");
-      const dados =
-        res.data.avaliacoes?.map((a) => ({
-          ...a,
-          nome_estabelecimento: a.nome_estabelecimento,
-          usuario: a.usuario || "Você",
-        })) || [];
-      setAvaliacoes(dados);
-    } catch (err) {
-      console.warn(err.response?.data?.message || "Erro ao buscar avaliações");
-      setAvaliacoes([]);
-    } finally {
-      setLoading(false);
+  // Confirma exclusão
+  const handleConfirmDelete = () => {
+    if (avaliacao) {
+      onDelete(avaliacao); // executa a função de deletar
     }
+    setOpenDeleteModal(false);
+    onClose(); // fecha o modal principal
   };
 
-  const handleOpenModal = (avaliacao) => {
-    setAvaliacaoModal(avaliacao);
-    setOpenModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setOpenModal(false);
-    setAvaliacaoModal(null);
-  };
-
-  const handleDeleteAvalicao = async (avaliacao) => {
-    if (!avaliacao) return;
-    try {
-      await api.deletarAvaliacao(avaliacao.id_avaliacao);
-      setAvaliacoes((prev) =>
-        prev.filter((a) => a.id_avaliacao !== avaliacao.id_avaliacao)
-      );
-      handleCloseModal();
-    } catch (err) {
-      console.error(
-        "Erro ao deletar avaliação:",
-        err.response?.data || err.message
-      );
-      alert("Não foi possível deletar a avaliação.");
-    }
+  // Cancela exclusão
+  const handleCancelDelete = () => {
+    setOpenDeleteModal(false); 
   };
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      <HamburgerDrawer />
-
-      <Box
-        sx={{
-          flex: 1,
-          p: 2,
-          display: "flex",
-          flexDirection: "column",
-          gap: 3,
-          width: "100%",
-          overflowY: "auto",
-          maxHeight: "100vh",
-          alignItems: "center", // centraliza os cards
-        }}
+    <>
+      <Modal
+        open={open}
+        onClose={onClose}
+        closeAfterTransition
+        BackdropComponent={Backdrop}
+        BackdropProps={{ timeout: 400 }}
       >
-        <Typography
-          variant="h4"
-          gutterBottom
-          sx={{ color: "#4a5a87", fontWeight: 700 }}
-        >
-          Minhas Avaliações
-        </Typography>
+        <Fade in={open}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: { xs: "90%", sm: 450 },
+              maxHeight: "80vh",
+              overflowY: "auto",
+              backgroundColor: "#D9D9D9",
+              borderRadius: 3,
+              boxShadow: 24,
+              p: 4,
+            }}
+          >
+            <Typography variant="h6" sx={{ color: "#4a5a87", mb: 1 }}>
+              {avaliacao?.nome_estabelecimento || "Estabelecimento"}
+            </Typography>
 
-        {loading ? (
-          <Box display="flex" justifyContent="center" mt={5}>
-            <CircularProgress />
-          </Box>
-        ) : avaliacoes.length === 0 ? (
-          <Typography sx={{ color: "#777", textAlign: "center", mt: 5 }}>
-            Você ainda não fez nenhuma avaliação.
-          </Typography>
-        ) : (
-          avaliacoes.map((avaliacao) => (
-            <Paper
-              key={avaliacao.id_avaliacao}
-              elevation={4}
-              sx={{
-                p: 3,
-                borderRadius: 3,
-                display: "flex",
-                flexDirection: "column",
-                gap: 1,
-                transition: "0.3s",
-                width: "100%",
-                maxWidth: 600, // define largura máxima do card
-                margin: "0 auto", // centraliza horizontalmente
-                "&:hover": { transform: "scale(1.01)", boxShadow: 6 },
-              }}
-            >
-              <Box display="flex" alignItems="center" gap={2}>
-                <Avatar sx={{ bgcolor: "#7681A1" }}>
-                  {avaliacao.usuario?.[0]?.toUpperCase() || "U"}
-                </Avatar>
-                <Box flex={1}>
-                  <Typography variant="subtitle1" fontWeight={600}>
-                    {avaliacao.nome_estabelecimento}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Usuário: {avaliacao.usuario}
-                  </Typography>
-                </Box>
-                <Rating value={avaliacao.nota || 0} readOnly precision={0.5} />
-              </Box>
-
-              <Typography variant="body1" mt={1}>
-                {avaliacao.comentario ? avaliacao.comentario : "-"}
+            {avaliacao?.endereco && (
+              <Typography variant="body2" sx={{ color: "#666", mb: 1 }}>
+                Endereço: {avaliacao.endereco}
               </Typography>
+            )}
 
-              <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
-                <Button
-                  variant="text"
-                  size="small"
-                  onClick={() => handleOpenModal(avaliacao)}
-                >
-                  Ver mais
-                </Button>
+            <Box display="flex" justifyContent="space-between" mb={2}>
+              <Typography variant="subtitle1">{avaliacao?.usuario || "Você"}</Typography>
+              <Rating value={avaliacao?.nota || 0} readOnly size="small" />
+            </Box>
 
-                <Button
-                  variant="outlined"
-                  color="error"
-                  size="small"
-                  onClick={() => handleDeleteAvalicao(avaliacao)}
-                >
-                  Deletar
-                </Button>
-              </Box>
-            </Paper>
-          ))
-        )}
-      </Box>
+            <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
+              {avaliacao?.comentario || "-"}
+            </Typography>
 
-      <ModalAvaliacao
-        open={openModal}
-        onClose={handleCloseModal}
-        avaliacao={avaliacaoModal}
-        onDelete={handleDeleteAvalicao}
-      />
-    </Box>
+            <Box mt={3} sx={{ display: "flex", gap: 1 }}>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={handleDeleteClick} // abre o modal de confirmação
+                fullWidth
+                sx={{ borderRadius: 2 }}
+              >
+                Deletar Avaliação
+              </Button>
+
+              <Button
+                variant="outlined"
+                onClick={onClose}
+                fullWidth
+                sx={{ borderRadius: 2 }}
+              >
+                Fechar
+              </Button>
+            </Box>
+          </Box>
+        </Fade>
+      </Modal>
+
+      {/* Modal de confirmação para deletar */}
+      <Modal
+        open={openDeleteModal}
+        onClose={handleCancelDelete}
+        closeAfterTransition
+        BackdropComponent={Backdrop}
+        BackdropProps={{ timeout: 400 }}
+      >
+        <Fade in={openDeleteModal}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: { xs: "90%", sm: 400 },
+              backgroundColor: "#fff",
+              borderRadius: 3,
+              boxShadow: 24,
+              p: 4,
+              textAlign: "center",
+            }}
+          >
+            <Typography variant="h6" sx={{ mb: 2, color: "#4a5a87" }}>
+              Tem certeza que deseja deletar esta avaliação?
+            </Typography>
+
+            <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={handleConfirmDelete} 
+              >
+                Sim
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={handleCancelDelete} 
+              >
+                Não
+              </Button>
+            </Box>
+          </Box>
+        </Fade>
+      </Modal>
+    </>
   );
 }
 
-export default AvaliacoesUsuario;
+export default ModalAvaliacao;
