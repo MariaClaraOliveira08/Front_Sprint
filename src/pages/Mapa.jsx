@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { GoogleMap, LoadScript, InfoWindow, Marker } from "@react-google-maps/api";
+import { GoogleMap, useJsApiLoader, InfoWindow, Marker } from "@react-google-maps/api";
 import HamburgerDrawer from "../components/HamburgerDrawer";
 import SidebarAvaliacoes from "../components/SidebarAvaliacoes";
 import { useLocation } from "react-router-dom";
@@ -17,6 +17,12 @@ const Mapa = ({ latitude = -20.5381, longitude = -47.4008 }) => {
 
   const [selectedLugar, setSelectedLugar] = useState(null);
   const [lugares, setLugares] = useState([]);
+
+  // ✅ Método recomendado para carregar o Google Maps
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: GOOGLE_API_KEY,
+    libraries: ["places"],
+  });
 
   useEffect(() => {
     if (location.state?.lugares) {
@@ -51,6 +57,15 @@ const Mapa = ({ latitude = -20.5381, longitude = -47.4008 }) => {
     ? { lat: selectedLugar.lat, lng: selectedLugar.lng }
     : { lat: latitude, lng: longitude };
 
+  // ✅ Exibe loading enquanto o mapa carrega
+  if (!isLoaded) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+        <h3>Carregando mapa...</h3>
+      </div>
+    );
+  }
+
   return (
     <div style={{ position: "relative", width: "100vw", height: "100vh" }}>
       <HamburgerDrawer />
@@ -63,47 +78,45 @@ const Mapa = ({ latitude = -20.5381, longitude = -47.4008 }) => {
         />
       )}
 
-      <LoadScript googleMapsApiKey={GOOGLE_API_KEY} libraries={["places"]}>
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          center={center}
-          zoom={14}
-          onLoad={(map) => (mapRef.current = map)}
-          options={{
-            streetViewControl: false,
-            mapTypeControl: false,
-            fullscreenControl: true,
-            zoomControl: true,
-          }}
-        >
-          {lugares.map((lugar, index) => (
-            <Marker
-              key={index}
-              position={{ lat: lugar.lat, lng: lugar.lng }}
-              onClick={() => setSelectedLugar(lugar)}
-            />
-          ))}
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={center}
+        zoom={14}
+        onLoad={(map) => (mapRef.current = map)}
+        options={{
+          streetViewControl: false,
+          mapTypeControl: false,
+          fullscreenControl: true,
+          zoomControl: true,
+        }}
+      >
+        {lugares.map((lugar, index) => (
+          <Marker
+            key={index}
+            position={{ lat: lugar.lat, lng: lugar.lng }}
+            onClick={() => setSelectedLugar(lugar)}
+          />
+        ))}
 
-          {selectedLugar && (
-            <InfoWindow
-              position={{ lat: selectedLugar.lat, lng: selectedLugar.lng }}
-              onCloseClick={() => setSelectedLugar(null)}
-            >
-              <div style={{ maxWidth: 250 }}>
-                <h3>{selectedLugar.nome}</h3>
-                <p>{selectedLugar.endereco}</p>
-                {getFotoURL(selectedLugar) && (
-                  <img
-                    src={getFotoURL(selectedLugar)}
-                    alt={selectedLugar.nome}
-                    style={{ width: "100%", borderRadius: 8, marginTop: 10 }}
-                  />
-                )}
-              </div>
-            </InfoWindow>
-          )}
-        </GoogleMap>
-      </LoadScript>
+        {selectedLugar && (
+          <InfoWindow
+            position={{ lat: selectedLugar.lat, lng: selectedLugar.lng }}
+            onCloseClick={() => setSelectedLugar(null)}
+          >
+            <div style={{ maxWidth: 250 }}>
+              <h3>{selectedLugar.nome}</h3>
+              <p>{selectedLugar.endereco}</p>
+              {getFotoURL(selectedLugar) && (
+                <img
+                  src={getFotoURL(selectedLugar)}
+                  alt={selectedLugar.nome}
+                  style={{ width: "100%", borderRadius: 8, marginTop: 10 }}
+                />
+              )}
+            </div>
+          </InfoWindow>
+        )}
+      </GoogleMap>
     </div>
   );
 };
