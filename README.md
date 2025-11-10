@@ -43,6 +43,6 @@ Este projeto fornece a estrutura inicial para um sistema com telas de **Login** 
     npm install @mui/icons-material
 
 5. Mapa
-    - biblioteca para instalar o mapa:
+    - Biblioteca para instalar o mapa:
    ```sh
-   npm install @react-google-maps/api
+    npm install @react-google-maps/api
