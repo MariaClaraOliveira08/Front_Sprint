@@ -1,182 +1,229 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import SearchIcon from "@mui/icons-material/Search";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import HamburgerDrawer from "../components/HamburgerDrawer"; // 🔹 Importa o menu lateral
+import HamburgerDrawer from "../components/HamburgerDrawer";
 import api from "../axios/axios";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
-function Favoritos() {
+const Favoritos = () => {
   const [favoritos, setFavoritos] = useState([]);
-  const [busca, setBusca] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [deletingId, setDeletingId] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
 
-  useEffect(() => {
-    const fetchFavoritos = async () => {
-      try {
-        const userId = localStorage.getItem("userId");
-        const response = await api.get(`/favoritos/${userId}`);
-        setFavoritos(response.data);
-      } catch (error) {
-        console.error("Erro ao carregar favoritos:", error);
-      }
-    };
-    fetchFavoritos();
-  }, []);
+  const fetchFavoritos = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("Você precisa estar logado para ver seus favoritos.");
+      setLoading(false);
+      return;
+    }
 
-  const removerFavorito = async (id) => {
     try {
-      await api.delete(`/favoritos/${id}`);
-      setFavoritos(favoritos.filter((f) => f.id !== id));
-    } catch (error) {
-      console.error("Erro ao remover favorito:", error);
+      const res = await api.get("/favoritos"); 
+      setFavoritos(res.data.favoritos || []);
+      console.log(res.data.favoritos);
+    } catch (err) {
+      console.error(err);
+      setError("Erro ao carregar favoritos.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const favoritosFiltrados = favoritos.filter((f) =>
-    f.nome.toLowerCase().includes(busca.toLowerCase())
-  );
+  useEffect(() => {
+    fetchFavoritos();
+  }, []);
+
+  const favoritosFiltrados = favoritos.filter((fav) => {
+    const textoBusca = searchTerm.toLowerCase();
+    const nome = fav?.nome_estabelecimento?.toLowerCase() || "";
+    const endereco = fav?.endereco?.toLowerCase() || "";
+    return nome.includes(textoBusca) || endereco.includes(textoBusca);
+  });
+
+  const toggleFavorito = async (id) => {
+    setDeletingId(id);
+    try {
+      await api.delete(`/favoritos/${id}`);
+      setFavoritos((prev) => prev.filter((fav) => fav.id_favorito !== id));
+      setSnackbar({
+        open: true,
+        message: "Favorito removido com sucesso!",
+        severity: "success",
+      });
+    } catch (err) {
+      console.error(err);
+      setSnackbar({
+        open: true,
+        message: "Erro ao remover favorito.",
+        severity: "error",
+      });
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") return;
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
 
   return (
     <div style={styles.wrapper}>
-      {/* 🔹 Menu lateral fixo */}
       <HamburgerDrawer />
 
-      {/* 🔹 Conteúdo principal */}
-      <div style={styles.container}>
-        {/* Cabeçalho igual à Home */}
+      {/*Coração fixo no canto superior direito */}
+      <div style={styles.topHeart}>
+        <FavoriteIcon sx={{ fontSize: 40, color: "#e91e63" }} />
+      </div>
+
+      <main style={styles.container}>
         <header style={styles.header}>
-          <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
-          <h2 style={styles.logoText}>Glimp</h2>
+          <LocationOnOutlinedIcon sx={{ fontSize: 32, color: "#000" }} />
+          <h1 style={styles.logoText}>Glimp</h1>
         </header>
 
-        <p style={styles.subtitulo}>Grandes Lugares Inspiram Momentos Perfeitos.
+        <p style={styles.subtitulo}>
+          Grandes Lugares Inspiram Momentos Perfeitos.
+        </p>
 
-</p>
-
-        {/* Campo de busca */}
         <div style={styles.searchBox}>
           <input
-            style={styles.searchInput}
             type="text"
-            placeholder="Buscar local favorito..."
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Pesquisar"
+            style={styles.searchInput}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
+          <SearchIcon sx={{ fontSize: 22, color: "#888" }} />
         </div>
 
-        {/* Lista de Favoritos */}
-        <div style={styles.listaFavoritos}>
-          {favoritosFiltrados.length === 0 ? (
-            <p style={{ color: "#666" }}>Nenhum favorito encontrado.</p>
-          ) : (
-            favoritosFiltrados.map((f) => (
-              <div key={f.id} style={styles.card}>
-                <div style={styles.infoContainer}>
-                  <span style={styles.nome}>{f.nome}</span>
-                  <span style={styles.endereco}>{f.endereco}</span>
+        {loading ? (
+          <p>Carregando favoritos...</p>
+        ) : error ? (
+          <p style={{ color: "red" }}>{error}</p>
+        ) : (
+          <section style={styles.listaFavoritos}>
+            {favoritosFiltrados.length > 0 ? (
+              favoritosFiltrados.map((fav) => (
+                <div key={fav.id_favorito} style={styles.card}>
+                  <div style={styles.infoContainer}>
+                    <div style={styles.nome}>{fav.nome_estabelecimento}</div>
+                    <div style={styles.endereco}>{fav.endereco}</div>
+                  </div>
+
+                  <button
+                    onClick={() => toggleFavorito(fav.id_favorito)}
+                    disabled={deletingId === fav.id_favorito}
+                    style={styles.deleteButton}
+                  >
+                    <FavoriteIcon sx={{ fontSize: 26, color: "#e91e63" }} />
+                  </button>
                 </div>
-                <button
-                  style={styles.deleteButton}
-                  onClick={() => removerFavorito(f.id)}
-                >
-                  <DeleteOutlineIcon sx={{ color: "#d11a2a" }} />
-                </button>
-              </div>
-            ))
-          )}
-        </div>
+              ))
+            ) : (
+              <p>Nenhum favorito encontrado.</p>
+            )}
+          </section>
+        )}
+      </main>
 
-        {/* Ícone decorativo (igual à Home) */}
-        <div style={styles.topHeart}>
-          <FavoriteIcon sx={{ fontSize: 36, color: "#d11a2a" }} />
-        </div>
-      </div>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
-}
+};
 
-export default Favoritos;
-
-// ========================
-// 🎨 Estilos padronizados
-// ========================
 const styles = {
   wrapper: {
     display: "flex",
     height: "100vh",
     width: "100vw",
-    fontFamily: "Segoe UI, sans-serif",
-    backgroundColor: "#f5f5f5",
+    fontFamily: "Arial, sans-serif",
+    backgroundColor: "#f0f2f5",
     position: "relative",
   },
-  topHeart: { position: "absolute", top: 50, right: 30, zIndex: 10 },
-
-  // Mesmo layout da Home (com padding esquerdo igual)
+  topHeart: { position: "absolute", top: 20, right: 30, zIndex: 10 },
   container: {
     flex: 1,
-    padding: 50,
-    paddingLeft: 200,
+    padding: 32,
+    paddingLeft: 100,
     display: "flex",
     flexDirection: "column",
-    backgroundColor: "#f5f5f5",
-    overflowY: "auto",
   },
-
-  header: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-  },
-  logoText: {
-    margin: 0,
-    fontSize: 26,
-    color: "#4a5a87",
-    fontWeight: 700,
-  },
-  subtitulo: {
-    fontSize: 14,
-    color: "#777",
-    marginBottom: 20,
-  },
-
+  header: { display: "flex", alignItems: "center", gap: 12, marginBottom: 40 },
+  logoText: { margin: 5, fontSize: 32, fontWeight: 700, color: "#000" },
+  subtitulo: { fontSize: 14, color: "#777", marginBottom: 20, marginTop: -40 },
   searchBox: {
     display: "flex",
     alignItems: "center",
-    width: "70%",
     backgroundColor: "#fff",
     borderRadius: 25,
-    padding: "0 15px",
-    border: "1px solid #ccc",
+    padding: "10px 20px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+    maxWidth: 600,
     marginBottom: 40,
+    border: "1px solid #ddd",
+    marginTop: 10,
+    marginLeft: 70,
   },
   searchInput: {
     flex: 1,
     border: "none",
     outline: "none",
-    padding: "12px 10px",
-    fontSize: 14,
+    backgroundColor: "transparent",
+    fontSize: 16,
+    color: "#333",
+    fontWeight: 500,
   },
-
   listaFavoritos: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 20,
-    marginRight: 200,
-    overflowY: "auto",
-    maxHeight: "70vh",
+    display: "grid",
+    gridTemplateColumns: "1fr",
+    gap: 24,
+    maxHeight: "70vh",  
+    overflowY: "auto",  
+    paddingRight: 16,
   },
+  
   card: {
     backgroundColor: "#fff",
     padding: 24,
     borderRadius: 16,
     display: "flex",
+    gap: 40,
     alignItems: "center",
-    justifyContent: "space-between",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+    cursor: "default",
+    userSelect: "none",
     position: "relative",
   },
   infoContainer: { display: "flex", flexDirection: "column", gap: 6, flex: 1 },
+
   nome: { fontWeight: 700, fontSize: 18, color: "#000" },
+
   endereco: { fontSize: 16, color: "#555" },
+
   deleteButton: {
     background: "none",
     border: "none",
@@ -186,3 +233,5 @@ const styles = {
     right: 10,
   },
 };
+
+export default Favoritos;
