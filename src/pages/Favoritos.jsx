@@ -168,25 +168,9 @@ const styles = {
     display: "flex",
     flexDirection: "column",
   },
-  header: {
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-    marginBottom: 40,
-    marginTop: 25,
-  },
-  logoText: {
-    margin: 0,
-    fontSize: 32,
-    fontWeight: 700,
-    color: "#000",
-  },
-  subtitulo: {
-    fontSize: 14,
-    color: "#777",
-    marginBottom: 20,
-    marginTop: -20, // ligeiramente ajustado
-  },
+  header: { display: "flex", alignItems: "center", gap: 12, marginBottom: 40 },
+  logoText: { margin: 5, fontSize: 32, fontWeight: 700, color: "#000" },
+  subtitulo: { fontSize: 14, color: "#777", marginBottom: 20, marginTop: -40 },
   searchBox: {
     display: "flex",
     alignItems: "center",
