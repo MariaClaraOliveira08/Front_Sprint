@@ -28,7 +28,7 @@ const Favoritos = () => {
     }
 
     try {
-      const res = await api.get("/favoritos"); 
+      const res = await api.get("/favoritos");
       setFavoritos(res.data.favoritos || []);
       console.log(res.data.favoritos);
     } catch (err) {
@@ -81,10 +81,7 @@ const Favoritos = () => {
     <div style={styles.wrapper}>
       <HamburgerDrawer />
 
-      {/*Coração fixo no canto superior direito */}
-      <div style={styles.topHeart}>
-        <FavoriteIcon sx={{ fontSize: 40, color: "#e91e63" }} />
-      </div>
+      {/* Ícone de coração REMOVIDO */}
 
       <main style={styles.container}>
         <header style={styles.header}>
@@ -164,7 +161,6 @@ const styles = {
     backgroundColor: "#f0f2f5",
     position: "relative",
   },
-  topHeart: { position: "absolute", top: 20, right: 30, zIndex: 10 },
   container: {
     flex: 1,
     padding: 32,
@@ -172,9 +168,25 @@ const styles = {
     display: "flex",
     flexDirection: "column",
   },
-  header: { display: "flex", alignItems: "center", gap: 12, marginBottom: 40 },
-  logoText: { margin: 5, fontSize: 32, fontWeight: 700, color: "#000" },
-  subtitulo: { fontSize: 14, color: "#777", marginBottom: 20, marginTop: -40 },
+  header: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 40,
+    marginTop: 25,
+  },
+  logoText: {
+    margin: 0,
+    fontSize: 32,
+    fontWeight: 700,
+    color: "#000",
+  },
+  subtitulo: {
+    fontSize: 14,
+    color: "#777",
+    marginBottom: 20,
+    marginTop: -20, // ligeiramente ajustado
+  },
   searchBox: {
     display: "flex",
     alignItems: "center",
@@ -201,11 +213,10 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "1fr",
     gap: 24,
-    maxHeight: "70vh",  
-    overflowY: "auto",  
+    maxHeight: "70vh",
+    overflowY: "auto",
     paddingRight: 16,
   },
-  
   card: {
     backgroundColor: "#fff",
     padding: 24,
@@ -219,11 +230,8 @@ const styles = {
     position: "relative",
   },
   infoContainer: { display: "flex", flexDirection: "column", gap: 6, flex: 1 },
-
   nome: { fontWeight: 700, fontSize: 18, color: "#000" },
-
   endereco: { fontSize: 16, color: "#555" },
-
   deleteButton: {
     background: "none",
     border: "none",
