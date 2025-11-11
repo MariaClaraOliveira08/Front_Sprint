@@ -49,7 +49,7 @@ const HamburgerDrawer = () => {
 
     setMostrarModal(false);
     setOpen(false);
-    navigate("/login", { replace: true });
+    navigate("/", { replace: true });
   };
 
   return (
