@@ -291,7 +291,7 @@ const SidebarAvaliacoes = ({
               name="nota"
               value={nota}
               onChange={(e, newValue) => setNota(newValue)}
-              precision={0.5}
+              precision={1}
             />
             <Button
               variant="contained"

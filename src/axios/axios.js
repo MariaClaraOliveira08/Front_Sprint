@@ -40,10 +40,10 @@ api.putUsuario = (user) => {
 };
 
 api.deleteUsuario = (id) => api.delete(`/user/${id}`);
-api.buscarEstabelecimentosGoogle = (location, radius, type) =>
-  api.get("/buscar", {
-    params: { location, radius, type },
-  });
+api.buscarEstabelecimentosGoogle = (location, radius, type, query) =>
+api.get("/buscar", {
+params: { location, radius, type, query },
+});
 api.postAvaliacao = (data) => api.post("/avaliacao", data);
 api.buscarAvaliacoesDoUsuario = () => api.get("/avaliacao");
 api.buscarAvaliacoesPorEstabelecimento = (google_place_id) =>
