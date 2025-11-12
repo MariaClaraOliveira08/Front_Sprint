@@ -61,7 +61,7 @@ function AvaliacoesUsuario() {
       );
       handleCloseModal();
     } catch (err) {
-      alert("Não foi possível deletar a avaliação.");
+      console.warn("Não foi possível deletar a avaliação:", err);
     }
   };
 
@@ -97,7 +97,7 @@ function AvaliacoesUsuario() {
           sx={{
             flex: 1,
             overflowY: "auto",
-            p: 3, // ← aumentei o padding interno
+            p: 3,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -124,8 +124,8 @@ function AvaliacoesUsuario() {
                   flexDirection: "column",
                   gap: 1,
                   transition: "0.3s",
-                  width: "90%", // ← ocupa mais da tela
-                  maxWidth: 900, // ← aumentei de 600 pra 900
+                  width: "90%",
+                  maxWidth: 900,
                   "&:hover": { transform: "scale(1.01)", boxShadow: 6 },
                 }}
               >
@@ -141,11 +141,7 @@ function AvaliacoesUsuario() {
                       Usuário: {avaliacao.usuario}
                     </Typography>
                   </Box>
-                  <Rating
-                    value={avaliacao.nota || 0}
-                    readOnly
-                    precision={1}
-                  />
+                  <Rating value={avaliacao.nota || 0} readOnly precision={1} />
                 </Box>
 
                 <Typography variant="body1" mt={1}>
