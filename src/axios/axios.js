@@ -55,3 +55,5 @@ api.getFavoritos = () => api.get("/favoritos");
 api.deleteFavoritos = () => api.get("/favoritos/${id}");
 
 export default api;
+
+
