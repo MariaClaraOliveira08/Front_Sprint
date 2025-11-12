@@ -19,11 +19,18 @@ function AvaliacoesUsuario() {
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [avaliacaoModal, setAvaliacaoModal] = useState(null);
+  const [fotoUsuario, setFotoUsuario] = useState(null);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
-  const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
+  const userId = localStorage.getItem("userId");
+
+  // 🔹 Buscar foto do usuário logado
+  useEffect(() => {
+    if (userId) {
+      setFotoUsuario(`${api.defaults.baseURL}user/${userId}/imagem?${Date.now()}`);
+    }
+  }, [userId]);
 
   useEffect(() => {
     buscarAvaliacoesUsuario();
@@ -166,8 +173,15 @@ function AvaliacoesUsuario() {
                   gap={2}
                   textAlign={{ xs: "center", sm: "left" }}
                 >
-                  <Avatar sx={{ bgcolor: "#7681A1", width: 50, height: 50 }}>
-                    {avaliacao.usuario?.[0]?.toUpperCase() || "U"}
+                  <Avatar
+                    src={fotoUsuario}
+                    sx={{
+                      bgcolor: "#7681A1",
+                      width: 50,
+                      height: 50,
+                    }}
+                  >
+                    {!fotoUsuario && (avaliacao.usuario?.[0]?.toUpperCase() || "U")}
                   </Avatar>
                   <Box flex={1}>
                     <Typography
