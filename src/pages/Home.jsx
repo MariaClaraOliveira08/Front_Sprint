@@ -1,285 +1,195 @@
+// src/pages/Home.jsx
 import React, { useState, useEffect } from "react";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import ParkIcon from "@mui/icons-material/Park";
 import StorefrontIcon from "@mui/icons-material/Storefront";
-import HamburgerDrawer from "../components/HamburgerDrawer";
-import DetalhesModal from "../components/Modal";
 import api from "../axios/axios";
-import { useNavigate } from "react-router-dom";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
+import DetalhesModal from "../components/DetalhesModal";
+import HamburgerDrawer from "../components/HamburgerDrawer";
 
-const Home = () => {
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
-  const [subcategoriaSelecionada, setSubcategoriaSelecionada] = useState(null);
+export default function Home() {
   const [lugares, setLugares] = useState([]);
-  const [loading, setLoading] = useState(false); 
-  const [termoBusca, setTermoBusca] = useState("");
-  const [openModal, setOpenModal] = useState(false);
-  const [enderecoSelecionado, setEnderecoSelecionado] = useState(null);
+  const [busca, setBusca] = useState("");
+  const [erro, setErro] = useState(null);
+  const [selectedLugar, setSelectedLugar] = useState(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
-  const navigate = useNavigate();
-
-  const categorias = [
-    {
-      nome: "Restaurantes",
-      type: "restaurant",
-      icon: <RestaurantMenuIcon sx={{ fontSize: 40 }} />,
-      subcategorias: [
-        { nome: "Pizzarias / Hamburguerias", type: "restaurant" }, 
-        { nome: "Bares", type: "bar" }, 
-      ],
-    },
-    {
-      nome: "Lojas",
-      type: "store", 
-      icon: <StorefrontIcon sx={{ fontSize: 40 }} />,
-      subcategorias: [
-        { nome: "Mercados", type: "supermarket" }, 
-        { nome: "Shopping", type: "shopping_mall" }, 
-        { nome: "Farmácias", type: "pharmacy" }, 
-      ],
-    },
-    {
-      nome: "Parques",
-      type: "park", 
-      icon: <ParkIcon sx={{ fontSize: 40 }} />,
-      subcategorias: [
-        { nome: "Jardins Botânicos", type: "botanical_garden" }, 
-        { nome: "Parques Urbanos", type: "park" }, 
-      ],
-    },
-  ];
-
-  const handleOpenDetalhes = (lugar) => {
-    const index = lugares.findIndex(item => item.place_id === lugar.place_id);
-    if (index !== -1) {
-      setEnderecoSelecionado(index);
-      setOpenModal(true);
-    }
-  };
-
-  const handleNavigateToMapa = (lugar, typeParaMapa) => {
-    navigate("/mapa", {
-      state: {
-        lugares: lugaresFiltrados,
-        lugar: lugar,
-        categoriaType: typeParaMapa, 
-      },
-    });
-  };
-
+  // 🔹 Busca os lugares da API
   useEffect(() => {
-    const fetchEstabelecimentos = async () => {
-      if (!categoriaSelecionada) return;
-      setLoading(true);
-
+    const fetchLugares = async () => {
       try {
-        const categoria = categorias.find(
-          (cat) => cat.nome.toLowerCase() === categoriaSelecionada
-        );
-        if (!categoria) return;
-
-        const typeToSearch = subcategoriaSelecionada || categoria.type; 
-
-        const subcategoriaObj = categorias
-          .flatMap(c => c.subcategorias)
-          .find(sub => sub.type === subcategoriaSelecionada);
-        
-        const categoryName = subcategoriaObj?.nome || categoria.nome;
-
-        const response = await api.get("/buscar", {
-          params: {
-            location: "-20.5381,-47.4008",
-            radius: 17000,
-            type: typeToSearch, 
-            categoryName: categoryName 
-          },
-        });
-
-        const dados = (response.data.estabelecimentos || []).map((item) => ({
-          nome: item.nome || "Nome não disponível",
-          endereco: item.endereco || "Não disponível",
-          categoria: categoryName, 
-          telefone: item.telefone || "Não disponível",
-          horarios: item.horarios || "Não disponível",
-          avaliacao: item.avaliacao || "Não disponível",
-          place_id: item.place_id,
-          lat: item.latitude,
-          lng: item.longitude,
-          comentarios: item.comentarios || [],
-          photos: item.photos || [],
-        }));
-
-        setLugares(dados);
+        const response = await api.get("/lugares");
+        setLugares(response.data);
       } catch (error) {
-        console.error("Erro ao carregar estabelecimentos:", error);
-        setLugares([]);
-      } finally {
-        setLoading(false);
+        setErro("Erro ao carregar lugares.");
+        setOpenSnackbar(true);
       }
     };
+    fetchLugares();
+  }, []);
 
-    fetchEstabelecimentos();
-  }, [categoriaSelecionada, subcategoriaSelecionada]); 
-
+  // 🔹 Filtragem de lugares
   const lugaresFiltrados = lugares.filter((lugar) =>
-    (lugar.nome || "").toLowerCase().includes(termoBusca.toLowerCase())
+    lugar.nome.toLowerCase().includes(busca.toLowerCase())
   );
 
-  const categoriaAtiva = categorias.find(
-    (cat) => cat.nome.toLowerCase() === categoriaSelecionada
-  );
-  const typeParaMapa = subcategoriaSelecionada || (categoriaAtiva ? categoriaAtiva.type : null);
-
-  if (loading)
-    return (
-      <div style={styles.loadingContainer}>
-        <p>Carregando...</p>
-      </div>
-    );
+  // 🔹 Categorias simuladas
+  const categorias = [
+    { nome: "Restaurantes", icone: <RestaurantMenuIcon /> },
+    { nome: "Parques", icone: <ParkIcon /> },
+    { nome: "Lojas", icone: <StorefrontIcon /> },
+  ];
 
   return (
     <div style={styles.container}>
       <HamburgerDrawer />
-      <div style={styles.main}>
-        <div style={styles.logoWrapper}>
-          <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
-          <h2 style={styles.logo}>Glimp</h2>
-        </div>
-        <p style={styles.subtitulo}>
-          Grandes Lugares Inspiram Momentos Perfeitos.
-        </p>
 
+      <div style={styles.main}>
+        {/* Logo e subtítulo */}
+        <div style={styles.logoWrapper}>
+          <LocationOnOutlinedIcon style={{ fontSize: 28, color: "#4a5a87" }} />
+          <h1 style={styles.logo}>Glimp</h1>
+        </div>
+        <p style={styles.subtitulo}>Descubra lugares incríveis perto de você</p>
+
+        {/* Barra de busca */}
         <div style={styles.searchWrapper}>
           <input
             type="text"
-            placeholder="Pesquisar..."
+            placeholder="Buscar lugares..."
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
             style={styles.search}
-            value={termoBusca}
-            onChange={(e) => setTermoBusca(e.target.value)}
           />
           <SearchIcon style={styles.searchIcon} />
         </div>
 
+        {/* Categorias */}
         <div style={styles.categorias}>
-          {categorias.map((cat) => (
+          {categorias.map((cat, index) => (
             <button
-              key={cat.nome}
-              onClick={() => {
-                setCategoriaSelecionada(cat.nome.toLowerCase());
-                setSubcategoriaSelecionada(null); 
-              }}
+              key={index}
               style={{
                 ...styles.botaoCategoria,
-                backgroundColor:
-                  categoriaSelecionada === cat.nome.toLowerCase()
-                    ? "#4a5a87"
-                    : "#d9d9d9",
-                color:
-                  categoriaSelecionada === cat.nome.toLowerCase()
-                    ? "#fff"
-                    : "#000",
+                backgroundColor: "#4a5a87",
+                color: "#fff",
               }}
             >
-              {cat.icon}
+              {cat.icone}
             </button>
           ))}
         </div>
 
-        {categoriaSelecionada && (
-          <div style={styles.subcategorias}>
-            {categorias
-              .find((cat) => cat.nome.toLowerCase() === categoriaSelecionada)
-              ?.subcategorias.map((sub) => (
-                <button
-                  key={sub.nome}
-                  onClick={() => setSubcategoriaSelecionada(sub.type)} 
-                  style={{
-                    ...styles.botaoSubcategoria,
-                    backgroundColor:
-                      subcategoriaSelecionada === sub.type
-                        ? "#4a5a87"
-                        : "#d9d9d9",
-                    color:
-                      subcategoriaSelecionada === sub.type ? "#fff" : "#000",
-                  }}
-                >
-                  {sub.nome} 
-                </button>
-              ))}
-          </div>
-        )}
+        {/* Subcategorias */}
+        <div style={styles.subcategorias}>
+          <button style={{ ...styles.botaoSubcategoria, backgroundColor: "#f0f0f0" }}>
+            Todos
+          </button>
+          <button style={{ ...styles.botaoSubcategoria, backgroundColor: "#f0f0f0" }}>
+            Abertos agora
+          </button>
+          <button style={{ ...styles.botaoSubcategoria, backgroundColor: "#f0f0f0" }}>
+            Avaliados
+          </button>
+        </div>
 
+        {/* Lista de lugares */}
         <div style={styles.lugares}>
-          {lugaresFiltrados.map((lugar, index) => (
-            <div
-              key={lugar.place_id || index}
-              style={styles.lugar}
-            >
-              <div style={styles.lugarInfo}>
-                <div style={styles.lugarNome}>{lugar.nome}</div>
-                <div style={styles.lugarHorario}>
-                  {lugar.horarios && lugar.horarios !== "Não disponível"
-                    ? lugar.horarios
-                    : "Horário não disponível"}
+          {lugaresFiltrados.length > 0 ? (
+            lugaresFiltrados.map((lugar, index) => (
+              <div key={index} style={styles.lugar}>
+                <div style={styles.lugarInfo}>
+                  <span style={styles.lugarNome}>{lugar.nome}</span>
+                  <span style={styles.lugarHorario}>
+                    Horário: {lugar.horario_funcionamento || "Não informado"}
+                  </span>
+                </div>
+                <div style={styles.lugarBotoes}>
+                  <button
+                    style={{
+                      ...styles.botaoAcao,
+                      backgroundColor: "#4a5a87",
+                    }}
+                    onClick={() => setSelectedLugar(lugar)}
+                  >
+                    Detalhes
+                  </button>
+                  <button
+                    style={{
+                      ...styles.botaoAcao,
+                      backgroundColor: "#6d83c5",
+                    }}
+                  >
+                    Ver no mapa
+                  </button>
                 </div>
               </div>
-
-              <div style={styles.lugarBotoes}>
-                <button
-                  onClick={() => handleOpenDetalhes(lugar)}
-                  style={{ ...styles.botaoAcao, backgroundColor: '#5c6c9e' }}
-                >
-                  Detalhes
-                </button>
-
-                <button
-                  onClick={() => handleNavigateToMapa(lugar, typeParaMapa)}
-                  style={{ ...styles.botaoAcao, backgroundColor: '#4a5a87' }}
-                >
-                  Ver no Mapa
-                </button>
-              </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p style={{ textAlign: "center", color: "#777" }}>
+              Nenhum lugar encontrado.
+            </p>
+          )}
         </div>
-      </div>
 
-      <DetalhesModal
-        open={openModal}
-        onClose={() => setOpenModal(false)}
-        lugar={
-          enderecoSelecionado !== null && enderecoSelecionado < lugares.length 
-            ? lugares[enderecoSelecionado] 
-            : null
-        }
-      />
+        {/* Modal de detalhes */}
+        {selectedLugar && (
+          <DetalhesModal
+            lugar={selectedLugar}
+            onClose={() => setSelectedLugar(null)}
+          />
+        )}
+
+        {/* Snackbar de erro */}
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={4000}
+          onClose={() => setOpenSnackbar(false)}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        >
+          <MuiAlert severity="error" variant="filled">
+            {erro}
+          </MuiAlert>
+        </Snackbar>
+      </div>
     </div>
   );
-};
+}
 
+// 🎨 Estilos 100% responsivos
 const styles = {
   container: {
     display: "flex",
+    flexDirection: "row",
     minHeight: "100vh",
-    width: "100vw",
+    width: "100%",
     fontFamily: "Segoe UI, sans-serif",
-    overflow: "hidden",
+    backgroundColor: "#f5f5f5",
   },
-  main: { flex: 1, backgroundColor: "#f5f5f5", padding: 50, paddingLeft: 200 },
+  main: {
+    flex: 1,
+    padding: "2rem",
+    paddingLeft: "12rem",
+    display: "flex",
+    flexDirection: "column",
+  },
   logoWrapper: { display: "flex", alignItems: "center", gap: 10 },
   logo: { margin: 0, fontSize: 26, color: "#4a5a87" },
   subtitulo: { fontSize: 14, color: "#777", marginBottom: 20 },
   searchWrapper: {
     display: "flex",
     alignItems: "center",
-    width: "70%",
+    width: "90%",
+    maxWidth: "700px",
     backgroundColor: "#fff",
     borderRadius: 25,
     padding: "0 15px",
     border: "1px solid #ccc",
-    marginBottom: 40,
+    margin: "0 auto 2rem auto",
   },
   search: {
     flex: 1,
@@ -291,18 +201,17 @@ const styles = {
   searchIcon: { color: "#555", fontSize: 24, cursor: "pointer", marginLeft: 8 },
   categorias: {
     display: "flex",
+    flexWrap: "wrap",
     justifyContent: "center",
-    alignItems: "center",
-    gap: 20,
+    gap: 16,
     marginBottom: 20,
-    marginRight: 210,
   },
   subcategorias: {
     display: "flex",
+    flexWrap: "wrap",
     justifyContent: "center",
     gap: 10,
     marginBottom: 30,
-    marginRight: 200,
   },
   botaoCategoria: {
     width: 80,
@@ -315,6 +224,7 @@ const styles = {
     cursor: "pointer",
     fontSize: 40,
     fontWeight: "bold",
+    transition: "0.3s",
   },
   botaoSubcategoria: {
     padding: "8px 16px",
@@ -323,60 +233,43 @@ const styles = {
     cursor: "pointer",
     fontSize: 14,
     fontWeight: "bold",
+    transition: "0.3s",
   },
-  lugares: { 
-    display: "flex", 
-    flexDirection: "column", 
+  lugares: {
+    display: "flex",
+    flexDirection: "column",
     gap: 15,
-    marginRight: 200,
+    width: "100%",
+    maxWidth: 800,
+    margin: "0 auto",
+    paddingBottom: "2rem",
   },
   lugar: {
     padding: "15px 20px",
     borderRadius: 8,
-    cursor: "default",
     backgroundColor: "#fff",
-    color: "#333",
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    transition: "0.2s",
-  },
-  lugarInfo: {
     display: "flex",
     flexDirection: "column",
-    flexGrow: 1,
+    gap: 10,
+    transition: "0.2s",
   },
-  lugarNome: {
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  lugarHorario: {
-    fontSize: 12,
-    color: "#555",
-    marginTop: 4,
-  },
+  lugarInfo: { display: "flex", flexDirection: "column", flexGrow: 1 },
+  lugarNome: { fontWeight: "bold", fontSize: 16 },
+  lugarHorario: { fontSize: 12, color: "#555", marginTop: 4 },
   lugarBotoes: {
-    display: 'flex',
+    display: "flex",
+    flexWrap: "wrap",
     gap: 10,
   },
   botaoAcao: {
-    padding: '8px 15px',
+    padding: "8px 15px",
     borderRadius: 8,
-    border: 'none',
-    color: 'white',
-    fontWeight: 'bold',
-    cursor: 'pointer',
+    border: "none",
+    color: "white",
+    fontWeight: "bold",
+    cursor: "pointer",
     fontSize: 14,
     minWidth: 100,
   },
-  loadingContainer: {
-    display: "flex",
-    height: "100vh",
-    justifyContent: "center",
-    alignItems: "center",
-    fontSize: 18,
-    color: "#777",
-  },
 };
 
-export default Home;
