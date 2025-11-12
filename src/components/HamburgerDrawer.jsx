@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Divider,
@@ -8,36 +8,67 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Avatar,
 } from "@mui/material";
 import {
   Home,
   FavoriteBorder,
   ChatBubbleOutline,
-  AccountCircle,
   Logout,
   Info,
   Menu as MenuIcon,
 } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
+import api from "../axios/axios";
 
 const HamburgerDrawer = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [mostrarModal, setMostrarModal] = useState(false);
+  const [userImage, setUserImage] = useState(null);
 
-  const toggleDrawer = (isOpen) => () => {
-    setOpen(isOpen);
-  };
+  const toggleDrawer = (isOpen) => () => setOpen(isOpen);
+
+  // Busca a imagem do usuário logado
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+
+    const fetchUser = async () => {
+      try {
+        const response = await api.getUsuarioById(userId);
+        if (response.data.user) {
+          setUserImage(
+            `${api.defaults.baseURL}user/${userId}/imagem?${Date.now()}`
+          );
+        }
+      } catch (error) {
+        console.error("Erro ao buscar imagem do usuário no menu:", error);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const menuItems = [
+    {
+      label: "Perfil",
+      icon: (
+        <Avatar
+          src={userImage}
+          alt="Foto do usuário"
+          sx={{ width: 24, height: 24 }}
+        />
+      ),
+      route: "/perfil",
+    },
     { label: "Início", icon: <Home />, route: "/home" },
     { label: "Favoritos", icon: <FavoriteBorder />, route: "/favoritos" },
     { label: "Avaliações", icon: <ChatBubbleOutline />, route: "/avaliacao" },
     { label: "Sobre nós", icon: <Info />, route: "/sobre" },
   ];
 
-  // 🔹 Função que executa o logout após confirmação
   const handleConfirmarLogout = () => {
     const userId = localStorage.getItem("userId");
     console.log("Usuário desconectado:", userId);
@@ -54,7 +85,7 @@ const HamburgerDrawer = () => {
 
   return (
     <>
-      {/* menu */}
+      
       <IconButton
         onClick={toggleDrawer(true)}
         aria-label="open drawer"
@@ -63,7 +94,7 @@ const HamburgerDrawer = () => {
         <MenuIcon fontSize="large" />
       </IconButton>
 
-      {/* Drawer lateral */}
+      
       <Drawer anchor="left" open={open} onClose={toggleDrawer(false)}>
         <Box
           sx={{
@@ -79,33 +110,23 @@ const HamburgerDrawer = () => {
           onClick={toggleDrawer(false)}
           onKeyDown={toggleDrawer(false)}
         >
-          {/* Conteúdo principal */}
+          {/* Lista dos menus */}
           <Box sx={{ marginTop: 6 }}>
             <List>
-              <ListItemButton
-                onClick={() => navigate("/perfil")}
-                sx={{
-                  bgcolor: location.pathname === "/perfil" ? "#b0b0b0" : "inherit",
-                }}
-              >
-                <ListItemIcon>
-                  <AccountCircle />
-                </ListItemIcon>
-                <ListItemText primary="Perfil" />
-              </ListItemButton>
-              <Divider />
-              {menuItems.map((item) => (
-                <ListItemButton
-                  key={item.label}
-                  onClick={() => navigate(item.route)}
-                  sx={{
-                    bgcolor:
-                      location.pathname === item.route ? "#b0b0b0" : "inherit",
-                  }}
-                >
-                  <ListItemIcon>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.label} />
-                </ListItemButton>
+              {menuItems.map((item, index) => (
+                <React.Fragment key={item.label}>
+                  <ListItemButton
+                    onClick={() => navigate(item.route)}
+                    sx={{
+                      bgcolor:
+                        location.pathname === item.route ? "#b0b0b0" : "inherit",
+                    }}
+                  >
+                    <ListItemIcon>{item.icon}</ListItemIcon>
+                    <ListItemText primary={item.label} />
+                  </ListItemButton>
+                  {index === 0 && <Divider />} 
+                </React.Fragment>
               ))}
             </List>
           </Box>
@@ -131,7 +152,7 @@ const HamburgerDrawer = () => {
         </Box>
       </Drawer>
 
-      {/*Modal de confirmação de logout */}
+      {/* Modal de confirmação de logout */}
       {mostrarModal && (
         <div style={styles.overlay}>
           <div style={styles.modal}>
@@ -159,7 +180,7 @@ const HamburgerDrawer = () => {
   );
 };
 
-//Estilos do modal
+//Estilização do modal
 const styles = {
   overlay: {
     position: "fixed",
