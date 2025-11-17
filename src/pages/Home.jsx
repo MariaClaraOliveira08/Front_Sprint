@@ -262,24 +262,50 @@ const styles = {
   container: {
     display: "flex",
     minHeight: "100vh",
-    width: "100vw",
+    width: "100%",
     fontFamily: "Segoe UI, sans-serif",
-    overflow: "hidden",
+    overflowX: "hidden",
   },
-  main: { flex: 1, backgroundColor: "#f5f5f5", padding: 50, paddingLeft: 200 },
-  logoWrapper: { display: "flex", alignItems: "center", gap: 10 },
-  logo: { margin: 0, fontSize: 26, color: "#4a5a87" },
-  subtitulo: { fontSize: 14, color: "#777", marginBottom: 20 },
+
+  main: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+
+    // 👉 Centraliza o conteúdo e limita largura no desktop
+    maxWidth: 900,
+    margin: "0 auto",
+    padding: "40px 20px", // perfeito no mobile e no desktop
+  },
+
+  logoWrapper: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  logo: {
+    margin: 0,
+    fontSize: 26,
+    color: "#4a5a87",
+  },
+
+  subtitulo: {
+    fontSize: 14,
+    color: "#777",
+    marginBottom: 20,
+  },
+
   searchWrapper: {
     display: "flex",
     alignItems: "center",
-    width: "70%",
+    width: "100%",
     backgroundColor: "#fff",
     borderRadius: 25,
     padding: "0 15px",
     border: "1px solid #ccc",
     marginBottom: 40,
   },
+
   search: {
     flex: 1,
     border: "none",
@@ -287,22 +313,30 @@ const styles = {
     padding: "12px 10px",
     fontSize: 14,
   },
-  searchIcon: { color: "#555", fontSize: 24, cursor: "pointer", marginLeft: 8 },
+
+  searchIcon: {
+    color: "#555",
+    fontSize: 24,
+    cursor: "pointer",
+    marginLeft: 8,
+  },
+
   categorias: {
     display: "flex",
     justifyContent: "center",
-    alignItems: "center",
+    flexWrap: "wrap",
     gap: 20,
     marginBottom: 20,
-    marginRight: 210,
   },
+
   subcategorias: {
     display: "flex",
     justifyContent: "center",
+    flexWrap: "wrap",
     gap: 10,
     marginBottom: 30,
-    marginRight: 200,
   },
+
   botaoCategoria: {
     width: 80,
     height: 80,
@@ -315,6 +349,7 @@ const styles = {
     fontSize: 40,
     fontWeight: "bold",
   },
+
   botaoSubcategoria: {
     padding: "8px 16px",
     borderRadius: 20,
@@ -323,12 +358,14 @@ const styles = {
     fontSize: 14,
     fontWeight: "bold",
   },
+
   lugares: {
     display: "flex",
     flexDirection: "column",
     gap: 15,
-    marginRight: 200,
+    width: "100%",
   },
+
   lugar: {
     padding: "15px 20px",
     borderRadius: 8,
@@ -338,26 +375,34 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    transition: "0.2s",
+    flexWrap: "wrap",
+    gap: 10,
   },
+
   lugarInfo: {
     display: "flex",
     flexDirection: "column",
     flexGrow: 1,
+    minWidth: 200,
   },
+
   lugarNome: {
     fontWeight: "bold",
     fontSize: 16,
   },
+
   lugarHorario: {
     fontSize: 12,
     color: "#555",
     marginTop: 4,
   },
+
   lugarBotoes: {
     display: "flex",
     gap: 10,
+    flexWrap: "wrap",
   },
+
   botaoAcao: {
     padding: "8px 15px",
     borderRadius: 8,
@@ -368,14 +413,5 @@ const styles = {
     fontSize: 14,
     minWidth: 100,
   },
-  loadingContainer: {
-    display: "flex",
-    height: "100vh",
-    justifyContent: "center",
-    alignItems: "center",
-    fontSize: 18,
-    color: "#777",
-  },
 };
-
 export default Home;
