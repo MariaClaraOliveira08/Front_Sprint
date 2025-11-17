@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://glimpmaps.canadacentral.cloudapp.azure.com:3000/projeto_final/",
+  baseURL: "http://10.89.240.68:3000/projeto_final/",
   headers: {
     accept: "application/json",
   },
