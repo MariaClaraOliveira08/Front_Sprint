@@ -61,42 +61,28 @@ const Home = () => {
 
   const handleNavigateToMapa = (lugar, typeParaMapa) => {
     navigate("/mapa", {
-      state: {
-        lugares: lugares,
-        lugar: lugar,
-        categoriaType: typeParaMapa,
-      },
+      state: { lugares, lugar, categoriaType: typeParaMapa },
     });
   };
 
-  const buscarEstabelecimentos = async (buscaManual = false) => {
+  // 🔍 NOVO: função para buscar por termo digitado
+  const handleSearch = async () => {
+    if (!termoBusca.trim()) return;
     setLoading(true);
+
     try {
-      const location = "-20.5381,-47.4008";
-      const radius = 17000;
-
-      let params = { location, radius };
-
-      // Se for uma busca textual
-      if (buscaManual && termoBusca.trim() !== "") {
-        params.query = termoBusca;
-      } else {
-        const categoria = categorias.find(
-          (cat) => cat.nome.toLowerCase() === categoriaSelecionada
-        );
-
-        if (categoria) {
-          const typeToSearch = subcategoriaSelecionada || categoria.type;
-          params.type = typeToSearch;
-        }
-      }
-
-      const response = await api.get("/buscar", { params });
+      const response = await api.get("/buscar", {
+        params: {
+          query: termoBusca,
+          location: "-20.5381,-47.4008",
+          radius: 17000,
+        },
+      });
 
       const dados = (response.data.estabelecimentos || []).map((item) => ({
         nome: item.nome || "Nome não disponível",
         endereco: item.endereco || "Não disponível",
-        categoria: item.categoria || "Não especificada",
+        categoria: item.tipo || "Não disponível",
         telefone: item.telefone || "Não disponível",
         horarios: item.horarios || "Não disponível",
         avaliacao: item.avaliacao || "Não disponível",
@@ -116,14 +102,53 @@ const Home = () => {
     }
   };
 
-  // Atualiza automaticamente ao mudar categoria/subcategoria
+  // 🔹 busca automática por categoria/subcategoria
   useEffect(() => {
-    if (categoriaSelecionada) buscarEstabelecimentos(false);
-  }, [categoriaSelecionada, subcategoriaSelecionada]);
+    const fetchEstabelecimentos = async () => {
+      if (!categoriaSelecionada) return;
+      setLoading(true);
 
-  const lugaresFiltrados = lugares.filter((lugar) =>
-    (lugar.nome || "").toLowerCase().includes(termoBusca.toLowerCase())
-  );
+      try {
+        const categoria = categorias.find(
+          (cat) => cat.nome.toLowerCase() === categoriaSelecionada
+        );
+        if (!categoria) return;
+
+        const typeToSearch = subcategoriaSelecionada || categoria.type;
+
+        const response = await api.get("/buscar", {
+          params: {
+            location: "-20.5381,-47.4008",
+            radius: 17000,
+            type: typeToSearch,
+          },
+        });
+
+        const dados = (response.data.estabelecimentos || []).map((item) => ({
+          nome: item.nome || "Nome não disponível",
+          endereco: item.endereco || "Não disponível",
+          categoria: categoria.nome,
+          telefone: item.telefone || "Não disponível",
+          horarios: item.horarios || "Não disponível",
+          avaliacao: item.avaliacao || "Não disponível",
+          place_id: item.place_id,
+          lat: item.latitude,
+          lng: item.longitude,
+          comentarios: item.comentarios || [],
+          photos: item.photos || [],
+        }));
+
+        setLugares(dados);
+      } catch (error) {
+        console.error("Erro ao carregar estabelecimentos:", error);
+        setLugares([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEstabelecimentos();
+  }, [categoriaSelecionada, subcategoriaSelecionada]);
 
   const categoriaAtiva = categorias.find(
     (cat) => cat.nome.toLowerCase() === categoriaSelecionada
@@ -150,6 +175,7 @@ const Home = () => {
           Grandes Lugares Inspiram Momentos Perfeitos.
         </p>
 
+        {/* 🔍 Barra de busca funcional */}
         <div style={styles.searchWrapper}>
           <input
             type="text"
@@ -157,13 +183,12 @@ const Home = () => {
             style={styles.search}
             value={termoBusca}
             onChange={(e) => setTermoBusca(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           />
-          <SearchIcon
-            style={styles.searchIcon}
-            onClick={() => buscarEstabelecimentos(true)}
-          />
+          <SearchIcon style={styles.searchIcon} onClick={handleSearch} />
         </div>
 
+        {/* Botões de categoria */}
         <div style={styles.categorias}>
           {categorias.map((cat) => (
             <button
@@ -189,32 +214,9 @@ const Home = () => {
           ))}
         </div>
 
-        {categoriaSelecionada && (
-          <div style={styles.subcategorias}>
-            {categorias
-              .find((cat) => cat.nome.toLowerCase() === categoriaSelecionada)
-              ?.subcategorias.map((sub) => (
-                <button
-                  key={sub.nome}
-                  onClick={() => setSubcategoriaSelecionada(sub.type)}
-                  style={{
-                    ...styles.botaoSubcategoria,
-                    backgroundColor:
-                      subcategoriaSelecionada === sub.type
-                        ? "#4a5a87"
-                        : "#d9d9d9",
-                    color:
-                      subcategoriaSelecionada === sub.type ? "#fff" : "#000",
-                  }}
-                >
-                  {sub.nome}
-                </button>
-              ))}
-          </div>
-        )}
-
+        {/* Lista de lugares */}
         <div style={styles.lugares}>
-          {lugaresFiltrados.map((lugar, index) => (
+          {lugares.map((lugar, index) => (
             <div key={lugar.place_id || index} style={styles.lugar}>
               <div style={styles.lugarInfo}>
                 <div style={styles.lugarNome}>{lugar.nome}</div>
@@ -228,14 +230,20 @@ const Home = () => {
               <div style={styles.lugarBotoes}>
                 <button
                   onClick={() => handleOpenDetalhes(lugar)}
-                  style={{ ...styles.botaoAcao, backgroundColor: "#5c6c9e" }}
+                  style={{
+                    ...styles.botaoAcao,
+                    backgroundColor: "#5c6c9e",
+                  }}
                 >
                   Detalhes
                 </button>
 
                 <button
                   onClick={() => handleNavigateToMapa(lugar, typeParaMapa)}
-                  style={{ ...styles.botaoAcao, backgroundColor: "#4a5a87" }}
+                  style={{
+                    ...styles.botaoAcao,
+                    backgroundColor: "#4a5a87",
+                  }}
                 >
                   Ver no Mapa
                 </button>
@@ -262,50 +270,24 @@ const styles = {
   container: {
     display: "flex",
     minHeight: "100vh",
-    width: "100%",
+    width: "100vw",
     fontFamily: "Segoe UI, sans-serif",
-    overflowX: "hidden",
+    overflow: "hidden",
   },
-
-  main: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-
-    // 👉 Centraliza o conteúdo e limita largura no desktop
-    maxWidth: 900,
-    margin: "0 auto",
-    padding: "40px 20px", // perfeito no mobile e no desktop
-  },
-
-  logoWrapper: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-  },
-
-  logo: {
-    margin: 0,
-    fontSize: 26,
-    color: "#4a5a87",
-  },
-
-  subtitulo: {
-    fontSize: 14,
-    color: "#777",
-    marginBottom: 20,
-  },
-
+  main: { flex: 1, backgroundColor: "#f5f5f5", padding: 50, paddingLeft: 200 },
+  logoWrapper: { display: "flex", alignItems: "center", gap: 10 },
+  logo: { margin: 0, fontSize: 26, color: "#4a5a87" },
+  subtitulo: { fontSize: 14, color: "#777", marginBottom: 20 },
   searchWrapper: {
     display: "flex",
     alignItems: "center",
-    width: "100%",
+    width: "70%",
     backgroundColor: "#fff",
     borderRadius: 25,
     padding: "0 15px",
     border: "1px solid #ccc",
     marginBottom: 40,
   },
-
   search: {
     flex: 1,
     border: "none",
@@ -313,30 +295,22 @@ const styles = {
     padding: "12px 10px",
     fontSize: 14,
   },
-
-  searchIcon: {
-    color: "#555",
-    fontSize: 24,
-    cursor: "pointer",
-    marginLeft: 8,
-  },
-
+  searchIcon: { color: "#555", fontSize: 24, cursor: "pointer", marginLeft: 8 },
   categorias: {
     display: "flex",
     justifyContent: "center",
-    flexWrap: "wrap",
+    alignItems: "center",
     gap: 20,
     marginBottom: 20,
+    marginRight: 210,
   },
-
   subcategorias: {
     display: "flex",
     justifyContent: "center",
-    flexWrap: "wrap",
     gap: 10,
     marginBottom: 30,
+    marginRight: 200,
   },
-
   botaoCategoria: {
     width: 80,
     height: 80,
@@ -349,7 +323,6 @@ const styles = {
     fontSize: 40,
     fontWeight: "bold",
   },
-
   botaoSubcategoria: {
     padding: "8px 16px",
     borderRadius: 20,
@@ -358,60 +331,59 @@ const styles = {
     fontSize: 14,
     fontWeight: "bold",
   },
-
-  lugares: {
-    display: "flex",
-    flexDirection: "column",
+  lugares: { 
+    display: "flex", 
+    flexDirection: "column", 
     gap: 15,
-    width: "100%",
+    marginRight: 200,
   },
-
   lugar: {
     padding: "15px 20px",
     borderRadius: 8,
     cursor: "default",
     backgroundColor: "#fff",
     color: "#333",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flexWrap: "wrap",
-    gap: 10,
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    transition: "0.2s",
   },
-
   lugarInfo: {
     display: "flex",
     flexDirection: "column",
     flexGrow: 1,
-    minWidth: 200,
   },
-
   lugarNome: {
-    fontWeight: "bold",
+    fontWeight: 'bold',
     fontSize: 16,
   },
-
   lugarHorario: {
     fontSize: 12,
     color: "#555",
     marginTop: 4,
   },
-
   lugarBotoes: {
-    display: "flex",
+    display: 'flex',
     gap: 10,
-    flexWrap: "wrap",
   },
-
   botaoAcao: {
-    padding: "8px 15px",
+    padding: '8px 15px',
     borderRadius: 8,
-    border: "none",
-    color: "white",
-    fontWeight: "bold",
-    cursor: "pointer",
+    border: 'none',
+    color: 'white',
+    fontWeight: 'bold',
+    cursor: 'pointer',
     fontSize: 14,
     minWidth: 100,
   },
+  loadingContainer: {
+    display: "flex",
+    height: "100vh",
+    justifyContent: "center",
+    alignItems: "center",
+    fontSize: 18,
+    color: "#777",
+  },
 };
+
 export default Home;
