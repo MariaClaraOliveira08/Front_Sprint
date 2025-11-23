@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from "react";
+import {
+  useTheme,
+  useMediaQuery,
+  Box,
+  Typography,
+  Snackbar,
+  Alert,
+} from "@mui/material";
+
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+
 import HamburgerDrawer from "../components/HamburgerDrawer";
 import api from "../axios/axios";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
 
 const Favoritos = () => {
   const [favoritos, setFavoritos] = useState([]);
@@ -19,6 +27,10 @@ const Favoritos = () => {
     severity: "info",
   });
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery("(max-width:600px)");
+  const isTablet = useMediaQuery("(max-width:900px)");
+
   const fetchFavoritos = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -30,9 +42,7 @@ const Favoritos = () => {
     try {
       const res = await api.get("/favoritos");
       setFavoritos(res.data.favoritos || []);
-      console.log(res.data.favoritos);
     } catch (err) {
-      console.error(err);
       setError("Erro ao carregar favoritos.");
     } finally {
       setLoading(false);
@@ -45,23 +55,25 @@ const Favoritos = () => {
 
   const favoritosFiltrados = favoritos.filter((fav) => {
     const textoBusca = searchTerm.toLowerCase();
-    const nome = fav?.nome_estabelecimento?.toLowerCase() || "";
-    const endereco = fav?.endereco?.toLowerCase() || "";
-    return nome.includes(textoBusca) || endereco.includes(textoBusca);
+    return (
+      fav?.nome_estabelecimento?.toLowerCase().includes(textoBusca) ||
+      fav?.endereco?.toLowerCase().includes(textoBusca)
+    );
   });
 
   const toggleFavorito = async (id) => {
     setDeletingId(id);
     try {
       await api.delete(`/favoritos/${id}`);
+
       setFavoritos((prev) => prev.filter((fav) => fav.id_favorito !== id));
+
       setSnackbar({
         open: true,
         message: "Favorito removido com sucesso!",
         severity: "success",
       });
-    } catch (err) {
-      console.error(err);
+    } catch {
       setSnackbar({
         open: true,
         message: "Erro ao remover favorito.",
@@ -72,158 +84,160 @@ const Favoritos = () => {
     }
   };
 
-  const handleCloseSnackbar = (event, reason) => {
-    if (reason === "clickaway") return;
-    setSnackbar((prev) => ({ ...prev, open: false }));
-  };
-
   return (
-    <div style={styles.wrapper}>
+    <Box
+      sx={{
+        display: "flex",
+        width: "100vw",
+        height: "100vh",
+        backgroundColor: "#f5f5f5",
+        fontFamily: "Segoe UI, sans-serif",
+      }}
+    >
       <HamburgerDrawer />
 
-      {/* Ícone de coração REMOVIDO */}
+      {/* --------------------------- CONTEÚDO PRINCIPAL --------------------------- */}
+      <Box
+        sx={{
+          flex: 1,
+          p: isMobile ? 2 : isTablet ? 4 : 6,
+          pl: isMobile ? 2 : isTablet ? 10 : 25,
+          display: "flex",
+          flexDirection: "column",
+          overflowY: "auto",
+        }}
+      >
+        {/* HEADER IGUAL AO SOBRE NÓS */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+          }}
+        >
+          <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
+          <Typography
+            variant={isMobile ? "h5" : "h4"}
+            sx={{ color: "#4a5a87", fontWeight: 700 }}
+          >
+            Glimp
+          </Typography>
+        </Box>
 
-      <main style={styles.container}>
-        <header style={styles.header}>
-          <LocationOnOutlinedIcon sx={{ fontSize: 32, color: "#000" }} />
-          <h1 style={styles.logoText}>Glimp</h1>
-        </header>
-
-        <p style={styles.subtitulo}>
+        <Typography
+          sx={{
+            fontSize: isMobile ? 13 : 15,
+            color: "#777",
+            mb: 3,
+            mt: 1,
+          }}
+        >
           Grandes Lugares Inspiram Momentos Perfeitos.
-        </p>
+        </Typography>
 
-        <div style={styles.searchBox}>
+        {/* BARRA DE PESQUISA */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            backgroundColor: "#fff",
+            borderRadius: 25,
+            padding: "10px 20px",
+            maxWidth: isMobile ? "100%" : 500,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            border: "1px solid #ddd",
+            mb: 4,
+          }}
+        >
           <input
             type="text"
             placeholder="Pesquisar"
-            style={styles.searchInput}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              flex: 1,
+              border: "none",
+              outline: "none",
+              backgroundColor: "transparent",
+              fontSize: 16,
+            }}
           />
           <SearchIcon sx={{ fontSize: 22, color: "#888" }} />
-        </div>
+        </Box>
 
-        {loading ? (
-          <p>Carregando favoritos...</p>
-        ) : error ? (
-          <p style={{ color: "red" }}>{error}</p>
-        ) : (
-          <section style={styles.listaFavoritos}>
-            {favoritosFiltrados.length > 0 ? (
-              favoritosFiltrados.map((fav) => (
-                <div key={fav.id_favorito} style={styles.card}>
-                  <div style={styles.infoContainer}>
-                    <div style={styles.nome}>{fav.nome_estabelecimento}</div>
-                    <div style={styles.endereco}>{fav.endereco}</div>
-                  </div>
+        {/* LISTA DE FAVORITOS */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: isMobile
+              ? "1fr"
+              : isTablet
+              ? "1fr 1fr"
+              : "1fr 1fr 1fr",
+            gap: 3,
+            pr: 2,
+          }}
+        >
+          {loading ? (
+            <Typography>Carregando...</Typography>
+          ) : error ? (
+            <Typography color="red">{error}</Typography>
+          ) : favoritosFiltrados.length > 0 ? (
+            favoritosFiltrados.map((fav) => (
+              <Box
+                key={fav.id_favorito}
+                sx={{
+                  backgroundColor: "#fff",
+                  p: 3,
+                  borderRadius: 3,
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  position: "relative",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <Typography sx={{ fontSize: 18, fontWeight: 700 }}>
+                  {fav.nome_estabelecimento}
+                </Typography>
+                <Typography sx={{ fontSize: 15, color: "#555" }}>
+                  {fav.endereco}
+                </Typography>
 
-                  <button
-                    onClick={() => toggleFavorito(fav.id_favorito)}
-                    disabled={deletingId === fav.id_favorito}
-                    style={styles.deleteButton}
-                  >
-                    <FavoriteIcon sx={{ fontSize: 26, color: "#e91e63" }} />
-                  </button>
-                </div>
-              ))
-            ) : (
-              <p>Nenhum favorito encontrado.</p>
-            )}
-          </section>
-        )}
-      </main>
+                {/* BOTÃO REMOVER */}
+                <button
+                  onClick={() => toggleFavorito(fav.id_favorito)}
+                  disabled={deletingId === fav.id_favorito}
+                  style={{
+                    border: "none",
+                    background: "none",
+                    cursor: "pointer",
+                    position: "absolute",
+                    top: 12,
+                    right: 12,
+                  }}
+                >
+                  <FavoriteIcon sx={{ fontSize: 28, color: "#e91e63" }} />
+                </button>
+              </Box>
+            ))
+          ) : (
+            <Typography>Nenhum favorito encontrado.</Typography>
+          )}
+        </Box>
+      </Box>
 
+      {/* SNACKBAR */}
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        autoHideDuration={3500}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
       >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
+        <Alert severity={snackbar.severity} sx={{ width: "100%" }}>
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </div>
+    </Box>
   );
-};
-
-const styles = {
-  wrapper: {
-    display: "flex",
-    height: "100vh",
-    width: "100vw",
-    fontFamily: "Arial, sans-serif",
-    backgroundColor: "#f0f2f5",
-    position: "relative",
-  },
-  container: {
-    flex: 1,
-    padding: 32,
-    paddingLeft: 100,
-    display: "flex",
-    flexDirection: "column",
-  },
-  header: { display: "flex", alignItems: "center", gap: 12, marginBottom: 40 },
-  logoText: { margin: 5, fontSize: 32, fontWeight: 700, color: "#000" },
-  subtitulo: { fontSize: 14, color: "#777", marginBottom: 20, marginTop: -40 },
-  searchBox: {
-    display: "flex",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 25,
-    padding: "10px 20px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-    maxWidth: 600,
-    marginBottom: 40,
-    border: "1px solid #ddd",
-    marginTop: 10,
-    marginLeft: 70,
-  },
-  searchInput: {
-    flex: 1,
-    border: "none",
-    outline: "none",
-    backgroundColor: "transparent",
-    fontSize: 16,
-    color: "#333",
-    fontWeight: 500,
-  },
-  listaFavoritos: {
-    display: "grid",
-    gridTemplateColumns: "1fr",
-    gap: 24,
-    maxHeight: "70vh",
-    overflowY: "auto",
-    paddingRight: 16,
-  },
-  card: {
-    backgroundColor: "#fff",
-    padding: 24,
-    borderRadius: 16,
-    display: "flex",
-    gap: 40,
-    alignItems: "center",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-    cursor: "default",
-    userSelect: "none",
-    position: "relative",
-  },
-  infoContainer: { display: "flex", flexDirection: "column", gap: 6, flex: 1 },
-  nome: { fontWeight: 700, fontSize: 18, color: "#000" },
-  endereco: { fontSize: 16, color: "#555" },
-  deleteButton: {
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    position: "absolute",
-    top: 10,
-    right: 10,
-  },
 };
 
 export default Favoritos;

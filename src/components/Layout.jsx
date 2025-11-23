@@ -1,32 +1,40 @@
-// layout.js
 import React from "react";
 import Header from "./Header";
 import Footer from "./Footer";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { Box } from "@mui/material";
 
 export default function Layout() {
+  const location = useLocation();
+
+  const isHome = location.pathname === "/home";
+  const isMapa = location.pathname === "/mapa";
+
   return (
     <Box
       sx={{
-        minHeight: "100dvh", // altura da viewport (mobile-friendly)
+        minHeight: "100dvh",
         display: "grid",
-        gridTemplateRows: "auto 1fr auto", // header | main | footer
-        overflow: "hidden", // impede scroll global
-        bgcolor: "#e5e5e5", // Cor de fundo para a tela inteira
+        gridTemplateRows: "auto 1fr auto",
+        overflow: "hidden",
+        bgcolor: "#e5e5e5",
       }}
     >
-            <Header /> 
+      <Header />
+
       <main
         style={{
           display: "grid",
-          placeItems: "center", // centraliza qualquer página
-          overflow: "hidden", // garante sem scroll dentro do main
+          placeItems: "center",
+          overflow: "hidden",
+          width: "100%",
         }}
       >
-            <Outlet />     {" "}
+        <Outlet />
       </main>
-            <Footer />   {" "}
+
+      {/* Remove o Footer na Home e no Mapa */}
+      {!isHome && !isMapa && <Footer />}
     </Box>
   );
 }

@@ -85,52 +85,7 @@ const SobreNos = () => {
           </Typography>
         </Box>
 
-        {/* Missão e Visão */}
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: isMobile ? "column" : "row",
-            gap: 2,
-            flexWrap: "wrap",
-          }}
-        >
-          <Box
-            sx={{
-              flex: 1,
-              minWidth: 250,
-              backgroundColor: "#ddd",
-              p: 3,
-              borderRadius: 3,
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-            }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
-              Missão
-            </Typography>
-            <Typography>
-              Facilitar o acesso a lugares incríveis com uma experiência
-              intuitiva.
-            </Typography>
-          </Box>
 
-          <Box
-            sx={{
-              flex: 1,
-              minWidth: 250,
-              backgroundColor: "#ddd",
-              p: 3,
-              borderRadius: 3,
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-            }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
-              Visão
-            </Typography>
-            <Typography>
-              Ser referência em descoberta de locais memoráveis em todo o país.
-            </Typography>
-          </Box>
-        </Box>
 
         {/* Instagram Section */}
         <Box
