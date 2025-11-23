@@ -1,3 +1,5 @@
+// 🔥 TOTALMENTE RESPONSIVO — SEM MUDAR SEU LAYOUT ORIGINAL
+
 import React, { useState, useEffect } from "react";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import SearchIcon from "@mui/icons-material/Search";
@@ -13,7 +15,7 @@ const Home = () => {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
   const [subcategoriaSelecionada, setSubcategoriaSelecionada] = useState(null);
   const [lugares, setLugares] = useState([]);
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
   const [termoBusca, setTermoBusca] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [enderecoSelecionado, setEnderecoSelecionado] = useState(null);
@@ -26,27 +28,27 @@ const Home = () => {
       type: "restaurant",
       icon: <RestaurantMenuIcon sx={{ fontSize: 40 }} />,
       subcategorias: [
-        { nome: "Pizzarias / Hamburguerias", type: "restaurant" }, 
-        { nome: "Bares", type: "bar" }, 
+        { nome: "Pizzarias / Hamburguerias", type: "restaurant" },
+        { nome: "Bares", type: "bar" },
       ],
     },
     {
       nome: "Lojas",
-      type: "store", 
+      type: "store",
       icon: <StorefrontIcon sx={{ fontSize: 40 }} />,
       subcategorias: [
-        { nome: "Mercados", type: "supermarket" }, 
-        { nome: "Shopping", type: "shopping_mall" }, 
-        { nome: "Farmácias", type: "pharmacy" }, 
+        { nome: "Mercados", type: "supermarket" },
+        { nome: "Shopping", type: "shopping_mall" },
+        { nome: "Farmácias", type: "pharmacy" },
       ],
     },
     {
       nome: "Parques",
-      type: "park", 
+      type: "park",
       icon: <ParkIcon sx={{ fontSize: 40 }} />,
       subcategorias: [
-        { nome: "Jardins Botânicos", type: "botanical_garden" }, 
-        { nome: "Parques Urbanos", type: "park" }, 
+        { nome: "Jardins Botânicos", type: "botanical_garden" },
+        { nome: "Parques Urbanos", type: "park" },
       ],
     },
   ];
@@ -64,7 +66,7 @@ const Home = () => {
       state: {
         lugares: lugaresFiltrados,
         lugar: lugar,
-        categoriaType: typeParaMapa, 
+        categoriaType: typeParaMapa,
       },
     });
   };
@@ -80,27 +82,27 @@ const Home = () => {
         );
         if (!categoria) return;
 
-        const typeToSearch = subcategoriaSelecionada || categoria.type; 
+        const typeToSearch = subcategoriaSelecionada || categoria.type;
 
         const subcategoriaObj = categorias
           .flatMap(c => c.subcategorias)
           .find(sub => sub.type === subcategoriaSelecionada);
-        
+
         const categoryName = subcategoriaObj?.nome || categoria.nome;
 
         const response = await api.get("/buscar", {
           params: {
             location: "-20.5381,-47.4008",
             radius: 17000,
-            type: typeToSearch, 
-            categoryName: categoryName 
+            type: typeToSearch,
+            categoryName: categoryName,
           },
         });
 
         const dados = (response.data.estabelecimentos || []).map((item) => ({
           nome: item.nome || "Nome não disponível",
           endereco: item.endereco || "Não disponível",
-          categoria: categoryName, 
+          categoria: categoryName,
           telefone: item.telefone || "Não disponível",
           horarios: item.horarios || "Não disponível",
           avaliacao: item.avaliacao || "Não disponível",
@@ -121,7 +123,7 @@ const Home = () => {
     };
 
     fetchEstabelecimentos();
-  }, [categoriaSelecionada, subcategoriaSelecionada]); 
+  }, [categoriaSelecionada, subcategoriaSelecionada]);
 
   const lugaresFiltrados = lugares.filter((lugar) =>
     (lugar.nome || "").toLowerCase().includes(termoBusca.toLowerCase())
@@ -142,15 +144,19 @@ const Home = () => {
   return (
     <div style={styles.container}>
       <HamburgerDrawer />
+
       <div style={styles.main}>
+        {/* LOGO */}
         <div style={styles.logoWrapper}>
           <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
           <h2 style={styles.logo}>Glimp</h2>
         </div>
+
         <p style={styles.subtitulo}>
           Grandes Lugares Inspiram Momentos Perfeitos.
         </p>
 
+        {/* SEARCH */}
         <div style={styles.searchWrapper}>
           <input
             type="text"
@@ -162,13 +168,14 @@ const Home = () => {
           <SearchIcon style={styles.searchIcon} />
         </div>
 
+        {/* CATEGORIAS */}
         <div style={styles.categorias}>
           {categorias.map((cat) => (
             <button
               key={cat.nome}
               onClick={() => {
                 setCategoriaSelecionada(cat.nome.toLowerCase());
-                setSubcategoriaSelecionada(null); 
+                setSubcategoriaSelecionada(null);
               }}
               style={{
                 ...styles.botaoCategoria,
@@ -187,6 +194,7 @@ const Home = () => {
           ))}
         </div>
 
+        {/* SUBCATEGORIAS */}
         {categoriaSelecionada && (
           <div style={styles.subcategorias}>
             {categorias
@@ -194,7 +202,7 @@ const Home = () => {
               ?.subcategorias.map((sub) => (
                 <button
                   key={sub.nome}
-                  onClick={() => setSubcategoriaSelecionada(sub.type)} 
+                  onClick={() => setSubcategoriaSelecionada(sub.type)}
                   style={{
                     ...styles.botaoSubcategoria,
                     backgroundColor:
@@ -205,18 +213,16 @@ const Home = () => {
                       subcategoriaSelecionada === sub.type ? "#fff" : "#000",
                   }}
                 >
-                  {sub.nome} 
+                  {sub.nome}
                 </button>
               ))}
           </div>
         )}
 
+        {/* LISTA DE LUGARES */}
         <div style={styles.lugares}>
           {lugaresFiltrados.map((lugar, index) => (
-            <div
-              key={lugar.place_id || index}
-              style={styles.lugar}
-            >
+            <div key={lugar.place_id || index} style={styles.lugar}>
               <div style={styles.lugarInfo}>
                 <div style={styles.lugarNome}>{lugar.nome}</div>
                 <div style={styles.lugarHorario}>
@@ -229,14 +235,14 @@ const Home = () => {
               <div style={styles.lugarBotoes}>
                 <button
                   onClick={() => handleOpenDetalhes(lugar)}
-                  style={{ ...styles.botaoAcao, backgroundColor: '#5c6c9e' }}
+                  style={{ ...styles.botaoAcao, backgroundColor: "#5c6c9e" }}
                 >
                   Detalhes
                 </button>
 
                 <button
                   onClick={() => handleNavigateToMapa(lugar, typeParaMapa)}
-                  style={{ ...styles.botaoAcao, backgroundColor: '#4a5a87' }}
+                  style={{ ...styles.botaoAcao, backgroundColor: "#4a5a87" }}
                 >
                   Ver no Mapa
                 </button>
@@ -250,8 +256,8 @@ const Home = () => {
         open={openModal}
         onClose={() => setOpenModal(false)}
         lugar={
-          enderecoSelecionado !== null && enderecoSelecionado < lugares.length 
-            ? lugares[enderecoSelecionado] 
+          enderecoSelecionado !== null && enderecoSelecionado < lugares.length
+            ? lugares[enderecoSelecionado]
             : null
         }
       />
@@ -263,50 +269,68 @@ const styles = {
   container: {
     display: "flex",
     minHeight: "100vh",
-    width: "100vw",
+    width: "100%",
     fontFamily: "Segoe UI, sans-serif",
     overflow: "hidden",
   },
-  main: { flex: 1, backgroundColor: "#f5f5f5", padding: 50, paddingLeft: 200 },
+
+  // 🔥 paddingLeft original 200px → agora responsivo
+  main: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+    padding: "5%",
+    paddingLeft: "5%",
+  },
+
   logoWrapper: { display: "flex", alignItems: "center", gap: 10 },
-  logo: { margin: 0, fontSize: 26, color: "#4a5a87" },
-  subtitulo: { fontSize: 14, color: "#777", marginBottom: 20 },
+  logo: { margin: 0, fontSize: "2rem", color: "#4a5a87" },
+  subtitulo: { fontSize: "1rem", color: "#777", marginBottom: 20 },
+
   searchWrapper: {
     display: "flex",
     alignItems: "center",
     width: "70%",
     backgroundColor: "#fff",
     borderRadius: 25,
-    padding: "0 15px",
+    padding: "0 3%",
     border: "1px solid #ccc",
     marginBottom: 40,
   },
+
   search: {
     flex: 1,
     border: "none",
     outline: "none",
-    padding: "12px 10px",
-    fontSize: 14,
+    padding: "12px",
+    fontSize: "1rem",
   },
-  searchIcon: { color: "#555", fontSize: 24, cursor: "pointer", marginLeft: 8 },
+
+  searchIcon: {
+    color: "#555",
+    fontSize: 24,
+    cursor: "pointer",
+  },
+
   categorias: {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    gap: 20,
+    gap: "5%",
     marginBottom: 20,
-    marginRight: 210,
+    marginRight: "20%",
   },
+
   subcategorias: {
     display: "flex",
     justifyContent: "center",
-    gap: 10,
+    gap: "3%",
     marginBottom: 30,
-    marginRight: 200,
+    marginRight: "20%",
   },
+
   botaoCategoria: {
-    width: 80,
-    height: 80,
+    width: "80px",
+    height: "80px",
     borderRadius: 15,
     border: "none",
     display: "flex",
@@ -314,67 +338,73 @@ const styles = {
     alignItems: "center",
     cursor: "pointer",
     fontSize: 40,
-    fontWeight: "bold",
   },
+
   botaoSubcategoria: {
-    padding: "8px 16px",
+    padding: "0.5rem 1rem",
     borderRadius: 20,
     border: "none",
     cursor: "pointer",
-    fontSize: 14,
+    fontSize: "0.9rem",
     fontWeight: "bold",
   },
-  lugares: { 
-    display: "flex", 
-    flexDirection: "column", 
+
+  lugares: {
+    display: "flex",
+    flexDirection: "column",
     gap: 15,
-    marginRight: 200,
+    marginRight: "8%",
   },
+
   lugar: {
     padding: "15px 20px",
     borderRadius: 8,
-    cursor: "default",
     backgroundColor: "#fff",
     color: "#333",
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    transition: "0.2s",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
+
   lugarInfo: {
     display: "flex",
     flexDirection: "column",
     flexGrow: 1,
   },
+
   lugarNome: {
-    fontWeight: 'bold',
-    fontSize: 16,
+    fontWeight: "bold",
+    fontSize: "1rem",
   },
+
   lugarHorario: {
-    fontSize: 12,
+    fontSize: "0.8rem",
     color: "#555",
     marginTop: 4,
   },
+
   lugarBotoes: {
-    display: 'flex',
+    display: "flex",
     gap: 10,
   },
+
   botaoAcao: {
-    padding: '8px 15px',
+    padding: "8px 15px",
     borderRadius: 8,
-    border: 'none',
-    color: 'white',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    fontSize: 14,
-    minWidth: 100,
+    border: "none",
+    color: "white",
+    fontWeight: "bold",
+    cursor: "pointer",
+    fontSize: "0.9rem",
+    minWidth: "100px",
   },
+
   loadingContainer: {
     display: "flex",
     height: "100vh",
     justifyContent: "center",
     alignItems: "center",
-    fontSize: 18,
+    fontSize: "1.2rem",
     color: "#777",
   },
 };

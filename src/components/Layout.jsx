@@ -16,24 +16,24 @@ export default function Layout() {
         minHeight: "100dvh",
         display: "grid",
         gridTemplateRows: "auto 1fr auto",
-        overflow: "hidden",
         bgcolor: "#e5e5e5",
       }}
     >
+
       <Header />
 
       <main
         style={{
-          display: "grid",
-          placeItems: "center",
-          overflow: "hidden",
           width: "100%",
+          height: "100%",
+          display: "block",     // 🔥 deixa o conteúdo fluir normal
+          overflowX: "hidden",  // 🔥 só bloqueia rolagem lateral
+          overflowY: "auto",    // 🔥 permite rolagem normal quando precisar
         }}
       >
         <Outlet />
       </main>
 
-      {/* Remove o Footer na Home e no Mapa */}
       {!isHome && !isMapa && <Footer />}
     </Box>
   );
