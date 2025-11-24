@@ -143,7 +143,7 @@ const Home = () => {
 
   return (
     <div style={styles.container}>
-      <HamburgerDrawer />
+       <HamburgerDrawer />
 
       <div style={styles.main}>
         {/* LOGO */}
@@ -252,7 +252,7 @@ const Home = () => {
         </div>
       </div>
 
-      <DetalhesModal
+       <DetalhesModal
         open={openModal}
         onClose={() => setOpenModal(false)}
         lugar={
@@ -261,7 +261,7 @@ const Home = () => {
             : null
         }
       />
-    </div>
+    </div> 
   );
 };
 
@@ -272,6 +272,7 @@ const styles = {
     width: "100%",
     fontFamily: "Segoe UI, sans-serif",
     overflow: "hidden",
+    
   },
 
   // 🔥 paddingLeft original 200px → agora responsivo
@@ -280,6 +281,7 @@ const styles = {
     backgroundColor: "#f5f5f5",
     padding: "5%",
     paddingLeft: "5%",
+    
   },
 
   logoWrapper: { display: "flex", alignItems: "center", gap: 10 },
@@ -289,7 +291,7 @@ const styles = {
   searchWrapper: {
     display: "flex",
     alignItems: "center",
-    width: "70%",
+    width: "90%",
     backgroundColor: "#fff",
     borderRadius: 25,
     padding: "0 3%",
@@ -317,7 +319,7 @@ const styles = {
     alignItems: "center",
     gap: "5%",
     marginBottom: 20,
-    marginRight: "20%",
+    // marginRight: "20%",
   },
 
   subcategorias: {
@@ -325,7 +327,7 @@ const styles = {
     justifyContent: "center",
     gap: "3%",
     marginBottom: 30,
-    marginRight: "20%",
+    // marginRight: "20%",
   },
 
   botaoCategoria: {
@@ -353,7 +355,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: 15,
-    marginRight: "8%",
+    // marginRight: "8%",
   },
 
   lugar: {

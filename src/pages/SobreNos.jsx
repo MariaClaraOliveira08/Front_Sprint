@@ -80,12 +80,12 @@ const SobreNos = () => {
             Sobre nós:
           </Typography>
           <Typography>
-            Somos apaixonados por conectar pessoas aos melhores lugares para
-            criar experiências inesquecíveis.
+            O GLIMP é um projeto criado para facilitar a descoberta de lugares
+            incríveis — de restaurantes a pontos de lazer e comércios locais.
+            Nosso objetivo é inspirar momentos perfeitos e dar visibilidade aos
+            estabelecimentos da sua cidade.
           </Typography>
         </Box>
-
-
 
         {/* Instagram Section */}
         <Box
@@ -112,12 +112,18 @@ const SobreNos = () => {
             }}
           >
             {[
-              ["mahh.oliveira07", "https://www.instagram.com/mahh.oliveira07/#"],
+              [
+                "mahh.oliveira07",
+                "https://www.instagram.com/mahh.oliveira07/#",
+              ],
               ["prieloize", "https://instagram.com/prieloize"],
               ["gabb_ignacio", "https://instagram.com/gabb_ignacio"],
               ["livreys", "https://instagram.com/livreys"],
               ["m.lureys", "https://instagram.com/m.lureys"],
-              ["guilherme_guimaraes11", "https://instagram.com/guilherme_guimaraes11"],
+              [
+                "guilherme_guimaraes11",
+                "https://instagram.com/guilherme_guimaraes11",
+              ],
               ["leo.pedrosoo", "https://instagram.com/leo.pedrosoo"],
             ].map(([user, link]) => (
               <a
