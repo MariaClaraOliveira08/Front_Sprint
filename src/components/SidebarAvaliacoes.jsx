@@ -13,8 +13,14 @@ import {
   IconButton,
   Modal,
 } from "@mui/material";
-import { Favorite, FavoriteBorder, RateReview } from "@mui/icons-material";
+import {
+  Favorite,
+  FavoriteBorder,
+  RateReview,
+  Close,
+} from "@mui/icons-material";
 import api from "../axios/axios";
+import { useNavigate } from "react-router-dom";
 
 const SidebarAvaliacoes = ({
   googlePlaceId,
@@ -34,10 +40,10 @@ const SidebarAvaliacoes = ({
     severity: "info",
   });
 
-  // controle do modal lateral
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const userId = localStorage.getItem("userId");
+  const navigate = useNavigate();
 
   const fetchAvaliacoes = async () => {
     setLoading(true);
@@ -187,7 +193,7 @@ const SidebarAvaliacoes = ({
         sx={{
           position: "absolute",
           top: 16,
-          right: 33, 
+          right: 33,
           backgroundColor: "white",
           boxShadow: 2,
           "&:hover": { backgroundColor: "#f5f5f5" },
@@ -197,7 +203,6 @@ const SidebarAvaliacoes = ({
         <RateReview color={isModalOpen ? "primary" : "action"} />
       </IconButton>
 
-      {/* Modal lateral */}
       <Modal
         open={isModalOpen}
         onClose={toggleModal}
@@ -210,15 +215,33 @@ const SidebarAvaliacoes = ({
       >
         <Box
           sx={{
-            width: { xs: "90%", sm: 400 },
-            height: "100vh",
+            width: { xs: "60%", sm: 380 }, // 🔥 ALTERAÇÃO AQUI
+            maxHeight: "90vh",
+            height: "auto",
             bgcolor: "background.paper",
             boxShadow: 4,
-            borderRadius: "8px 0 0 8px",
+            borderRadius: "12px 0 0 12px",
             p: 3,
-            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
+            position: "relative",
           }}
         >
+          <IconButton
+            onClick={() => {
+              setIsModalOpen(false);
+              navigate("/mapa");
+            }}
+            sx={{
+              position: "absolute",
+              top: 8,
+              left: 8,
+              color: "gray",
+            }}
+          >
+            <Close />
+          </IconButton>
+
           <IconButton
             onClick={toggleFavorito}
             sx={{
@@ -231,53 +254,69 @@ const SidebarAvaliacoes = ({
             {curtido ? <Favorite /> : <FavoriteBorder />}
           </IconButton>
 
-          <Typography variant="h6" gutterBottom>
+          <Typography
+            variant="h5"
+            sx={{ fontWeight: "bold", mb: 2, mt: 3, textAlign: "left" }}
+          >
             Avaliações
           </Typography>
 
-          {loading ? (
-            <Box display="flex" justifyContent="center" my={2}>
-              <CircularProgress />
-            </Box>
-          ) : avaliacoes.length === 0 ? (
-            <Typography color="text.secondary">
-              Nenhuma avaliação ainda.
-            </Typography>
-          ) : (
-            avaliacoes.map((a) => (
-              <Paper key={a.id_avaliacao} sx={{ p: 2, mb: 2, borderRadius: 2 }}>
-                <Box display="flex" alignItems="center" gap={1} mb={1}>
-                  <Avatar sx={{ bgcolor: "#7681A1", width: 30, height: 30 }}>
-                    {a.usuario?.[0]?.toUpperCase() || "U"}
-                  </Avatar>
-                  <Box>
-                    <Typography variant="subtitle2">
-                      {a.usuario}{" "}
-                      {a.nome_estabelecimento &&
-                      a.nome_estabelecimento !== "Nome não informado"
-                        ? `- ${a.nome_estabelecimento}`
-                        : ""}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {a.endereco || a.google_place_id}
-                    </Typography>
+          <Box sx={{ flex: 1, overflowY: "auto", pr: 1 }}>
+            {loading ? (
+              <Box display="flex" justifyContent="center" my={2}>
+                <CircularProgress />
+              </Box>
+            ) : avaliacoes.length === 0 ? (
+              <Typography color="text.secondary">
+                Nenhuma avaliação ainda.
+              </Typography>
+            ) : (
+              avaliacoes.map((a) => (
+                <Paper
+                  key={a.id_avaliacao}
+                  sx={{ p: 2, mb: 2, borderRadius: 2 }}
+                >
+                  <Box display="flex" alignItems="center" gap={1} mb={1}>
+                    <Avatar sx={{ bgcolor: "#7681A1", width: 30, height: 30 }}>
+                      {a.usuario?.[0]?.toUpperCase() || "U"}
+                    </Avatar>
+                    <Box>
+                      <Typography variant="subtitle2">
+                        {a.usuario}{" "}
+                        {a.nome_estabelecimento &&
+                        a.nome_estabelecimento !== "Nome não informado"
+                          ? `- ${a.nome_estabelecimento}`
+                          : ""}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {a.endereco || a.google_place_id}
+                      </Typography>
+                    </Box>
+                    <Rating
+                      value={a.nota || 0}
+                      readOnly
+                      size="small"
+                      sx={{ ml: "auto" }}
+                    />
                   </Box>
-                  <Rating
-                    value={a.nota || 0}
-                    readOnly
-                    size="small"
-                    sx={{ ml: "auto" }}
-                  />
-                </Box>
-                <Typography variant="body2">{a.comentario}</Typography>
-              </Paper>
-            ))
-          )}
+                  <Typography variant="body2">{a.comentario}</Typography>
+                </Paper>
+              ))
+            )}
+          </Box>
 
-          <Box mt={3}>
+          <Box
+            sx={{
+              mt: 2,
+              pt: 2,
+              borderTop: "1px solid #ddd",
+              backgroundColor: "white",
+            }}
+          >
             <Typography variant="subtitle1" sx={{ mb: 1 }}>
               Adicionar Avaliação
             </Typography>
+
             <TextField
               label="Comentário"
               multiline
@@ -287,17 +326,19 @@ const SidebarAvaliacoes = ({
               onChange={(e) => setComentario(e.target.value)}
               sx={{ mb: 2 }}
             />
+
             <Rating
               name="nota"
               value={nota}
               onChange={(e, newValue) => setNota(newValue)}
               precision={1}
             />
+
             <Button
               variant="contained"
               color="primary"
               fullWidth
-              sx={{ mt: 2 }}
+              sx={{ mt: 1, mb: 1 }}
               onClick={handleSubmit}
               disabled={submitting}
             >
