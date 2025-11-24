@@ -201,7 +201,7 @@ function AvaliacoesUsuario() {
                   <Rating
                     value={avaliacao.nota || 0}
                     readOnly
-                    precision={0.5}
+                    precision={1}
                     size={isMobile ? "small" : "medium"}
                   />
                 </Box>
