@@ -1,3 +1,5 @@
+// 🔥 TOTALMENTE RESPONSIVO — SEM MUDAR SEU LAYOUT ORIGINAL
+
 import React, { useState, useEffect } from "react";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import SearchIcon from "@mui/icons-material/Search";
@@ -52,7 +54,7 @@ const Home = () => {
   ];
 
   const handleOpenDetalhes = (lugar) => {
-    const index = lugares.findIndex((item) => item.place_id === lugar.place_id);
+    const index = lugares.findIndex(item => item.place_id === lugar.place_id);
     if (index !== -1) {
       setEnderecoSelecionado(index);
       setOpenModal(true);
@@ -61,48 +63,14 @@ const Home = () => {
 
   const handleNavigateToMapa = (lugar, typeParaMapa) => {
     navigate("/mapa", {
-      state: { lugares, lugar, categoriaType: typeParaMapa },
+      state: {
+        lugares: lugaresFiltrados,
+        lugar: lugar,
+        categoriaType: typeParaMapa,
+      },
     });
   };
 
-  // 🔍 NOVO: função para buscar por termo digitado
-  const handleSearch = async () => {
-    if (!termoBusca.trim()) return;
-    setLoading(true);
-
-    try {
-      const response = await api.get("/buscar", {
-        params: {
-          query: termoBusca,
-          location: "-20.5381,-47.4008",
-          radius: 17000,
-        },
-      });
-
-      const dados = (response.data.estabelecimentos || []).map((item) => ({
-        nome: item.nome || "Nome não disponível",
-        endereco: item.endereco || "Não disponível",
-        categoria: item.tipo || "Não disponível",
-        telefone: item.telefone || "Não disponível",
-        horarios: item.horarios || "Não disponível",
-        avaliacao: item.avaliacao || "Não disponível",
-        place_id: item.place_id,
-        lat: item.latitude,
-        lng: item.longitude,
-        comentarios: item.comentarios || [],
-        photos: item.photos || [],
-      }));
-
-      setLugares(dados);
-    } catch (error) {
-      console.error("Erro ao buscar estabelecimentos:", error);
-      setLugares([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 🔹 busca automática por categoria/subcategoria
   useEffect(() => {
     const fetchEstabelecimentos = async () => {
       if (!categoriaSelecionada) return;
@@ -116,18 +84,25 @@ const Home = () => {
 
         const typeToSearch = subcategoriaSelecionada || categoria.type;
 
+        const subcategoriaObj = categorias
+          .flatMap(c => c.subcategorias)
+          .find(sub => sub.type === subcategoriaSelecionada);
+
+        const categoryName = subcategoriaObj?.nome || categoria.nome;
+
         const response = await api.get("/buscar", {
           params: {
             location: "-20.5381,-47.4008",
             radius: 17000,
             type: typeToSearch,
+            categoryName: categoryName,
           },
         });
 
         const dados = (response.data.estabelecimentos || []).map((item) => ({
           nome: item.nome || "Nome não disponível",
           endereco: item.endereco || "Não disponível",
-          categoria: categoria.nome,
+          categoria: categoryName,
           telefone: item.telefone || "Não disponível",
           horarios: item.horarios || "Não disponível",
           avaliacao: item.avaliacao || "Não disponível",
@@ -150,11 +125,14 @@ const Home = () => {
     fetchEstabelecimentos();
   }, [categoriaSelecionada, subcategoriaSelecionada]);
 
+  const lugaresFiltrados = lugares.filter((lugar) =>
+    (lugar.nome || "").toLowerCase().includes(termoBusca.toLowerCase())
+  );
+
   const categoriaAtiva = categorias.find(
     (cat) => cat.nome.toLowerCase() === categoriaSelecionada
   );
-  const typeParaMapa =
-    subcategoriaSelecionada || (categoriaAtiva ? categoriaAtiva.type : null);
+  const typeParaMapa = subcategoriaSelecionada || (categoriaAtiva ? categoriaAtiva.type : null);
 
   if (loading)
     return (
@@ -166,16 +144,19 @@ const Home = () => {
   return (
     <div style={styles.container}>
       <HamburgerDrawer />
+
       <div style={styles.main}>
+        {/* LOGO */}
         <div style={styles.logoWrapper}>
           <LocationOnOutlinedIcon sx={{ fontSize: 36, color: "#000" }} />
           <h2 style={styles.logo}>Glimp</h2>
         </div>
+
         <p style={styles.subtitulo}>
           Grandes Lugares Inspiram Momentos Perfeitos.
         </p>
 
-        {/* 🔍 Barra de busca funcional */}
+        {/* SEARCH */}
         <div style={styles.searchWrapper}>
           <input
             type="text"
@@ -183,12 +164,11 @@ const Home = () => {
             style={styles.search}
             value={termoBusca}
             onChange={(e) => setTermoBusca(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           />
-          <SearchIcon style={styles.searchIcon} onClick={handleSearch} />
+          <SearchIcon style={styles.searchIcon} />
         </div>
 
-        {/* Botões de categoria */}
+        {/* CATEGORIAS */}
         <div style={styles.categorias}>
           {categorias.map((cat) => (
             <button
@@ -214,9 +194,34 @@ const Home = () => {
           ))}
         </div>
 
-        {/* Lista de lugares */}
+        {/* SUBCATEGORIAS */}
+        {categoriaSelecionada && (
+          <div style={styles.subcategorias}>
+            {categorias
+              .find((cat) => cat.nome.toLowerCase() === categoriaSelecionada)
+              ?.subcategorias.map((sub) => (
+                <button
+                  key={sub.nome}
+                  onClick={() => setSubcategoriaSelecionada(sub.type)}
+                  style={{
+                    ...styles.botaoSubcategoria,
+                    backgroundColor:
+                      subcategoriaSelecionada === sub.type
+                        ? "#4a5a87"
+                        : "#d9d9d9",
+                    color:
+                      subcategoriaSelecionada === sub.type ? "#fff" : "#000",
+                  }}
+                >
+                  {sub.nome}
+                </button>
+              ))}
+          </div>
+        )}
+
+        {/* LISTA DE LUGARES */}
         <div style={styles.lugares}>
-          {lugares.map((lugar, index) => (
+          {lugaresFiltrados.map((lugar, index) => (
             <div key={lugar.place_id || index} style={styles.lugar}>
               <div style={styles.lugarInfo}>
                 <div style={styles.lugarNome}>{lugar.nome}</div>
@@ -230,20 +235,14 @@ const Home = () => {
               <div style={styles.lugarBotoes}>
                 <button
                   onClick={() => handleOpenDetalhes(lugar)}
-                  style={{
-                    ...styles.botaoAcao,
-                    backgroundColor: "#5c6c9e",
-                  }}
+                  style={{ ...styles.botaoAcao, backgroundColor: "#5c6c9e" }}
                 >
                   Detalhes
                 </button>
 
                 <button
                   onClick={() => handleNavigateToMapa(lugar, typeParaMapa)}
-                  style={{
-                    ...styles.botaoAcao,
-                    backgroundColor: "#4a5a87",
-                  }}
+                  style={{ ...styles.botaoAcao, backgroundColor: "#4a5a87" }}
                 >
                   Ver no Mapa
                 </button>
@@ -270,50 +269,68 @@ const styles = {
   container: {
     display: "flex",
     minHeight: "100vh",
-    width: "100vw",
+    width: "100%",
     fontFamily: "Segoe UI, sans-serif",
     overflow: "hidden",
   },
-  main: { flex: 1, backgroundColor: "#f5f5f5", padding: 50, paddingLeft: 200 },
+
+  // 🔥 paddingLeft original 200px → agora responsivo
+  main: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+    padding: "5%",
+    paddingLeft: "5%",
+  },
+
   logoWrapper: { display: "flex", alignItems: "center", gap: 10 },
-  logo: { margin: 0, fontSize: 26, color: "#4a5a87" },
-  subtitulo: { fontSize: 14, color: "#777", marginBottom: 20 },
+  logo: { margin: 0, fontSize: "2rem", color: "#4a5a87" },
+  subtitulo: { fontSize: "1rem", color: "#777", marginBottom: 20 },
+
   searchWrapper: {
     display: "flex",
     alignItems: "center",
     width: "70%",
     backgroundColor: "#fff",
     borderRadius: 25,
-    padding: "0 15px",
+    padding: "0 3%",
     border: "1px solid #ccc",
     marginBottom: 40,
   },
+
   search: {
     flex: 1,
     border: "none",
     outline: "none",
-    padding: "12px 10px",
-    fontSize: 14,
+    padding: "12px",
+    fontSize: "1rem",
   },
-  searchIcon: { color: "#555", fontSize: 24, cursor: "pointer", marginLeft: 8 },
+
+  searchIcon: {
+    color: "#555",
+    fontSize: 24,
+    cursor: "pointer",
+  },
+
   categorias: {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    gap: 20,
+    gap: "5%",
     marginBottom: 20,
-    marginRight: 210,
+    marginRight: "20%",
   },
+
   subcategorias: {
     display: "flex",
     justifyContent: "center",
-    gap: 10,
+    gap: "3%",
     marginBottom: 30,
-    marginRight: 200,
+    marginRight: "20%",
   },
+
   botaoCategoria: {
-    width: 80,
-    height: 80,
+    width: "80px",
+    height: "80px",
     borderRadius: 15,
     border: "none",
     display: "flex",
@@ -321,67 +338,73 @@ const styles = {
     alignItems: "center",
     cursor: "pointer",
     fontSize: 40,
-    fontWeight: "bold",
   },
+
   botaoSubcategoria: {
-    padding: "8px 16px",
+    padding: "0.5rem 1rem",
     borderRadius: 20,
     border: "none",
     cursor: "pointer",
-    fontSize: 14,
+    fontSize: "0.9rem",
     fontWeight: "bold",
   },
-  lugares: { 
-    display: "flex", 
-    flexDirection: "column", 
+
+  lugares: {
+    display: "flex",
+    flexDirection: "column",
     gap: 15,
-    marginRight: 200,
+    marginRight: "8%",
   },
+
   lugar: {
     padding: "15px 20px",
     borderRadius: 8,
-    cursor: "default",
     backgroundColor: "#fff",
     color: "#333",
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    transition: "0.2s",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
+
   lugarInfo: {
     display: "flex",
     flexDirection: "column",
     flexGrow: 1,
   },
+
   lugarNome: {
-    fontWeight: 'bold',
-    fontSize: 16,
+    fontWeight: "bold",
+    fontSize: "1rem",
   },
+
   lugarHorario: {
-    fontSize: 12,
+    fontSize: "0.8rem",
     color: "#555",
     marginTop: 4,
   },
+
   lugarBotoes: {
-    display: 'flex',
+    display: "flex",
     gap: 10,
   },
+
   botaoAcao: {
-    padding: '8px 15px',
+    padding: "8px 15px",
     borderRadius: 8,
-    border: 'none',
-    color: 'white',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    fontSize: 14,
-    minWidth: 100,
+    border: "none",
+    color: "white",
+    fontWeight: "bold",
+    cursor: "pointer",
+    fontSize: "0.9rem",
+    minWidth: "100px",
   },
+
   loadingContainer: {
     display: "flex",
     height: "100vh",
     justifyContent: "center",
     alignItems: "center",
-    fontSize: 18,
+    fontSize: "1.2rem",
     color: "#777",
   },
 };

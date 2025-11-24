@@ -1,4 +1,3 @@
-// 📁 src/pages/Cadastro.jsx
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -13,7 +12,7 @@ import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import sheets from "../axios/axios";
 import PasswordField from "../components/PasswordField";
 import CustomSnackbar from "../components/CustomSnackbar";
-import ModalVerificarCodigo from "../components/ModalVerificarCodigo"; // 👈 importamos o modal
+import ModalVerificarCodigo from "../components/ModalVerificarCodigo"; //  importamos o modal
 
 export default function Cadastro() {
   const navigate = useNavigate();

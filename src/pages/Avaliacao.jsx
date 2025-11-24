@@ -7,7 +7,9 @@ import {
   Avatar,
   Rating,
   Button,
+  useMediaQuery,
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import HamburgerDrawer from "../components/HamburgerDrawer";
 import api from "../axios/axios";
 import ModalAvaliacao from "../components/ModalAvaliacao";
@@ -17,6 +19,18 @@ function AvaliacoesUsuario() {
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [avaliacaoModal, setAvaliacaoModal] = useState(null);
+  const [fotoUsuario, setFotoUsuario] = useState(null);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const userId = localStorage.getItem("userId");
+
+  // 🔹 Buscar foto do usuário logado
+  useEffect(() => {
+    if (userId) {
+      setFotoUsuario(`${api.defaults.baseURL}user/${userId}/imagem?${Date.now()}`);
+    }
+  }, [userId]);
 
   useEffect(() => {
     buscarAvaliacoesUsuario();
@@ -61,47 +75,59 @@ function AvaliacoesUsuario() {
       );
       handleCloseModal();
     } catch (err) {
-      console.warn("Não foi possível deletar a avaliação:", err);
+      alert("Não foi possível deletar a avaliação.");
     }
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: { xs: "column", md: "row" },
+        minHeight: "100vh",
+      }}
+    >
       <HamburgerDrawer />
 
       <Box
         sx={{
           flex: 1,
-          height: "100vh",
           display: "flex",
           flexDirection: "column",
+          height: "100%",
+          p: { xs: 1, sm: 2, md: 3 },
         }}
       >
+        {/* Cabeçalho */}
         <Box
           sx={{
-            p: 2,
+            p: { xs: 1, sm: 2 },
             borderBottom: "1px solid #ccc",
             textAlign: "center",
           }}
         >
           <Typography
-            variant="h4"
-            gutterBottom
-            sx={{ color: "#4a5a87", fontWeight: 700, marginTop: 5 }}
+            variant={isMobile ? "h5" : "h4"}
+            sx={{
+              color: "#4a5a87",
+              fontWeight: 700,
+              mt: { xs: 2, sm: 4 },
+            }}
           >
             Minhas Avaliações
           </Typography>
         </Box>
 
+        {/* Corpo */}
         <Box
           sx={{
             flex: 1,
             overflowY: "auto",
-            p: 3,
+            p: { xs: 2, sm: 3 },
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: 3,
+            gap: { xs: 2, sm: 3 },
           }}
         >
           {loading ? (
@@ -109,7 +135,14 @@ function AvaliacoesUsuario() {
               <CircularProgress />
             </Box>
           ) : avaliacoes.length === 0 ? (
-            <Typography sx={{ color: "#777", textAlign: "center", mt: 5 }}>
+            <Typography
+              sx={{
+                color: "#777",
+                textAlign: "center",
+                mt: 5,
+                px: { xs: 2 },
+              }}
+            >
               Você ainda não fez nenhuma avaliação.
             </Typography>
           ) : (
@@ -118,40 +151,85 @@ function AvaliacoesUsuario() {
                 key={avaliacao.id_avaliacao}
                 elevation={4}
                 sx={{
-                  p: 3,
+                  p: { xs: 2, sm: 3 },
                   borderRadius: 3,
                   display: "flex",
                   flexDirection: "column",
                   gap: 1,
-                  transition: "0.3s",
-                  width: "90%",
+                  width: { xs: "95%", sm: "90%", md: "80%", lg: "70%" },
                   maxWidth: 900,
-                  "&:hover": { transform: "scale(1.01)", boxShadow: 6 },
+                  transition: "0.3s",
+                  "&:hover": {
+                    transform: { md: "scale(1.01)" },
+                    boxShadow: 6,
+                  },
                 }}
               >
-                <Box display="flex" alignItems="center" gap={2}>
-                  <Avatar sx={{ bgcolor: "#7681A1" }}>
-                    {avaliacao.usuario?.[0]?.toUpperCase() || "U"}
+                {/* Cabeçalho da avaliação */}
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  flexDirection={{ xs: "column", sm: "row" }}
+                  gap={2}
+                  textAlign={{ xs: "center", sm: "left" }}
+                >
+                  <Avatar
+                    src={fotoUsuario}
+                    sx={{
+                      bgcolor: "#7681A1",
+                      width: 50,
+                      height: 50,
+                    }}
+                  >
+                    {!fotoUsuario && (avaliacao.usuario?.[0]?.toUpperCase() || "U")}
                   </Avatar>
                   <Box flex={1}>
-                    <Typography variant="subtitle1" fontWeight={600}>
+                    <Typography
+                      variant={isMobile ? "subtitle1" : "h6"}
+                      fontWeight={600}
+                    >
                       {avaliacao.nome_estabelecimento}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ wordWrap: "break-word" }}
+                    >
                       Usuário: {avaliacao.usuario}
                     </Typography>
                   </Box>
-                  <Rating value={avaliacao.nota || 0} readOnly precision={1} />
+                  <Rating
+                    value={avaliacao.nota || 0}
+                    readOnly
+                    precision={1}
+                    size={isMobile ? "small" : "medium"}
+                  />
                 </Box>
 
-                <Typography variant="body1" mt={1}>
-                  {avaliacao.comentario ? avaliacao.comentario : "-"}
+                {/* Comentário */}
+                <Typography
+                  variant="body1"
+                  mt={1}
+                  sx={{
+                    fontSize: { xs: "0.9rem", sm: "1rem" },
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {avaliacao.comentario || "-"}
                 </Typography>
 
-                <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+                {/* Botão */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: { xs: "center", sm: "flex-start" },
+                    gap: 1,
+                    mt: 1,
+                  }}
+                >
                   <Button
                     variant="text"
-                    size="small"
+                    size={isMobile ? "small" : "medium"}
                     onClick={() => handleOpenModal(avaliacao)}
                   >
                     Ver mais
