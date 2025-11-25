@@ -57,7 +57,7 @@ const HamburgerDrawer = () => {
       icon: (
         <Avatar
           src={userImage}
-          alt="Foto do usuário"
+         
           sx={{ width: 24, height: 24 }}
         />
       ),
