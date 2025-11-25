@@ -20,20 +20,26 @@ export default function Layout() {
       }}
     >
 
+      {/* HEADER FIXO */}
       <Header />
 
+      {/* MAIN COM ESPAÇO PARA NÃO FICAR ATRÁS DO HEADER */}
       <main
         style={{
           width: "100%",
           height: "100%",
-          display: "block",     // 🔥 deixa o conteúdo fluir normal
-          overflowX: "hidden",  // 🔥 só bloqueia rolagem lateral
-          overflowY: "auto",    // 🔥 permite rolagem normal quando precisar
+          display: "block",
+          overflowX: "hidden",
+          overflowY: "auto",
+
+          // 🔥 ESSA LINHA RESOLVE O PROBLEMA DO TÍTULO CORTADO
+          paddingTop: 45, 
         }}
       >
         <Outlet />
       </main>
 
+      {/* FOOTER EXCETO EM HOME E MAPA */}
       {!isHome && !isMapa && <Footer />}
     </Box>
   );
