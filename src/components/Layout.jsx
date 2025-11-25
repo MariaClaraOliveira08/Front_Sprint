@@ -16,14 +16,12 @@ export default function Layout() {
         minHeight: "100dvh",
         display: "grid",
         gridTemplateRows: "auto 1fr auto",
-        bgcolor: "#e5e5e5",
+        bgcolor: "#e5e5e5", 
       }}
     >
 
-      {/* HEADER FIXO */}
       <Header />
 
-      {/* MAIN COM ESPAÇO PARA NÃO FICAR ATRÁS DO HEADER */}
       <main
         style={{
           width: "100%",
@@ -31,15 +29,14 @@ export default function Layout() {
           display: "block",
           overflowX: "hidden",
           overflowY: "auto",
-
-          // 🔥 ESSA LINHA RESOLVE O PROBLEMA DO TÍTULO CORTADO
           paddingTop: 45, 
+          minHeight: "calc(100dvh - 45px)", 
+          boxSizing: "border-box",
         }}
       >
         <Outlet />
       </main>
 
-      {/* FOOTER EXCETO EM HOME E MAPA */}
       {!isHome && !isMapa && <Footer />}
     </Box>
   );
