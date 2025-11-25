@@ -200,7 +200,6 @@ function Perfil() {
         >
           <Avatar
             src={avatarPreview}
-            alt="Foto do perfil"
             sx={{ width: "100%", height: "100%" }}
           />
           <Box

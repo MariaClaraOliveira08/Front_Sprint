@@ -16,7 +16,7 @@ export default function Layout() {
         minHeight: "100dvh",
         display: "grid",
         gridTemplateRows: "auto 1fr auto",
-        bgcolor: "#e5e5e5",
+        bgcolor: "#e5e5e5", 
       }}
     >
 
@@ -26,9 +26,12 @@ export default function Layout() {
         style={{
           width: "100%",
           height: "100%",
-          display: "block",     // 🔥 deixa o conteúdo fluir normal
-          overflowX: "hidden",  // 🔥 só bloqueia rolagem lateral
-          overflowY: "auto",    // 🔥 permite rolagem normal quando precisar
+          display: "block",
+          overflowX: "hidden",
+          overflowY: "auto",
+          paddingTop: 45, 
+          minHeight: "calc(100dvh - 45px)", 
+          boxSizing: "border-box",
         }}
       >
         <Outlet />

@@ -23,7 +23,6 @@ const DetalhesModal = ({ open, onClose, lugar }) => {
   const renderHorarios = (horarios) => {
     if (!horarios) return "Não disponível";
 
-    // Caso venha string simples
     if (typeof horarios === "string") {
       return (
         <Typography variant="body2" sx={{ mt: 1 }}>
@@ -32,7 +31,6 @@ const DetalhesModal = ({ open, onClose, lugar }) => {
       );
     }
 
-    // Caso venha como array (ex: ["Seg: 8h - 18h", "Ter: 8h - 18h"])
     if (Array.isArray(horarios)) {
       return (
         <Stack spacing={0.5} sx={{ mt: 1 }}>
@@ -54,7 +52,6 @@ const DetalhesModal = ({ open, onClose, lugar }) => {
       );
     }
 
-    // Caso venha como objeto (ex: { seg: "8h-18h", ter: "8h-18h" })
     if (typeof horarios === "object") {
       return (
         <Stack spacing={0.5} sx={{ mt: 1 }}>
@@ -98,12 +95,17 @@ const DetalhesModal = ({ open, onClose, lugar }) => {
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 420,
+
+          //  responsividade
+          width: "90vw",
+          maxWidth: "420px",
+          maxHeight: "85vh",
+          overflowY: "auto",
+
           bgcolor: "#fff",
           borderRadius: 3,
-          p: 4,
+          p: { xs: 2, sm: 4 },
           boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
-          transition: "all 0.3s ease",
           border: "1px solid #e0e0e0",
         }}
       >
@@ -146,24 +148,36 @@ const DetalhesModal = ({ open, onClose, lugar }) => {
 
         {/* Informações */}
         <Stack spacing={1.5}>
-          <Typography variant="body2" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <LocationOn color="action" fontSize="small" /> 
+          <Typography
+            variant="body2"
+            sx={{ display: "flex", alignItems: "center", gap: 1 }}
+          >
+            <LocationOn color="action" fontSize="small" />
             <strong>Endereço:</strong> {lugar.endereco}
           </Typography>
 
-          <Typography variant="body2" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Phone color="action" fontSize="small" /> 
+          <Typography
+            variant="body2"
+            sx={{ display: "flex", alignItems: "center", gap: 1 }}
+          >
+            <Phone color="action" fontSize="small" />
             <strong>Telefone:</strong> {lugar.telefone || "Não informado"}
           </Typography>
 
           <Box>
             <Typography
               variant="body2"
-              sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                mb: 0.5,
+              }}
             >
-              <AccessTime color="action" fontSize="small" /> 
+              <AccessTime color="action" fontSize="small" />
               <strong>Horários:</strong>
             </Typography>
+
             {renderHorarios(lugar.horarios)}
           </Box>
         </Stack>
